@@ -1,0 +1,34 @@
+.StartScreen {
+  height: 100%;
+  width: 100%;
+}
+.CenterForm {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+.Box {
+  background-color: rgb(37, 158, 37);
+  border: 12px solid rjjjj gb(37, 158, 37);
+  border-radius: 25%;
+  height: 100%;
+  width: 100%;
+
+}
+.CenterBox {
+  position: absolute;
+
+
+  top: 25%;
+  left: 37.5%;
+  height: 50%;
+  width: 25%;
+}
+
+
+.Title {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+
+}
