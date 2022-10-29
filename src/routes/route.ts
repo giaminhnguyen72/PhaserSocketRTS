@@ -1,5 +1,5 @@
 import { Router } from "express";
-import express = require("express");
+import express from "express";
 
 export default class Route {
     router: Router

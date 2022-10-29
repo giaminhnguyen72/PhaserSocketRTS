@@ -1,57 +1,103 @@
-const path = require('path')
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-module.exports = {
-  entry: path.resolve(__dirname, 'src/frontend', 'index.js'),
-  output: {
-    path: path.resolve(__dirname, 'dist/frontend'),
-    filename: 'bundle.js',
-    publicPath: '/frontend'
-  },
-  devtool: 'inline-source-map',
+import path from 'path'
+let dirname = path.resolve()
+export default [
+  {
+    entry: './dist/frontend',
+    devtool: 'inline-source-map',
+    output: {
+      path: path.resolve(dirname, 'public'),
+      filename: 'bundle.js'
 
-  module: {
-    rules: [
-      {
-        test: /\.(jsx|js)$/,
-        include: path.resolve(__dirname, 'src/frontend'),
-        exclude: /node_modules/,
-        use: [{
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              ['@babel/preset-env', {
-                "targets": "defaults" 
-              }],
-              '@babel/preset-react'
-            ]
-          }
-        }]
-      },
-      {
-        test: /\.css$/,
-        use: [
-          {
-            loader: 'style-loader'
-          },
-          {
-            loader: 'css-loader',
+    },
+    devtool: 'inline-source-map',
+
+    module: {
+      rules: [
+        {
+          test: /\.(jsx|js|ts|tsx)$/,
+          include: path.resolve(dirname, 'public'),
+          exclude: /node_modules/,
+          use: [{
+            loader: 'babel-loader',
             options: {
-              modules: true,
-              sourceMap: true
+              presets: [
+                ['@babel/preset-env', {
+                  "targets": "defaults" 
+                }],
+                '@babel/preset-react'
+              ]
             }
-          }
-        ]
-      }
+          }]
+        },
+        {
+          test: /\.css$/,
+          use: [
+            {
+              loader: 'style-loader'
+            },
+            {
+              loader: 'css-loader',
+              options: {
+                modules: true,
+                sourceMap: true
+              }
+            }
+          ]
+        }
 
-    ]
+      ]
+    },
+    resolve: {
+      extensions: ['.js', '.jsx']
+    }
   },
-  resolve: {
-    extensions: ['.js', '.jsx']
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: 'public/index.html',
-    })
-  ]
-}
+  {
+    entry: './dist/GameFrontend',
+    devtool: 'inline-source-map',
+    output: {
+      path: path.resolve(dirname, 'public'),
+      filename: 'gameBundle.js'
+    },
+    devtool: 'inline-source-map',
+
+    module: {
+      rules: [
+        {
+          test: /\.(jsx|js|ts|tsx)$/,
+          include: path.resolve(dirname, 'public'),
+          exclude: /node_modules/,
+          use: [{
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                ['@babel/preset-env', {
+                  "targets": "defaults" 
+                }],
+                '@babel/preset-react'
+              ]
+            }
+          }]
+        },
+        {
+          test: /\.css$/,
+          use: [
+            {
+              loader: 'style-loader'
+            },
+            {
+              loader: 'css-loader',
+              options: {
+                modules: true,
+                sourceMap: true
+              }
+            }
+          ]
+        }
+
+      ]
+    },
+    resolve: {
+      extensions: ['.js', '.jsx']
+    }
+  }
+]

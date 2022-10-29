@@ -1,19 +1,16 @@
 
 import { SocketOptions } from "mongodb";
 import { Server, Socket } from "socket.io";
-import PlayRouter from "../routes/playRouter";
-import Route from "../routes/route";
-import RoomManager from "./RoomManager";
+import PlayRouter from "../routes/playRouter.js";
+import Route from "../routes/route.js";
+import RoomManager from "./RoomManager.js";
 
 export default class GameManager {
     server: Server;
     router: Route
-    roomManager: RoomManager
     constructor(server: Server, router: PlayRouter) {
         this.server = server
         this.router= router
-        this.roomManager = new RoomManager()
-        router.setRoomManager(this.roomManager)
         this.setUpServer()
     }
     setUpServer() {

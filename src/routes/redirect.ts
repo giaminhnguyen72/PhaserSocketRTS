@@ -1,9 +1,9 @@
-import Route from './route'
+import Route from './route.js'
 import { Request, Response, NextFunction } from "express";
-import express = require('express');
+import express from 'express';
 
-const path = require('path')
-
+import path from 'path'
+const __dirname: string = path.resolve();
 
 export default class RedirectRouter extends Route {
 
@@ -12,22 +12,20 @@ export default class RedirectRouter extends Route {
         super();
         this.get()
         this.test()
-        const publicFunc = () => {express.static(path.join(__dirname, '../../public'))} 
-        this.use('/public', publicFunc);
-        this.use('/frontend', publicFunc)
+        const publicFunc = () => {
+            console.log("publicFunction")
+        } 
+
+        
+        this.use('.../public', publicFunc)
+        this.use(path.join(__dirname, 'dist/frontend'), publicFunc)
     }
     get() {
        this.router.get('/', (req:Request, res:Response, next:NextFunction) => {
 
-            res.sendFile(path.join(__dirname, '../frontend/index.html'))
+            res.sendFile(path.join(__dirname, 'public/index.html'))
         })
     }
-    play() {
-        this.router.get('/play', (req:Request, res:Response, next:NextFunction) => {
-             res.sendFile(path.join(__dirname, '../frontend/play.html'))
-         })
-        
-     }
      
      test() {
          this.router.get('/test', (req:Request, res:Response, next:NextFunction) => {

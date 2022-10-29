@@ -1,24 +1,26 @@
 'use strict';
 
-import { http } from 'winston';
-import {app, playRoutes} from './app';
-import winston from './utils/logger/winston';
+
+import {app, playRoutes} from './app.js';
+
 import { createServer} from 'http'
 import { Server, Socket } from 'socket.io';
-import GameManager from './sockets/GameManager';
+import GameManager from './sockets/GameManager.js';
+
+import RoomManager from './sockets/RoomManager.js';
+
 
 const serv = createServer(app);
 
-const io = new Server(serv)
+const io: Server = new Server(serv)
 
 
-let gameManager:GameManager = new GameManager(io, playRoutes)
-
-
+let roomManager: RoomManager = new RoomManager(io)
+playRoutes.setRooms(roomManager)
 /* LOCAL CONFIG */
 const BASE_URL = "localhost";
-const PORT = app.get('port');
-const ENV = app.get('env');
+const PORT = 5000;
+
 
 /**
  * Starts the server on the provided port
@@ -27,13 +29,12 @@ const server = serv.listen(
   PORT,
   () => {
     console.log(
-      'App is running on %s:%d in %s mode',
+      'App is running on %s:%d in dev mode',
       BASE_URL,
       PORT,
-      ENV,
       '\nPress CTRL-C to stop',
     );
-    winston.debug(`App is running on ${BASE_URL}:${PORT} in ${ENV} mode`);
+    
   },
 );
 
