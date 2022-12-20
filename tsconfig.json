@@ -16,6 +16,6 @@
     },
     "plugins": []
   },
-  "include": ["src/**/*", "src/interfaces/.ts"],
+  "include": ["src", "src/*", "src/**/*", "src/interfaces/.ts"],
   
 }

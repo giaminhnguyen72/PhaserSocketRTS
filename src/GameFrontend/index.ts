@@ -1,15 +1,8 @@
 
+import { io, Socket } from "socket.io-client";
 import WaitingScene from "./scenes/WaitingScene.js";
 
-let CONFIG: any = {
-    type: Phaser.AUTO,
-    title: 'test',
-    parent: 'game',
-    scene: [
-        new WaitingScene()
-    ]
 
-}
 class Game extends Phaser.Game {
     constructor(config: any) {
         super(config)
@@ -23,6 +16,27 @@ function startGame() {
     }
 
 }
+
 window.onload = () => {
+    var socket: Socket = io()
+
+    let CONFIG: any = {
+        type: Phaser.AUTO,
+        title: 'test',
+        parent: 'game',
+        scene: [
+            new WaitingScene(socket)
+        ]
+
+    }
+        socket.on("connect", ()=> {
+            console.log('Connected')
+            socket.emit("playerJoined")
+            
+        })
+        socket.on("disconnect", () => {
+            console.log('disconnected')
+        })
     var game: Phaser.Game = new Phaser.Game(CONFIG)
+    
 }

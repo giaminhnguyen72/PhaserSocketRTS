@@ -63,6 +63,18 @@ export default class RoomManager {
         this.server = server
         this.setUpEvents()
     }
+    setUpEvents(): void {
+        this.server.on("connection", (socket: Socket)=> {
+            
+            socket.on("playerJoined", () => {
+                console.log("Player event has been actived")
+                
+            })
+            
+            
+        })
+        
+    }
     addRoom(roomName: string): Room {
         var roomID: number = this.generateRoomID()
         var room:Room = new Room(roomID, roomName)
@@ -75,30 +87,14 @@ export default class RoomManager {
         }
         return false
     }
-    joinRoom(socket: Socket, roomID?: Number) {
-        if (roomID === undefined) {
-            
-            
+    removeRoom(roomID: number) {
+        if (this.rooms.has(roomID)) {
+            this.rooms.delete(roomID)
         } else {
-            
+            console.log("Delete error room not found")
         }
     }
-    leaveRoom(id: Number) {
-        
-    }
-    removeRoom(roomID: number) {
-        
-    }
-    setUpEvents(): void {
-        this.server.on("connection", (socket: Socket)=> {
-            socket.on("playerJoined", () => {
-                console.log("Player event has been actived")
-                
-            })
-            
-        })
-        
-    }
+
     hasRoom(roomID: number): boolean {
         return this.rooms.has(roomID)
     }
@@ -116,7 +112,7 @@ export default class RoomManager {
             var room = this.rooms.get(id)
             var player = room?.addPlayer(playerName)
             
-            this.server.sockets.emit("playerAdded",player)
+            this.server.sockets.emit("playerAdded",player, roomID)
             console.log("addPlayer in roommanager")
             return true
         } else {

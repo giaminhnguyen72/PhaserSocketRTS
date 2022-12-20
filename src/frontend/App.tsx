@@ -1,13 +1,18 @@
 
 
-import StartScreen from './FrontPage.js';
+import StartScreen from './screens/frontPage/FrontPage.js';
 import React from 'react';
-function App() {
 
+function App() {
+  const style: Object = {
+
+    height: "100%",
+    width: "100%",
+    minHeight: "100%"
+  }
     return (
-      <div className="App">
-        <StartScreen/>
-      </div>
+      <StartScreen/>
+
     );
   
   

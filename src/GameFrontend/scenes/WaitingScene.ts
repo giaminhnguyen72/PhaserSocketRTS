@@ -4,24 +4,21 @@ import {io, Socket} from 'socket.io-client'
 
 
 export default class WaitingScene extends Phaser.Scene {
-    constructor() {
+    socket: Socket;
+    constructor(socket: Socket) {
         super({
             key: "WaitingScene"
         })
+        this.socket = socket
     }
     preload(): void {
-        const socket: Socket = io()
         var count = 0
-        socket.on("connect", ()=> {
-            console.log('Connected')
-            socket.emit("playerJoined")
-        })
-        socket.on("disconnect", () => {
-            console.log('disconnected')
-        })
-        socket.on("playerAdded", (player: Player) => {
+        var socket = this.socket
+        socket.on("playerAdded", (player: Player, roomID: number) => {
             var playerInfo  = " PlayerName: " + player.name + "          PlayerID: "+ player.clientId
             this.add.text(100, 100 + count * 10, playerInfo)
+            this.add.text(200, 150 + count * 10, player.roomId.toString())
+            count++
             console.log("Player has been added")
         })
     }

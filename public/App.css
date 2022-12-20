@@ -1,5 +1,5 @@
 body {
-  background-color: aqua;
+  background-color: #5ed887;
 }
 .joinRoomBox {
   background-color: rgb(28, 46, 212);
@@ -21,15 +21,16 @@ body {
   border: 12px solid rgb(37, 158, 37);
   border-radius: 12%;
   width: 67%;
-
+  
+  
+  justify-content: "center";
 }
 .CenterBox {
   position: absolute;
   display:flex;
   top: 25%;
   left: 25%;
-  height: 50%;
-  width: 50%;
+  justify-self: "center";
 }
 
 
@@ -45,4 +46,14 @@ body {
   border-radius: 12%;
   width:33%;
 
+}
+body {
+  height: 100%;
+}
+html {
+  height: 100%;
+}
+#app {
+  height: 100%;
+  width: 100%;
 }
