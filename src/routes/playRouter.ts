@@ -42,7 +42,7 @@ export default class PlayRouter extends Route {
             console.log("ID1 " + id)
 
             if (!validateName(req.body.playerName)) {
-                res.redirect('../')
+                //res.redirect('../')
             }
             var playerName: string = req.body.playerName
             playerName = playerName.trim()
@@ -56,7 +56,7 @@ export default class PlayRouter extends Route {
                         console.log("2000000")
                     }
                 })
-                this.rooms.addPlayer(playerName, id)
+                //this.rooms.addPlayer(playerName, id)
                 
             } else {
                 res.redirect('../')
@@ -77,17 +77,17 @@ export default class PlayRouter extends Route {
         })
     }
     createGame(): void {
-        /**
-         * 
+
          
         this.router.get('/createGame', (req:Request, res:Response, next:NextFunction) => {
             //generate Room ID
             //Set Up sockets connection
             //reroute to play/id
-            console.log('create game')
-            res.sendFile(path.join(__dirname, 'public/play.html'))
+            console.log('create game20')
+            res.status(404).send("lol fail")
         })
-        */
+        
+        
         this.router.post('/createGame', (req:Request, res: Response) => {
             var gameName: string = req.body.gameName
             var playerName: string = req.body.playerName

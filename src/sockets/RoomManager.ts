@@ -17,12 +17,13 @@ export class Room {
         this.roomName = roomName
     }
     
-    addPlayer(name:string):Player {
+    addPlayer(name:string, socket: Socket):Player {
         var playerID: number = this.generatePlayerID()
         var player: Player = {
             name: name,
             clientId: playerID,
-            roomId: this.roomID
+            roomId: this.roomID,
+            
         }
         this.players.set(playerID, player)
         console.log("player added in rooms")
@@ -30,20 +31,18 @@ export class Room {
     }
     removePlayer(id: number): Player {
         if (this.players.has(id)) {
+            var player: Player|undefined = this.players.get(id)
             this.players.delete(id)
-            return {
-                name: "",
-                clientId: 23453,
-                roomId: 345
-            }
+            return player as Player
         } else {
             console.log("error")
+            return {
+                name: "Error Player",
+                clientId: -1,
+                roomId: this.roomID
+            }
         }
-        return {
-            name: "Error Player",
-            clientId: -1,
-            roomId: this.roomID
-        }
+        
     }
     generatePlayerID(): number {
         var totalFactor = 100000000
@@ -65,11 +64,11 @@ export default class RoomManager {
     }
     setUpEvents(): void {
         this.server.on("connection", (socket: Socket)=> {
-            
-            socket.on("playerJoined", () => {
-                console.log("Player event has been actived")
-                
+
+            socket.on("AddPlayer", (playerName: string, roomID:string) => {
+                this.addPlayer(playerName,  socket, parseInt(roomID))
             })
+            console.log("Player Joined")
             
             
         })
@@ -106,13 +105,14 @@ export default class RoomManager {
         }
         return roomID
     }
-    addPlayer(playerName: string, roomID?: number): boolean {
+    addPlayer(playerName: string, socket: Socket, roomID: number ): boolean {
         var id: number = roomID as number
         if (this.rooms.has(roomID as number)) {
-            var room = this.rooms.get(id)
-            var player = room?.addPlayer(playerName)
+            var room: Room = this.rooms.get(id) as Room
+            var player = room.addPlayer(playerName, socket)
+            socket.join(roomID.toString())
             
-            this.server.sockets.emit("playerAdded",player, roomID)
+            this.server.to(roomID.toString()).emit("playerAdded", player.name, player.clientId)
             console.log("addPlayer in roommanager")
             return true
         } else {

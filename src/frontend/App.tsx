@@ -1,6 +1,6 @@
 
 
-import StartScreen from './screens/frontPage/FrontPage.js';
+import {StartScreen} from './screens/frontPage/FrontPage.js';
 import React from 'react';
 
 function App() {

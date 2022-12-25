@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 export function JoinRoomForm(props: any) {
     var style: Object = {
@@ -30,19 +30,30 @@ export function JoinRoomForm(props: any) {
         fontSize: "1.5vw",
         color: 'white'
     }
+    
+    const [playerName, setPlayerName] = useState("")
+    const [roomID, setRoomID] = useState("")
+    const storeFormData =  () => {
+        window.sessionStorage.setItem("PlayerName", playerName)
+        window.sessionStorage.setItem("RoomID", roomID)
+    }
     return (
         <form  method="POST" action='/play' style={formStyle} >
 
                         <label style={labelStyle}>Player Name</label>
 
-                        <input className="playerName" name="playerName" type="text" required/>
+                        <input className="playerName" name="playerName" type="text" 
+                        value={playerName}
+                        onChange={(e) => {setPlayerName(e.target.value)}} required/>
 
                         <label style={labelStyle} >Room Number</label>
 
-                        <input className="roomNumber" name="roomID" type="text" required />
+                        <input className="roomNumber" name="roomID" type="text" value={roomID} 
+                        onChange={(e) => {setRoomID(e.target.value)}}
+                        required />
 
 
-                    <input className="Play" type="submit" value="Play"/>
+                    <button className="Play" type="submit" value="Play" onClick={storeFormData}> Play</button>
             </form>
     )
 }

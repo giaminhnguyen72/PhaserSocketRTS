@@ -33,8 +33,9 @@ export function CreateRoomForm (props: any) {
     }
 
     const [playerName, setPlayerName] = useState("")
-    const storeFormDate = () => {
+    const storeFormData = () => {
         window.sessionStorage.setItem("PlayerName", playerName)
+        window.sessionStorage.setItem("RoomNumber", "")
     }
     return (
         
@@ -52,7 +53,7 @@ export function CreateRoomForm (props: any) {
                     required />
                 
                 
-                <button className="Play" type="submit" onClick={storeFormDate}>Create Game</button>
+                <button className="Play" type="submit" onClick={storeFormData}>Create Game</button>
             </form>
         
     )

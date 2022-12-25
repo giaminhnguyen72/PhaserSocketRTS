@@ -3,6 +3,7 @@ let dirname = path.resolve()
 export default [
   {
     entry: './dist/frontend',
+    mode: "production",
     devtool: 'inline-source-map',
     output: {
       path: path.resolve(dirname, 'public'),
@@ -53,7 +54,8 @@ export default [
   },
   {
     entry: './dist/GameFrontend',
-    devtool: 'inline-source-map',
+    mode: "production",
+
     output: {
       path: path.resolve(dirname, 'public'),
       filename: 'gameBundle.js'

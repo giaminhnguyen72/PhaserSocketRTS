@@ -30,6 +30,7 @@ export default class RedirectRouter extends Route {
      test() {
          this.router.get('/test', (req:Request, res:Response, next:NextFunction) => {
              console.log("test")
+             res.send("23")
          })
      }
 }
