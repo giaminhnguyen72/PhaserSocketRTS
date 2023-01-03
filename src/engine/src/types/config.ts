@@ -1,13 +1,50 @@
+import { Entity } from "./Entity"
+import { Scene } from "./scene"
+
 /**
  * Describes the CSS properties of the canvas element
  * 
  */
-
-export interface EngineConfig {
-    style: Object;
-
+export class PhysicsConfig {
 
 }
-export interface StyleConfig {
+export class GraphicsConfig {
+    parent: string
+    style: Object
+    background?:string
+    canvasID: string
+    constructor(
+        parent: string="engineDiv",
+        canvasID: string ="engineCanvas",
+        style:Object={},
+        background?: string
+    ) {
+        
+        this.parent = parent
+        this.canvasID = canvasID
+        this.style = style
+        this.background = background
+    }
+
+}
+export class EngineConfig {
+
+    graphicsConfig?: GraphicsConfig
+    physicsConfig?: PhysicsConfig
+    sceneConfig?: SceneConfig[]
+
+}
+export class SceneConfig {
+    name: string
+    background?: string
+    entities: Entity[]
+
+    constructor(name: string,  entities: Entity[] =[], background?: string) {
+        this.name = name
+        this.entities = entities
+        this.background = background
+    }
+}
     
+export interface StyleConfig {
 }

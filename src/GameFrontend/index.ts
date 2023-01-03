@@ -4,10 +4,14 @@ import {WaitingScene} from "./scenes/WaitingScene.js";
 
 import Phaser from "phaser"
 import {Engine} from "../engine/src/core/engine.js"
-import { EngineConfig } from "../engine/src/types/config.js";
+import { EngineConfig, GraphicsConfig } from "../engine/src/types/config.js";
+import { GraphicsEngine } from "../engine/src/graphics/GraphicEngine.js";
 
 
 window.onload = () => {
+    /**
+     * 
+     
     var socket: Socket = io()
 
     let CONFIG: Phaser.Types.Core.GameConfig = {
@@ -42,7 +46,10 @@ window.onload = () => {
             console.log('disconnected')
         })
     var game: Phaser.Game = new Phaser.Game(CONFIG)
-    var engConfig: Object = {"background-color": "red", "height": "100px"}
-    var engine: Engine = new Engine(engConfig)
-    console.log(engine.parseStyle())
+    */
+
+    var engine: Engine = new Engine({
+        physicsConfig: {},
+        graphicsConfig: new GraphicsConfig("test", "193as", {"background-color": "blue"} )
+    })
 }

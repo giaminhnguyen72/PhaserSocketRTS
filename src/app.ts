@@ -46,5 +46,5 @@ app.use('/', routes.getRouter());
 
 let playRoutes: PlayRouter = new PlayRouter();
 app.use("/play", playRoutes.getRouter());
-
+app.use("/play/:id", express.static(path.join(__dirname, 'public')))
 export{ app, playRoutes };

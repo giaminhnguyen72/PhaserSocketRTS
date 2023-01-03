@@ -10,13 +10,13 @@ export default class PlayRouter extends Route {
         super();
         this.createGame();
         this.play()
+        this.router.use("/:id", (req: Request, res: Response, next: NextFunction) => {
+            console.log("test")
+            
+        }) 
+        
         this.rooms = rooms
-        this.use('.../public', ()=> {
-            console.log("hello")
-        })
-        this.use(path.join(__dirname, 'public'), () => {
-            console.log("Hello")
-        })
+        
         console.log('created')
     }
     play(): void {
@@ -25,7 +25,7 @@ export default class PlayRouter extends Route {
             var id: number= parseInt(req.params.id)
             if (this.rooms?.rooms.has(id)) {
                 console.log("Get")
-                res.sendFile(path.join(__dirname, 'public/play.html'))
+                res.sendFile(path.join(__dirname, 'public/engine.html'))
             } else {
                 res.redirect('../')
             }
@@ -49,7 +49,7 @@ export default class PlayRouter extends Route {
             if (this.rooms?.rooms.has(id)) {
                 console.log("Post 32432")
                 
-                res.sendFile(path.join(__dirname, 'public/play.html'), function (err: Error) {
+                res.sendFile(path.join(__dirname, 'public/engine.html'), function (err: Error) {
                     if (err) {
                         next(err)
                     } else {
