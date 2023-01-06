@@ -6,6 +6,7 @@ import Phaser from "phaser"
 import {Engine} from "../engine/src/core/engine.js"
 import { EngineConfig, GraphicsConfig } from "../engine/src/types/config.js";
 import { GraphicsEngine } from "../engine/src/graphics/GraphicEngine.js";
+import { Player } from "./scenes/entities/Player.js";
 
 
 window.onload = () => {
@@ -47,9 +48,25 @@ window.onload = () => {
         })
     var game: Phaser.Game = new Phaser.Game(CONFIG)
     */
-
-    var engine: Engine = new Engine({
+    let engine: Engine = new Engine({
         physicsConfig: {},
-        graphicsConfig: new GraphicsConfig("test", "193as", {"background-color": "blue"} )
+        graphicsConfig: new GraphicsConfig("test", "193as", {"background-color": "white", "width": "100%", "height": "100%"} ),
+        sceneConfig: 
+            [
+                {
+                    name: "as",
+                    entities: [
+                        new Player()
+                    ]
+    
+                }
+            
+            ]
     })
+    
+    engine.start(1)
 }
+
+
+
+

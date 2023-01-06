@@ -1,24 +1,39 @@
-import { componentType } from "../../constants/componentType"
-import { Component } from "../../types/components"
-import { Entity } from "../../types/Entity"
+
+import { Component } from "../../types/components.js"
+import { Acceleration, Position, Velocity } from "../../types/components/physics/transformType.js"
+import { Entity } from "../../types/Entity.js"
 
 export class Transform implements Component{
-    x: number
-    y: number
-    z: number
+    pos: Position
+    vel: Velocity
+    accel: Acceleration
     entity: Entity
-    componentId: number
-    tag: string = "PHYSICS"
-    constructor(entityId:Entity, ComponentId: number, x:number=0, y:number=0,z:number=0) {
-        this.entity = entityId
-        this.componentId = ComponentId
-        this.x = x
-        this.y = y
-        this.z = z
+    componentId?: number
+    readonly engineTag: string = "PHYSICS"
+    constructor(
+                entity: Entity,
+                pos: Position={x:0, y: 0, z: 0},
+                vel: Velocity={x:0, y: 0, z: 0},
+                accel: Acceleration={x:0,y:0,z:0}
+                ) 
+        {
+            
+        this.entity = entity
+        this.pos = pos
+        this.vel = vel
+        this.accel = accel
+
 
     }
     
     update(dt: number): void {
-        throw new Error("Method not implemented.")
+
+        this.vel.x = this.vel.x  + this.accel.x * dt
+        this.vel.y = this.vel.y  + this.accel.y * dt
+        this.vel.z = this.vel.z  + this.accel.z * dt
+
+        this.pos.x = this.pos.x  + this.vel.x * dt
+        this.pos.y = this.pos.y  + this.vel.y * dt
+        this.pos.z = this.pos.z  + this.vel.z * dt
     }
 }

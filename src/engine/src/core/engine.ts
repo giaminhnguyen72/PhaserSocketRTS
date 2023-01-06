@@ -1,3 +1,4 @@
+
 import { GraphicsEngine } from "../graphics/GraphicEngine.js";
 import { PhysicsEngine } from "../physics/PhysicsEngine.js";
 import { EngineConfig } from "../types/config.js";
@@ -11,21 +12,37 @@ export class Engine {
     running:boolean
     sceneManager: SceneManager
     systems: System[] = []
+    time: number = 0
+    graphics?: GraphicsEngine
     constructor(gameConfig: EngineConfig = new EngineConfig(), systems?: System[]) {
         this.engineConfig = gameConfig
         
         if (this.engineConfig.physicsConfig) {
             this.systems.push(new PhysicsEngine())
         }
-        if (this.engineConfig.graphicsConfig) {
-            this.systems.push(new GraphicsEngine(this.engineConfig.graphicsConfig))
-        }
+        
         if (systems) {
             for (var sys of systems) {
                 this.systems.push(sys)
             }
         }
-        this.sceneManager = new SceneManager(this.engineConfig.sceneConfig)
+        if (this.engineConfig.graphicsConfig) {
+            this.graphics = new GraphicsEngine(this.engineConfig.graphicsConfig)
+            this.systems.push(this.graphics)
+        }
+        this.sceneManager = new SceneManager(this.engineConfig.sceneConfig, this.systems)
+        this.running = true
+        for (var sys of this.systems) {
+            var comp = this.sceneManager.getCurrentScene().engineComponents.get(sys.tag)
+            if (comp) {
+                sys.components = comp
+                console.log(sys.components)
+            } else {
+                throw Error("error in start method")
+            }
+            
+        }
+
         this.running = false
         /**
          * 
@@ -102,13 +119,33 @@ export class Engine {
         }
     }
     */
+   
     start(dt: number): void {
         this.running = true
-        while(this.running) {
+        
+        if (this.graphics) {
+            this.update(dt)
+
+
+            window.requestAnimationFrame(() => this.start(dt))
+        } else {
+            while(this.running) {
+                this.update(dt)
+
+
+            }
+        }
+        
+    }
+    update(dt: number) {
+
             for (var sys of this.systems) {
                 sys.update(dt)
             }
-        }
+                
+            this.time += dt
+            console.log(this.time)
+            
     }
 
 

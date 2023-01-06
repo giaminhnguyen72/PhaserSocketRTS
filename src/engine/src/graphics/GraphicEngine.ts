@@ -1,15 +1,21 @@
-import { componentType } from "../constants/componentType.js"
 
+
+import { Engine } from "matter"
+import { GRAPHICS_TAG } from "../constants/componentType.js"
 import { Component } from "../types/components.js"
 import { GraphicsConfig } from "../types/config.js"
-import { Drawable } from "../types/Entity.js"
+import { Entity } from "../types/Entity.js"
+
 import { System } from "../types/system.js"
 
 export class GraphicsEngine implements System{
-    tag: string = "GRAPHICS"
+    tag: string = GRAPHICS_TAG
     components: Component[]
+    entities: Entity[]
     graphicsConfig: GraphicsConfig
     div: HTMLDivElement
+    canvas: HTMLCanvasElement
+    ctx: CanvasRenderingContext2D
     constructor(graphicsConfig: GraphicsConfig) {
         this.graphicsConfig = graphicsConfig
         this.components = []
@@ -19,15 +25,29 @@ export class GraphicsEngine implements System{
         document.body.style.width = "100%"
         document.body.style.margin = "0"
         this.setup()
+        this.canvas = this.generateCanvas() as HTMLCanvasElement
+        this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D
         this.div = this.generateDiv(this.graphicsConfig.parent) ;
+        this.entities = []
+        
     }
     
     
     update(dt: number) {
+        console.log("Graphics")
+        this.ctx.clearRect(0,0,this.ctx.canvas.width, this.ctx.canvas.height)
         for (var comp of this.components) {
-            comp.update(dt)
+            console.log(comp.componentId)
+            comp.update(dt, this.ctx)
+            console.log("Inside Graphics Component")
+            console.log(comp.componentId)
+
         }
+        
+        
     }
+
+    
     generateDiv(parent: string) {
         var div: HTMLDivElement = document.createElement('div')
         div.id = parent
@@ -36,7 +56,8 @@ export class GraphicsEngine implements System{
         div.style.width = "100%"
         div.style.zIndex = "1"
         div.style.backgroundImage = "/images/test.jpg"
-        div.appendChild(this.generateCanvas())
+        
+        div.appendChild(this.canvas)
         document.body.appendChild(div)
 
         console.log("test")

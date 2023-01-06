@@ -25,6 +25,7 @@ export default class PlayRouter extends Route {
             var id: number= parseInt(req.params.id)
             if (this.rooms?.rooms.has(id)) {
                 console.log("Get")
+
                 res.sendFile(path.join(__dirname, 'public/engine.html'))
             } else {
                 res.redirect('../')
