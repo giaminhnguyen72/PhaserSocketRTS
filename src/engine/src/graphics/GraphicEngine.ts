@@ -1,6 +1,6 @@
 
 
-import { Engine } from "matter"
+
 import { GRAPHICS_TAG } from "../constants/componentType.js"
 import { Component } from "../types/components.js"
 import { GraphicsConfig } from "../types/config.js"
@@ -38,6 +38,7 @@ export class GraphicsEngine implements System{
         this.ctx.clearRect(0,0,this.ctx.canvas.width, this.ctx.canvas.height)
         for (var comp of this.components) {
             console.log(comp.componentId)
+            
             comp.update(dt, this.ctx)
             console.log("Inside Graphics Component")
             console.log(comp.componentId)
@@ -90,7 +91,7 @@ export class GraphicsEngine implements System{
         return cssArray.join(" ")
     }
     setup() {
-
+        
         if (true) {
             var image = new Image()
             image.src = "/images/test.jpg"

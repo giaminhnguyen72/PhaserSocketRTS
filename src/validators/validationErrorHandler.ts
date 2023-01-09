@@ -1,9 +1,13 @@
+
+/**
+ * 
+ 
 'use strict';
 
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator/check';
 import { BAD_REQUEST, getStatusText } from 'http-status-codes';
-
+*/
 /**
  * Validation handler middleware, must be placed after all validation is done
  *
@@ -12,6 +16,9 @@ import { BAD_REQUEST, getStatusText } from 'http-status-codes';
  * @param {NextFunction} next
  * @returns
  */
+/**
+ * 
+
 var validationErrorHandler = (req: Request, res: Response, next: NextFunction) => { // tslint:disable: max-line-length
   const errors = validationResult(req);
 
@@ -28,3 +35,4 @@ var validationErrorHandler = (req: Request, res: Response, next: NextFunction) =
 };
 
 export default validationErrorHandler;
+ */

@@ -1,7 +1,9 @@
 
+import { EventHandler } from "../events/EventHandler.js";
 import { GraphicsEngine } from "../graphics/GraphicEngine.js";
 import { PhysicsEngine } from "../physics/PhysicsEngine.js";
 import { EngineConfig } from "../types/config.js";
+import { ContextInfo } from "../types/context.js";
 import { System } from "../types/system.js";
 import { SceneManager } from "./managers/SceneManager.js";
 
@@ -14,9 +16,13 @@ export class Engine {
     systems: System[] = []
     time: number = 0
     graphics?: GraphicsEngine
+    contextInfo?: ContextInfo
     constructor(gameConfig: EngineConfig = new EngineConfig(), systems?: System[]) {
         this.engineConfig = gameConfig
-        
+
+        if (this.engineConfig.eventConfig) {
+            this.systems.push(new EventHandler(this.engineConfig.eventConfig))
+        }
         if (this.engineConfig.physicsConfig) {
             this.systems.push(new PhysicsEngine())
         }
@@ -36,7 +42,7 @@ export class Engine {
             var comp = this.sceneManager.getCurrentScene().engineComponents.get(sys.tag)
             if (comp) {
                 sys.components = comp
-                console.log(sys.components)
+
             } else {
                 throw Error("error in start method")
             }

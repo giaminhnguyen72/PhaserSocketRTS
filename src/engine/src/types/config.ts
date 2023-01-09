@@ -32,6 +32,8 @@ export class EngineConfig {
     graphicsConfig?: GraphicsConfig
     physicsConfig?: PhysicsConfig
     sceneConfig?: SceneConfig[]
+    eventConfig?: EventConfig
+
 
 }
 export class SceneConfig {
@@ -45,6 +47,11 @@ export class SceneConfig {
         this.background = background
     }
 }
-    
-export interface StyleConfig {
+export class EventConfig {
+    keyboard: boolean
+    mouse: boolean
+    constructor(keyboard:boolean, mouse: boolean) {
+        this.keyboard = keyboard
+        this.mouse = mouse
+    }
 }

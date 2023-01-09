@@ -1,8 +1,10 @@
-'use strict';
+
+/**
+ 'use strict';
 
 import { NOT_FOUND, getStatusText } from 'http-status-codes';
 import { Request, Response, NextFunction } from 'express';
-
+*/
 /**
  * Error response middleware for 404 not found
  *
@@ -11,6 +13,9 @@ import { Request, Response, NextFunction } from 'express';
  * @param {NextFunction} next
  * @returns {Response}
  */
+/**
+ * 
+
 const notFoundErrorHandler = (req: Request, res: Response, next: NextFunction): Response => {
   return res.status(NOT_FOUND).json({
     error: {
@@ -21,3 +26,4 @@ const notFoundErrorHandler = (req: Request, res: Response, next: NextFunction): 
 };
 
 export default notFoundErrorHandler;
+ */

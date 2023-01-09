@@ -1,9 +1,8 @@
-import Phaser from "phaser"
+
 import { Server, Socket } from "socket.io"
 import { io } from "socket.io-client"
 import { Player } from "../interfaces/Player.js"
-import { ExceptionHandler } from "winston"
-import { runInThisContext } from "vm"
+
 //Rooms are going to have more options than this. Will probably add a RoomConfig Interface
 export class Room {
     players: Map<number, Player>

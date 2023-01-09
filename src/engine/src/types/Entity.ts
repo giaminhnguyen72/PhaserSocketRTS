@@ -10,7 +10,7 @@ export interface Entity {
     components: Component[]
     id?: number
     scene?: Scene
-    render?: (ctx: CanvasRenderingContext2D) => void
+    
 }
 
 

@@ -1,10 +1,10 @@
 
-import { Component,  } from "../../types/components.js";
+import { Component, Renderable,  } from "../../types/components.js";
 import { Entity } from "../../types/Entity.js";
 import { Scene } from "../../types/scene.js";
 import { Transform } from "../Physics/transform.js";
 
-export class Sprite implements Component {
+export class Sprite implements Component, Renderable {
     entity: Entity;
     componentId?: number;
     engineTag: string = "GRAPHICS"

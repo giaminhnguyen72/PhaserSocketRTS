@@ -2,7 +2,6 @@
 import { io, Socket } from "socket.io-client";
 import {WaitingScene} from "./scenes/WaitingScene.js";
 
-import Phaser from "phaser"
 import {Engine} from "../engine/src/core/engine.js"
 import { EngineConfig, GraphicsConfig } from "../engine/src/types/config.js";
 import { GraphicsEngine } from "../engine/src/graphics/GraphicEngine.js";
@@ -61,7 +60,11 @@ window.onload = () => {
     
                 }
             
-            ]
+            ],
+        eventConfig: {
+            keyboard: true,
+            mouse: true
+        }
     })
     
     engine.start(1)

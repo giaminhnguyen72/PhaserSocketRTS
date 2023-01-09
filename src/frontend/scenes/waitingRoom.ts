@@ -1,9 +1,9 @@
 import io from 'socket.io-client'
 
-export default class WaitingRoom extends Phaser.Scene {
+export default class WaitingRoom  {
     constructor() {
-        super({key: 'WaitingRoom'})
-    }
+        
+    }  
     preload() {
 
     }

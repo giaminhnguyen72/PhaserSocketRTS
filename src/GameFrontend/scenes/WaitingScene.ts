@@ -1,17 +1,21 @@
 
 import { Player } from 'Player.js'
-import Phaser from 'phaser';
+
 import {io, Socket} from 'socket.io-client'
 
 
 
-export class WaitingScene extends Phaser.Scene {
+export class WaitingScene {
     socket: Socket;
     playerMap: Map<number, string>
     constructor(socket: Socket) {
-        super({
+        /**
+         * 
+         * super({
             key: "WaitingScene"
         })
+         */
+        
         this.socket = socket
         this.playerMap = new Map<number, string>()
     }
@@ -24,14 +28,14 @@ export class WaitingScene extends Phaser.Scene {
         socket.on("playerAdded", (playerName: string, clientId: number) => {
             this.addPlayer(clientId, playerName)
             var playerInfo  = " PlayerName: " + playerName + "          PlayerID: "+ clientId
-            this.add.text(100, 100 + count * 10, playerInfo)
+            //this.add.text(100, 100 + count * 10, playerInfo)
 
             count++
             console.log("Player has been added")
         })
         
-        this.add.text(0,0,"Waiting Stuff")
-        this.add.text(0, 200, "" + window.location.pathname)
+        //this.add.text(0,0,"Waiting Stuff")
+        //this.add.text(0, 200, "" + window.location.pathname)
         this.createPlayerList()
 
         
@@ -49,9 +53,10 @@ export class WaitingScene extends Phaser.Scene {
         var styles: Object = {
             
         }
-        var ul: Phaser.GameObjects.DOMElement = this.add.dom(100, 100, "div", 'display: flex; flex-direction: column; height: 500px; width: 200px; justify-content: center; background-color: red; align-self: center; align-items: center;')
-        ul.depth = 1
-        ul.setClassName("ul")
+        
+        //var ul: Phaser.GameObjects.DOMElement = this.add.dom(100, 100, "div", 'display: flex; flex-direction: column; height: 500px; width: 200px; justify-content: center; background-color: red; align-self: center; align-items: center;')
+        //ul.depth = 1
+        //ul.setClassName("ul")
         /**
          * var list = document.getElementsByClassName("ul")[0]
         

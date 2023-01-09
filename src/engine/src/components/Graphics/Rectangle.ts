@@ -1,8 +1,8 @@
-import { Component } from "../../types/components.js";
+import { Component, Renderable } from "../../types/components.js";
 import { Entity } from "../../types/Entity.js";
 import { Transform } from "../Physics/transform.js";
 
-export class Rectangle implements Component {
+export class Rectangle implements Component{
     entity: Entity;
     engineTag: string = "GRAPHICS";
     componentId?: number | undefined;

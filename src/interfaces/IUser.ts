@@ -1,6 +1,9 @@
-import { Model } from "mongoose";
-import IUserDocument from "./IUserDocument";
+//import { Model } from "mongoose";
+//import IUserDocument from "./IUserDocument";
 /* user document extended */
+/**
+ * 
+
 export interface IUser extends IUserDocument {}
 export interface IUserModel<T> extends Model<IUser> {
     fetchAll(): Promise<T>;
@@ -9,3 +12,4 @@ export interface IUserModel<T> extends Model<IUser> {
     deleteByID(userID: string): Promise<T>;
     modifyByID(userID: string, modifications: {}): Promise<T>;
   }
+   */

@@ -1,5 +1,5 @@
 
-import { SocketOptions } from "mongodb";
+
 import { Server, Socket } from "socket.io";
 import PlayRouter from "../routes/playRouter.js";
 import Route from "../routes/route.js";
