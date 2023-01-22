@@ -1,22 +1,26 @@
 
 
-import { SceneManager } from "../core/managers/SceneManager.js"
-import { Component } from "./components.js"
+import { SceneManager } from "./managers/SceneManager.js"
+import { Component } from "../types/components.js"
 import { SceneConfig } from "./config.js"
-import { Entity} from "./Entity.js"
-import { System } from "./system.js"
+import { Entity} from "../types/Entity.js"
+import { System } from "../types/system.js"
+import { EntityManager } from "./managers/EntityManager.js"
 
 export class Scene {
     name: string
-    
+    entityManager: EntityManager
+    sceneManager: SceneManager
     background?: string
     time: number
     entities: Map<number, Entity>
     engineComponents: Map<string, Component[]>
-    constructor(sceneConfig: SceneConfig, systems: System[]) {
+    constructor(sceneManager: SceneManager, sceneConfig: SceneConfig, systems: System<Component>[]) {
+        this.sceneManager = sceneManager
         this.name = sceneConfig.name
         this.entities = new Map<number,Entity>()
         this.engineComponents = new Map<string, Component[]>()
+        this.entityManager = new EntityManager(this)
         for (var system of systems) {
 
             this.engineComponents.set(system.tag, [])
@@ -32,6 +36,9 @@ export class Scene {
         this.time = 0
 
     }
+    update(dt: number) {
+        // apply world rules
+    }
     addEntity(entity: Entity) {
         var uniqueId = SceneManager.getUniqueId()
         entity.id = uniqueId
@@ -43,14 +50,11 @@ export class Scene {
             if (compList) {
                 compList.push(this.createComponent(comp))
             } else {
-                console.log(comp.engineTag)
-                for (var key of this.engineComponents.keys()) {
-                    console.log(key)
-                }
+                console.log(comp.engineTag + " tagged System is not found")
                 
-                throw Error("something wrong adding entities")
             }
         }
+        console.log("successfully added entity")
 
     }
     removeEntity(id: number): Entity | undefined {

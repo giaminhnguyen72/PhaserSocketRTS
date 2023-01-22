@@ -2,10 +2,13 @@
 import { EventHandler } from "../events/EventHandler.js";
 import { GraphicsEngine } from "../graphics/GraphicEngine.js";
 import { PhysicsEngine } from "../physics/PhysicsEngine.js";
-import { EngineConfig } from "../types/config.js";
-import { ContextInfo } from "../types/context.js";
+import { ScriptingEngine } from "../scripting/ScriptingEngine.js";
+import { Component } from "../types/components.js";
+import { EngineConfig } from "./config.js";
+import { ContextInfo } from "./context.js";
 import { System } from "../types/system.js";
 import { SceneManager } from "./managers/SceneManager.js";
+import { CollisionSystem } from "../Collision/CollisionSystem.js";
 
 export class Engine {
     engineConfig: EngineConfig;
@@ -13,18 +16,24 @@ export class Engine {
     
     running:boolean
     sceneManager: SceneManager
-    systems: System[] = []
+    systems: System<Component>[] = []
     time: number = 0
     graphics?: GraphicsEngine
     contextInfo?: ContextInfo
-    constructor(gameConfig: EngineConfig = new EngineConfig(), systems?: System[]) {
+    constructor(gameConfig: EngineConfig = {isServer: true}, systems?: System<Component>[]) {
         this.engineConfig = gameConfig
-
+        if (gameConfig.graphicsConfig) {
+            this.contextInfo = new ContextInfo(gameConfig.graphicsConfig)
+        }
         if (this.engineConfig.eventConfig) {
             this.systems.push(new EventHandler(this.engineConfig.eventConfig))
         }
+        
         if (this.engineConfig.physicsConfig) {
             this.systems.push(new PhysicsEngine())
+        }
+        if (this.engineConfig.scriptingConfig && this.contextInfo) {
+            this.systems.push( new ScriptingEngine())
         }
         
         if (systems) {
@@ -32,8 +41,14 @@ export class Engine {
                 this.systems.push(sys)
             }
         }
-        if (this.engineConfig.graphicsConfig) {
-            this.graphics = new GraphicsEngine(this.engineConfig.graphicsConfig)
+        if (this.engineConfig.collisionConfig) {
+            this.systems.push(new CollisionSystem())
+        }
+        
+        if (this.engineConfig.graphicsConfig && this.contextInfo) {
+            console.log("Console.context info")
+            console.log(this.contextInfo)
+            this.graphics = new GraphicsEngine(this.engineConfig.graphicsConfig, this.contextInfo)
             this.systems.push(this.graphics)
         }
         this.sceneManager = new SceneManager(this.engineConfig.sceneConfig, this.systems)
@@ -126,17 +141,22 @@ export class Engine {
     }
     */
    
-    start(dt: number): void {
+    start(time: number): void {
         this.running = true
         
         if (this.graphics) {
-            this.update(dt)
 
 
-            window.requestAnimationFrame(() => this.start(dt))
+
+            window.requestAnimationFrame((timestamp) => {
+                
+                let dt = timestamp - this.time
+                this.update(dt)
+                this.time = timestamp
+            })
         } else {
             while(this.running) {
-                this.update(dt)
+                this.update(time)
 
 
             }
@@ -144,13 +164,18 @@ export class Engine {
         
     }
     update(dt: number) {
-
+            console.log(this)
             for (var sys of this.systems) {
                 sys.update(dt)
             }
-                
+            this.sceneManager.update(dt)    
             this.time += dt
             console.log(this.time)
+            window.requestAnimationFrame((timestamp:number) => {
+                let dt = timestamp - this.time
+                this.update(dt)
+                this.time = timestamp
+            })
             
     }
 

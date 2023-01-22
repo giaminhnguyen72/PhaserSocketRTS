@@ -1,5 +1,5 @@
 import { Component } from "./components"
-import { Scene } from "./scene"
+import { Scene } from "../core/scene"
 
 export interface Drawable {
     depth: number

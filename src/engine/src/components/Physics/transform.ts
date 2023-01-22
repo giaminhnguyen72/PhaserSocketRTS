@@ -27,7 +27,7 @@ export class Transform implements Component{
     }
     
     update(dt: number): void {
-
+        console.log("Position is: " + this.pos.x + " and " + this.pos.y)
         this.vel.x = this.vel.x  + this.accel.x * dt
         this.vel.y = this.vel.y  + this.accel.y * dt
         this.vel.z = this.vel.z  + this.accel.z * dt

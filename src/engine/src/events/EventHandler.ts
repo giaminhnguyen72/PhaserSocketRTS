@@ -1,11 +1,11 @@
 import { MouseType } from "../constants/listener.js";
 import { Component, Collideable, Listenable } from "../types/components.js";
-import { EventConfig } from "../types/config.js";
+import { EventConfig } from "../core/config.js";
 import { System } from "../types/system.js";
 
-export class EventHandler implements System{
+export class EventHandler implements System<Listenable> {
     tag: string = "EVENTHANDLER";
-    components: Component[];
+    components: Listenable[];
     eventConfig: EventConfig
     events: string[]
     constructor(eventConfig: EventConfig ={
@@ -32,18 +32,18 @@ export class EventHandler implements System{
             console.log(event.key)
 
         })
-        
+
 
     }
-    stuff<T extends Listenable>(obj: T) {
-        
-    }
+
     update(dt: number): void {
         console.log("Event Handler")
+        var len = this.components.length
 
-        for (var comp of this.components) {
+        for (var i = 0; i < len; i++) {
+            var comp = this.components[i]
             console.log("Has Component")
-            var listenable: Listenable = comp as Listenable
+            var listenable: Listenable = comp
             var eventMap = listenable.eventMap
             for (var e of this.events) {
                 if (eventMap) {

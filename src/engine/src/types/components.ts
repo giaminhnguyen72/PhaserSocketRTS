@@ -1,4 +1,5 @@
 
+import { Shape } from "./components/collision/shape.js"
 import { Entity} from "./Entity.js"
 
 export interface Component {
@@ -23,10 +24,19 @@ export interface Renderable extends Component {
 
 
  export interface Collideable extends Component {
-    checkCollider(collider: Collideable): void
+    collideType: string
+    shape: Shape
+
     collides(collider: Collideable): void
+    checkCollision(collider: Collideable):boolean
     
 }
 export interface Listenable extends Component {
     eventMap: Map<string, () => void>
+}
+export interface Listener<T> extends Listenable {
+
+}
+export interface EventSource extends Listenable {
+    generateEvent(event: string): string
 }

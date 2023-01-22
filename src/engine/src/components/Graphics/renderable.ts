@@ -1,7 +1,7 @@
 
 import { Component, Renderable,  } from "../../types/components.js";
 import { Entity } from "../../types/Entity.js";
-import { Scene } from "../../types/scene.js";
+import { Scene } from "../../core/scene.js";
 import { Transform } from "../Physics/transform.js";
 
 export class Sprite implements Component, Renderable {

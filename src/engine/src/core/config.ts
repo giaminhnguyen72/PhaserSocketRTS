@@ -1,5 +1,6 @@
-import { Entity } from "./Entity"
-import { Scene } from "./scene"
+import { Entity } from "../types/Entity.js"
+import { SocketManager } from "./managers/SocketManager.js"
+import { Scene } from "./scene.js"
 
 /**
  * Describes the CSS properties of the canvas element
@@ -27,12 +28,15 @@ export class GraphicsConfig {
     }
 
 }
-export class EngineConfig {
-
+export interface EngineConfig {
+    isServer: boolean
     graphicsConfig?: GraphicsConfig
     physicsConfig?: PhysicsConfig
     sceneConfig?: SceneConfig[]
     eventConfig?: EventConfig
+    collisionConfig?: CollisionConfig
+    scriptingConfig?: ScriptingConfig
+    sockets?: SocketManager
 
 
 }
@@ -54,4 +58,10 @@ export class EventConfig {
         this.keyboard = keyboard
         this.mouse = mouse
     }
+}
+export class CollisionConfig {
+
+}
+export class ScriptingConfig {
+
 }

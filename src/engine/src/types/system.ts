@@ -1,8 +1,9 @@
 import { Component } from "./components.js"
 
 
-export interface System {
+export interface System<T extends Component> {
     tag: string
-    components: Component[]
+    components: T[]
     update(dt: number):void
+
 }

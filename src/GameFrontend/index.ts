@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import {WaitingScene} from "./scenes/WaitingScene.js";
 
 import {Engine} from "../engine/src/core/engine.js"
-import { EngineConfig, GraphicsConfig } from "../engine/src/types/config.js";
+import { EngineConfig, GraphicsConfig } from "../engine/src/core/config.js";
 import { GraphicsEngine } from "../engine/src/graphics/GraphicEngine.js";
 import { Player } from "./scenes/entities/Player.js";
 
@@ -48,6 +48,7 @@ window.onload = () => {
     var game: Phaser.Game = new Phaser.Game(CONFIG)
     */
     let engine: Engine = new Engine({
+        isServer: false,
         physicsConfig: {},
         graphicsConfig: new GraphicsConfig("test", "193as", {"background-color": "white", "width": "100%", "height": "100%"} ),
         sceneConfig: 
@@ -55,7 +56,7 @@ window.onload = () => {
                 {
                     name: "as",
                     entities: [
-                        new Player()
+                        new Player({x:0, y:0, z:15}, {x:0.001,y: 0,z: 0})
                     ]
     
                 }
@@ -64,7 +65,9 @@ window.onload = () => {
         eventConfig: {
             keyboard: true,
             mouse: true
-        }
+        },
+        scriptingConfig: {},
+        collisionConfig: {}
     })
     
     engine.start(1)
