@@ -1,4 +1,5 @@
 'use strict'
+import { CollisionSystem } from "../../systems/Collision/CollisionSystem.js";
 import { Collideable, Component } from "../../types/components.js";
 import { Shape, Rectangle } from "../../types/components/collision/shape.js";
 import { Position } from "../../types/components/physics/transformType.js";
@@ -13,6 +14,7 @@ export class BoxCollider implements Collideable {
     prev: Position
     collideType: string;
     shape: Rectangle
+    system!: CollisionSystem;
     onCollision: (otherCollider: Collideable) => void
     constructor(entity: Entity,  pos: Position, onCollision: (otherCollider: Collideable) => void) {
         this.entity = entity
@@ -29,9 +31,12 @@ export class BoxCollider implements Collideable {
         }
         this.onCollision = onCollision
     }
+    visible: boolean = true;
+    alive: boolean = true;
+    
     
     checkCollision(collider: Collideable): boolean {
-        console.log("Checking Collision")
+
         let doesCollide = false
         let ret: boolean = false
         if (collider instanceof BoxCollider) {
@@ -52,22 +57,22 @@ export class BoxCollider implements Collideable {
                     return false
                 }
             } else {
-                console.log("slanted box")
+
             }
             
             
         } else {
-            console.log("not box")
+
         }
         return ret
     }
 
     collides(collider: Collideable): void {
-        console.log("Collided")
+
         this.onCollision(collider)
     }
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
-        console.log("Updating Box Collider")
+
         this.prev.x = this.shape.pos.x
         this.prev.y = this.shape.pos.y
         this.prev.z = this.shape.pos.z
@@ -84,6 +89,7 @@ export class CircleCollider implements Collideable {
     componentId?: number | undefined;
     collideType: string;
     shape: Rectangle
+    system!: CollisionSystem
     onCollision: (otherCollider: Collideable) => void
     constructor(entity: Entity,  pos: Position, onCollision: (otherCollider: Collideable) => void) {
         this.entity = entity
@@ -96,6 +102,8 @@ export class CircleCollider implements Collideable {
         }
         this.onCollision = onCollision
     }
+    visible: boolean = true;
+    alive: boolean = true;
     
     checkCollision(collider: BoxCollider): boolean {
         var doesCollide = false

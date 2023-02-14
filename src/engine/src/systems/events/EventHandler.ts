@@ -1,44 +1,31 @@
-import { io, Socket } from "socket.io-client";
-import { EventHandler } from "../../systems/events/EventHandler.js";
-import { Component, Listenable, Renderable } from "../../types/components.js";
+import { MouseType } from "../../constants/listener.js";
+import { Component, Collideable, Listenable } from "../../types/components.js";
+import { EventConfig } from "../../core/config.js";
 import { System } from "../../types/system.js";
-import { EventConfig } from "../config.js";
-import { SceneManager } from "./SceneManager.js";
+import { SceneManager } from "../../core/managers/SceneManager.js";
 
-export class SocketManager implements System<Listenable>{
-    socket: Socket
-
-    sceneManager: SceneManager
+export class EventHandler implements System<Listenable> {
     tag: string = "EVENTHANDLER";
     components: Map<number, Listenable>;
-
+    eventConfig: EventConfig
     events: string[]
     deleted: Component[] = []
-    constructor(sceneManager: SceneManager) {
+    constructor(eventConfig: EventConfig ={
+        keyboard: false,
+        mouse: false
+    }) {
         this.components = new Map<number, Listenable>()
         this.events = []
-
-        this.sceneManager = sceneManager
-        
-        this.socket = io()
-        this.socket.on("connect", () => {
-
-            this.socket.on("create", (comp: Renderable) => {
-
-            })
-            this.socket.on("ypdate",() => {
-
-            })
-        })
+        this.eventConfig = eventConfig
         window.addEventListener("click", (event) => {
             this.events.push("click")
-            
             
         })
         window.addEventListener("keydown", (event) => {
             this.events.push(event.key)
 
         })
+
 
     }
     register(comp: Listenable): void {
@@ -48,7 +35,7 @@ export class SocketManager implements System<Listenable>{
             comp.system = this
             this.components.set(id, comp)
         }
-        console.log("Socket Manager registered")
+        console.log("Event Handler registered")
     }
     unregister(comp: number): void {
        let deleted = this.components.get(comp) 
@@ -62,8 +49,8 @@ export class SocketManager implements System<Listenable>{
     
 
     update(dt: number): void {
-        console.log("Client Socket Handler")
-        console.log("Client Socket Handler Components:"+this.components.size)
+        console.log("Event Handler")
+        console.log("Event  Handler Components:"+this.components.size)
         var len = this.components.size
 
         let keys = [...this.components.keys()]
@@ -93,5 +80,5 @@ export class SocketManager implements System<Listenable>{
         this.events = []
 
     }
-    
+
 }

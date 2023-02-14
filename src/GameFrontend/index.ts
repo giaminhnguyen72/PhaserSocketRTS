@@ -4,8 +4,15 @@ import {WaitingScene} from "./scenes/WaitingScene.js";
 
 import {Engine} from "../engine/src/core/engine.js"
 import { EngineConfig, GraphicsConfig } from "../engine/src/core/config.js";
-import { GraphicsEngine } from "../engine/src/graphics/GraphicEngine.js";
+import { GraphicsEngine } from "../engine/src/systems/graphics/GraphicEngine.js";
 import { Player } from "./scenes/entities/Player.js";
+import { Scene } from "../engine/src/core/scene.js";
+import { SceneManager } from "../engine/src/core/managers/SceneManager.js";
+import { Component } from "../engine/src/types/components.js";
+import { Entity } from "../engine/src/types/Entity.js";
+import { Templar } from "./scenes/entities/Templar.js";
+import { MainCamera } from "./scenes/entities/MainCamera.js";
+import { EngineType } from "../engine/src/constants/engineType.js";
 
 
 window.onload = () => {
@@ -47,16 +54,30 @@ window.onload = () => {
         })
     var game: Phaser.Game = new Phaser.Game(CONFIG)
     */
+
+
+   class Test implements Scene {
+       name: string = "test";
+       sceneManager!: SceneManager;
+       background?: string | undefined;
+       time: number = 0;
+       entities: Map<number, Entity> = new Map();
+       engineComponents: Map<string, Map<number, Component>> = new Map();
+        addEntity!: (scene: Scene, entity: Entity, id: number) => Entity
+    
+   }
     let engine: Engine = new Engine({
-        isServer: false,
+        engineType: EngineType.SOCKETCLIENT,
         physicsConfig: {},
         graphicsConfig: new GraphicsConfig("test", "193as", {"background-color": "white", "width": "100%", "height": "100%"} ),
         sceneConfig: 
             [
                 {
-                    name: "as",
+                    scene: new Test(),
                     entities: [
-                        new Player({x:0, y:0, z:15}, {x:0.001,y: 0,z: 0})
+                        new Player({x:0, y:0, z:15}, {x:2,y: 3,z: 0}),
+                        new Templar(),
+                        new MainCamera()
                     ]
     
                 }

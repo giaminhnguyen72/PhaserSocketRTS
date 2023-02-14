@@ -17,34 +17,20 @@ export class EntityManager {
         for (var comp of entity.components) {
             var compList = this.scene.engineComponents.get(comp.engineTag)
             if (compList) {
-                compList.push(this.createComponent(comp))
+                let createdComponent = this.createComponent(comp)
+                compList.set(createdComponent.componentId as number, createdComponent)
             } else {
-                console.log(comp.engineTag)
-                for (var key of this.scene.engineComponents.keys()) {
-                    console.log(key)
-                }
+                console.log(comp.engineTag + " tagged System is not found")
                 
-                throw Error("something wrong adding entities")
             }
         }
+        console.log("successfully added entity")
 
     }
-    removeEntity(id: number): Entity | undefined {
+    removeEntity(id: number){
         
-        var entity = this.getEntity(id)
-        if (entity) {
-            for (var e of entity.components) {
-                var engineCompList = this.scene.engineComponents.get(e.engineTag)
-                if (engineCompList) {
-                    for (var i = 0; i < engineCompList.length; i++) {
-                        if (engineCompList[i].entity == entity) {
-                            engineCompList.splice(i, 1)
-                        }
-                    }
-                }
-            }
-        }
-        return entity
+
+    
     }
     getEntity(id: number) {
         return this.scene.entities.get(id)

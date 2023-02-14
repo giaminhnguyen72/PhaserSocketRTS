@@ -1,14 +1,16 @@
 
-import { EventHandler } from "../events/EventHandler.js";
-import { GraphicsEngine } from "../graphics/GraphicEngine.js";
-import { PhysicsEngine } from "../physics/PhysicsEngine.js";
-import { ScriptingEngine } from "../scripting/ScriptingEngine.js";
+import { EventHandler } from "../systems/events/EventHandler.js";
+import { GraphicsEngine } from "../systems/graphics/GraphicEngine.js";
+import { PhysicsEngine } from "../systems/physics/PhysicsEngine.js";
+import { ScriptingEngine } from "../systems/scripting/ScriptingEngine.js";
 import { Component } from "../types/components.js";
 import { EngineConfig } from "./config.js";
 import { ContextInfo } from "./context.js";
 import { System } from "../types/system.js";
 import { SceneManager } from "./managers/SceneManager.js";
-import { CollisionSystem } from "../Collision/CollisionSystem.js";
+import { CollisionSystem } from "../systems/Collision/CollisionSystem.js";
+import { EngineType } from "../constants/engineType.js";
+import { Server } from "socket.io";
 
 export class Engine {
     engineConfig: EngineConfig;
@@ -20,7 +22,7 @@ export class Engine {
     time: number = 0
     graphics?: GraphicsEngine
     contextInfo?: ContextInfo
-    constructor(gameConfig: EngineConfig = {isServer: true}, systems?: System<Component>[]) {
+    constructor(gameConfig: EngineConfig = {engineType: EngineType.CLIENTONLY}, systems?: System<Component>[]) {
         this.engineConfig = gameConfig
         if (gameConfig.graphicsConfig) {
             this.contextInfo = new ContextInfo(gameConfig.graphicsConfig)
@@ -30,7 +32,7 @@ export class Engine {
         }
         
         if (this.engineConfig.physicsConfig) {
-            this.systems.push(new PhysicsEngine())
+            this.systems.push(new PhysicsEngine(this.engineConfig.physicsConfig))
         }
         if (this.engineConfig.scriptingConfig && this.contextInfo) {
             this.systems.push( new ScriptingEngine())
@@ -42,7 +44,7 @@ export class Engine {
             }
         }
         if (this.engineConfig.collisionConfig) {
-            this.systems.push(new CollisionSystem())
+            this.systems.push(new CollisionSystem(this.engineConfig.collisionConfig))
         }
         
         if (this.engineConfig.graphicsConfig && this.contextInfo) {
@@ -51,12 +53,17 @@ export class Engine {
             this.graphics = new GraphicsEngine(this.engineConfig.graphicsConfig, this.contextInfo)
             this.systems.push(this.graphics)
         }
-        this.sceneManager = new SceneManager(this.engineConfig.sceneConfig, this.systems)
+        if (systems) {
+            for (var sys of systems) {
+                this.systems.push(sys)
+            }
+        }
+        this.sceneManager = new SceneManager(this.engineConfig,this.engineConfig.sceneConfig, this.systems)
         this.running = true
         for (var sys of this.systems) {
-            var comp = this.sceneManager.getCurrentScene().engineComponents.get(sys.tag)
+            var comp = this.sceneManager.getCurrentScene().engineComponents.set(sys.tag, sys.components)
             if (comp) {
-                sys.components = comp
+                
 
             } else {
                 throw Error("error in start method")
@@ -141,34 +148,31 @@ export class Engine {
     }
     */
    
-    start(time: number): void {
+    start(dt: number): void {
         this.running = true
         
-        if (this.graphics) {
+        if (this.engineConfig.engineType == EngineType.CLIENTONLY || this.engineConfig.engineType == EngineType.SOCKETCLIENT) {
 
 
 
-            window.requestAnimationFrame((timestamp) => {
-                
-                let dt = timestamp - this.time
-                this.update(dt)
-                this.time = timestamp
-            })
+            this.update(dt)
         } else {
-            while(this.running) {
-                this.update(time)
+            setTimeout(() => {
+                if (this.running) {
+                    this.serverUpdate(dt)
+                }
 
+            }, dt)
 
-            }
         }
         
     }
     update(dt: number) {
-            console.log(this)
+
             for (var sys of this.systems) {
                 sys.update(dt)
             }
-            this.sceneManager.update(dt)    
+  
             this.time += dt
             console.log(this.time)
             window.requestAnimationFrame((timestamp:number) => {
@@ -177,6 +181,21 @@ export class Engine {
                 this.time = timestamp
             })
             
+    }
+    serverUpdate(dt: number) {
+
+            for (var sys of this.systems) {
+                sys.update(dt)
+            }
+  
+            this.time += dt
+            console.log(this.time)
+            setTimeout(() => {
+                if (this.running) {
+                    this.serverUpdate(dt)
+                }
+
+            }, dt)
     }
 
 

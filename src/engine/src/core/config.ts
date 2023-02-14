@@ -1,3 +1,7 @@
+
+import { Server } from "socket.io"
+import { Socket } from "socket.io-client"
+import { EngineType } from "../constants/engineType.js"
 import { Entity } from "../types/Entity.js"
 import { SocketManager } from "./managers/SocketManager.js"
 import { Scene } from "./scene.js"
@@ -29,26 +33,29 @@ export class GraphicsConfig {
 
 }
 export interface EngineConfig {
-    isServer: boolean
+    engineType: EngineType
     graphicsConfig?: GraphicsConfig
     physicsConfig?: PhysicsConfig
     sceneConfig?: SceneConfig[]
     eventConfig?: EventConfig
     collisionConfig?: CollisionConfig
     scriptingConfig?: ScriptingConfig
-    sockets?: SocketManager
+    server?: Server
+    socketServerConfig?: SocketServerConfig
+    socketClientConfig?: SocketClientConfig
 
 
 }
-export class SceneConfig {
-    name: string
-    background?: string
-    entities: Entity[]
 
-    constructor(name: string,  entities: Entity[] =[], background?: string) {
-        this.name = name
+
+export class SceneConfig {
+    
+    entities: Entity[]
+    scene: Scene
+    constructor(scene: Scene,  entities: Entity[] =[]) {
+        this.scene = scene
         this.entities = entities
-        this.background = background
+
     }
 }
 export class EventConfig {
@@ -64,4 +71,10 @@ export class CollisionConfig {
 }
 export class ScriptingConfig {
 
+}
+export interface SocketServerConfig {
+    socketEventMap: Map<string, (socket: Socket) => void>
+}
+export interface SocketClientConfig {
+    socketEventMap: Map<string, (socket: Socket) => void>
 }

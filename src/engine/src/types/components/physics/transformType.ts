@@ -13,4 +13,9 @@ export interface Acceleration{
     y: number
     z: number
 }
+export interface Force {
+    x:number
+    y: number
+    z: number
+}
 

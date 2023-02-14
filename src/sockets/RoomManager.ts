@@ -1,19 +1,54 @@
 
+
 import { Server, Socket } from "socket.io"
 import { io } from "socket.io-client"
-import { Player } from "../interfaces/Player.js"
+import { SceneManager } from "../engine/src/core/managers/SceneManager.js"
+import { Scene } from "../engine/src/core/scene.js"
+import { Entity } from "../engine/src/types/Entity.js"
+import { MainCamera } from "../GameFrontend/scenes/entities/MainCamera.js"
 
+import { Templar } from "../GameFrontend/scenes/entities/Templar.js"
+import { EngineType } from "../engine/src/constants/engineType.js"
+import { Engine } from "../engine/src/core/engine.js"
+import { Player } from "../interfaces/Player.js"
+import { Component } from "../engine/src/types/components.js"
+import { Player as GamePlayer } from "../GameFrontend/scenes/entities/Player.js"
 //Rooms are going to have more options than this. Will probably add a RoomConfig Interface
 export class Room {
     players: Map<number, Player>
     roomID: number
     joinable: boolean
     roomName: string
-    constructor(roomID:number, roomName: string, players: Map<number, Player> = new Map<number, Player>(), joinable: boolean = false) {
+    engine: Engine
+    constructor(roomID:number, roomName: string, server: Server, players: Map<number, Player> = new Map<number, Player>(), joinable: boolean = false) {
         this.players = players
         this.roomID = roomID
         this.joinable = joinable
         this.roomName = roomName
+        this.engine = new Engine(
+            {
+            server: server,
+            engineType: EngineType.SOCKETSERVER,
+            physicsConfig: {},
+
+            scriptingConfig: {},
+            collisionConfig: {},
+            sceneConfig: [
+                {
+                    scene: new Test(),
+                    entities: [
+                        new GamePlayer({x:0,y:0,z:0},{x:0,y:0,z:0}),
+                        new Templar(),
+                        new MainCamera()
+                    ]
+    
+                }
+            
+            ]
+        })
+        this.engine.start(20)
+        
+
     }
     
     addPlayer(name:string, socket: Socket):Player {
@@ -53,13 +88,27 @@ export class Room {
     }
 
 }
+
+class Test implements Scene {
+    engineComponents: Map<string, Map<number, Component>> = new Map<string, Map<number, Component>>()
+    name: string = "test";
+    sceneManager!: SceneManager;
+    background?: string | undefined;
+    time: number = 0;
+    entities: Map<number, Entity> = new Map();
+
+     addEntity!: (scene: Scene, entity: Entity, id: number) => Entity
+ 
+}
 export default class RoomManager {
     rooms: Map<number, Room>;
     server: Server
+
     constructor(server: Server) {
         this.rooms = new Map<number, Room>();
         this.server = server
         this.setUpEvents()
+        
     }
     setUpEvents(): void {
         this.server.on("connection", (socket: Socket)=> {
@@ -75,7 +124,7 @@ export default class RoomManager {
     }
     addRoom(roomName: string): Room {
         var roomID: number = this.generateRoomID()
-        var room:Room = new Room(roomID, roomName)
+        var room:Room = new Room(roomID, roomName, this.server)
         this.rooms.set(roomID, room)
         return room;
     }

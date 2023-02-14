@@ -1,3 +1,4 @@
+import { EventHandler } from "../../systems/events/EventHandler.js";
 import { Component, Listenable } from "../../types/components.js";
 import { Entity } from "../../types/Entity.js";
 import { System } from "../../types/system.js";
@@ -16,6 +17,9 @@ export class MouseListener implements Listenable {
             this.eventMap.set(k, v)
         })
     }
+    visible: boolean = true;
+    alive: boolean = true;
+    system!: EventHandler;
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
         console.log("In mouse Listener")
     }
