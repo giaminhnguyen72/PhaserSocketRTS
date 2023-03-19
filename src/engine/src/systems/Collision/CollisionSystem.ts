@@ -19,6 +19,9 @@ export class CollisionSystem implements System<Collideable> {
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
+        } else {
+            comp.system = this
+            this.components.set(comp.componentId, comp)
         }
         
     }
@@ -35,6 +38,7 @@ export class CollisionSystem implements System<Collideable> {
     
     update(dt: number): void {
         console.log("Collision System Running")
+        console.log("Collision Components: " + this.components.size)
 
         for (var [key1, col1] of this.components) {
             if (col1.visible) {

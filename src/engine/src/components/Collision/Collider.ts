@@ -8,15 +8,18 @@ import { Transform } from "../Physics/transform.js";
 
 
 export class BoxCollider implements Collideable {
-    entity: Entity;
+    entity: number;
     engineTag: string = "COLLISION";
     componentId?: number | undefined;
     prev: Position
     collideType: string;
     shape: Rectangle
     system!: CollisionSystem;
+    visit(s: BoxCollider) {
+        
+    }
     onCollision: (otherCollider: Collideable) => void
-    constructor(entity: Entity,  pos: Position, onCollision: (otherCollider: Collideable) => void) {
+    constructor(entity: number = -1,  pos: Position ={x: 0, y:0, z:0}, onCollision: (otherCollider: Collideable) => void) {
         this.entity = entity
         this.collideType = "Box"
         this.shape = {
@@ -31,9 +34,14 @@ export class BoxCollider implements Collideable {
         }
         this.onCollision = onCollision
     }
+    copy<T>(collider: T): void {
+
+        
+        
+    }
     visible: boolean = true;
     alive: boolean = true;
-    
+
     
     checkCollision(collider: Collideable): boolean {
 
@@ -83,15 +91,18 @@ export class BoxCollider implements Collideable {
 
     
 }
+function Copy(curr:BoxCollider, next: BoxCollider) {
+    curr.prev= next.prev
+}
 export class CircleCollider implements Collideable {
-    entity: Entity;
+    entity: number = -1
     engineTag: string = "COLLISION";
     componentId?: number | undefined;
     collideType: string;
     shape: Rectangle
     system!: CollisionSystem
     onCollision: (otherCollider: Collideable) => void
-    constructor(entity: Entity,  pos: Position, onCollision: (otherCollider: Collideable) => void) {
+    constructor(entity: number,  pos: Position, onCollision: (otherCollider: Collideable) => void) {
         this.entity = entity
 
         this.collideType = "Box"
@@ -101,6 +112,9 @@ export class CircleCollider implements Collideable {
             rot: 0
         }
         this.onCollision = onCollision
+    }
+    copy<T>(): void {
+        throw new Error("Method not implemented.");
     }
     visible: boolean = true;
     alive: boolean = true;

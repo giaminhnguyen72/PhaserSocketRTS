@@ -7,6 +7,7 @@ import { addEntity, addSocketEntity } from "../sceneUtils.js";
 import { EngineType } from "../../constants/engineType.js";
 import { SocketManager } from "./SocketManager.js";
 import { Engine } from "../engine.js";
+import { SocketServerManager } from "./SocketServerManager.js";
 
 export class SceneManager {
     scenes: Map<string, Scene>
@@ -25,33 +26,29 @@ export class SceneManager {
         this.engineConfig = engineConfig
         let engineType = engineConfig.engineType
         if (engineType == EngineType.SOCKETCLIENT) {
-            this.addEntity = addEntity
-            systems.push(new SocketManager(this)
-                )
-        } else {
             this.addEntity = addSocketEntity
+                
+        } else if (engineType == EngineType.SOCKETSERVER){
+            this.addEntity = addEntity
+            //systems.push(new SocketServerManager(this))
+        } else {
+            this.addEntity = addEntity
         }
+
         for (let i = 0; i < scenes.length; i++) {
             let newConfig:SceneConfig = scenes[i]
             let newScene = newConfig.scene
             newScene.sceneManager = this
             newScene.engineComponents = new Map()
-            newScene.entities = new Map()
+            newScene.addEntity = this.addEntity
+            
+            
             console.log("In Scene Manager")
 
             
             this.scenes.set(newScene.name, newScene)
 
-            for (var system of systems) {
-                this.systemTag.set(system.tag, system)
-                newScene.engineComponents.set(system.tag, system.components)
-            }
-
-            for (var e of newConfig.entities) {
-                
-                addEntity(newScene, e)
-                
-            }
+            
         }
         this.sceneConfigs = scenes
         this.currentIdx = this.sceneConfigs[0].scene.name

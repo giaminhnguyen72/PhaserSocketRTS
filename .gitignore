@@ -3,3 +3,5 @@ node_modules
 package-lock.json
 bundle.js
 /public/gameBundle.js
+gameBundle.js
+public/gameBundle.js

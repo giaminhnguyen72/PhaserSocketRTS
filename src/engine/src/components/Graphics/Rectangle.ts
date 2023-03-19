@@ -5,16 +5,23 @@ import { System } from "../../types/system.js";
 import { Transform } from "../Physics/transform.js";
 
 export class Rectangle implements Component, Renderable{
-    entity: Entity;
+    entity: number
     engineTag: string = "GRAPHICS";
     componentId?: number | undefined;
     transform: Transform
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
 
     }
-    constructor(entity: Entity, transform: Transform) {
+    constructor(entity: number, transform: Transform) {
         this.entity = entity
         this.transform = transform
+    }
+    rendered: boolean = false;
+    visit(component: this): void {
+
+    }
+    copy(rectangle: Rectangle): void {
+        throw new Error("Method not implemented.");
     }
     initialize(): void {
         

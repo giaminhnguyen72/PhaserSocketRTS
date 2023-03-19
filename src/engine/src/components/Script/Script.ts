@@ -4,7 +4,7 @@ import { Entity } from "../../types/Entity.js";
 import { System } from "../../types/system.js";
 
 export class Script implements Component {
-    entity?: Entity | undefined;
+    entity?: number;
     engineTag: string = "SCRIPTING";
     componentId?: number | undefined;
     system!: System<Component>
@@ -12,12 +12,24 @@ export class Script implements Component {
     constructor(callback: (dt: number ) => void) {
         this.callback = callback
     }
+    copy<Script>(script: Script): void {
+        
+    }
     visible: boolean = true;
     alive: boolean = true;
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
         this.callback(dt)
         
     }
+    toJSON() {
+        return {
+            entity: this.entity,
+            engineTag: this.engineTag,
+            componenId: this.componentId,
+            callback: this.callback
+        }
+    }
+    
 
 
 }

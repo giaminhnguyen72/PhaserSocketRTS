@@ -15,25 +15,27 @@ export class Player implements Entity{
     components: Component[];
     id?: number | undefined;
     scene?: Scene | undefined;
-
+    className: string = "Player"
     transform: Transform
     renderer: Rectangle
     listener: MouseListener
-    constructor(pos: Position, vel: Velocity) {
+    constructor(pos: Position={x:0,y:0,z:0}, vel: Velocity={x: Math.random(),y:Math.random(),z: Math.random()}) {
 
         this.transform = new Transform(
-            this,
+            -1,
         pos, 
         vel
         )
         var func = () => {
-            
+            if (this.scene) {
+                this.scene.addEntity(this.scene, new Player({x:0, y:0, z:0}, {x:0, y: 1, z:0}), -1)
+            }
             this.transform.vel.x *= -1* Math.random()  * 2
             this.transform.vel.y *= -1* Math.random() * 2
     }
         var script:Script = new Script((dt) => {
             var topRight = this.transform.pos.x + 20
-            console.log("In Player Script")
+
 
             if (this.transform.pos.x < 0 ) {
 
@@ -54,8 +56,8 @@ export class Player implements Entity{
                 this.transform.vel.y *= -1 * Math.random() * 2
             }
         })
-        this.renderer = new Rectangle(this, this.transform)
-        this.listener = new MouseListener(this, 
+        this.renderer = new Rectangle(-1, this.transform)
+        this.listener = new MouseListener(-1, 
         {
             "click": func,
             "test2": () => {}
@@ -64,8 +66,8 @@ export class Player implements Entity{
             this.transform.vel.x *= -1
             this.transform.vel.y *= -1
         }
-        let sprite: Sprite = new Sprite(this,this.transform, "/images/Knight_Forward.png")
-        var collider: BoxCollider = new BoxCollider(this, this.transform.pos,colliderCallback)
+        let sprite: Sprite = new Sprite(-1,this.transform, "/images/Knight_Forward.png")
+        var collider: BoxCollider = new BoxCollider(-1, this.transform.pos,colliderCallback)
         this.components = [
             this.transform,
             sprite,

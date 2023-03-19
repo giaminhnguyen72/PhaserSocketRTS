@@ -9,11 +9,14 @@ export class Transform implements Transformable {
     pos: Position
     vel: Velocity
     accel: Acceleration
-    entity: Entity
+    entity: number
     componentId?: number
+    visible: boolean = true
+    alive: boolean = true
+    system!: System<Component>
     readonly engineTag: string = "PHYSICS"
     constructor(
-                entity: Entity,
+                entity: number,
                 pos: Position={x:0, y: 0, z: 0},
                 vel: Velocity={x:0, y: 0, z: 0},
                 accel: Acceleration={x:0,y:0,z:0}
@@ -27,9 +30,26 @@ export class Transform implements Transformable {
 
 
     }
-    visible: boolean = true
-    alive: boolean = true
-    system!: System<Component>
+    copy(transform: Transform): void {
+        this.pos.x = transform.pos.x
+        this.pos.y = transform.pos.y
+        this.pos.z = transform.pos.z
+        
+        this.vel.x = transform.vel.x
+        this.vel.x = transform.vel.x
+        this.vel.x = transform.vel.x
+
+        this.accel.x = transform.accel.x
+        this.accel.x = transform.accel.x
+        this.accel.x = transform.accel.x
+
+        this.entity = transform.entity
+        this.componentId = transform.componentId
+        this.visible = transform.visible
+        this.alive = transform.alive
+
+    }
+    
     
     update(dt: number): void {
         console.log("Position is: " + this.pos.x + " and " + this.pos.y)
@@ -40,6 +60,18 @@ export class Transform implements Transformable {
         this.pos.x = this.pos.x  + this.vel.x * dt
         this.pos.y = this.pos.y  + this.vel.y * dt
         this.pos.z = this.pos.z  + this.vel.z * dt
+    }
+    toJSON() {
+        return {
+            pos: this.pos,
+            vel: this.vel,
+            accel: this.accel,
+            entity: this.entity,
+            componentId: this.componentId,
+            visible:  this.visible,
+            alive: this.alive,
+            engineTag: "PHYSICS"
+        }
     }
     
 }

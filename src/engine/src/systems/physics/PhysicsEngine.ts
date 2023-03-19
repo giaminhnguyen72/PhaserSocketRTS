@@ -21,6 +21,9 @@ export class PhysicsEngine implements System<Transformable>{
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
+        } else {
+            comp.system = this
+            this.components.set(comp.componentId, comp)
         }
     }
     unregister(comp: number): void {
@@ -29,7 +32,7 @@ export class PhysicsEngine implements System<Transformable>{
             deleted.alive = false
 
             this.deleted.push(deleted)
-            console.log(deleted.entity?.id + " s Component with id " +  deleted.componentId + "is popped")
+            console.log(deleted.entity + " s Component with id " +  deleted.componentId + "is popped")
        }
     
     }
@@ -37,6 +40,7 @@ export class PhysicsEngine implements System<Transformable>{
     
     update(dt: number): void {
         console.log("Physics engine running")
+        console.log("Physics Components: " + this.components.size)
         for (var comp of this.components) {
 
             comp[1].update(dt)

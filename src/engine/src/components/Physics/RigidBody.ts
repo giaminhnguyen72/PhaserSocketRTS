@@ -8,12 +8,12 @@ class RigidBody implements Forceable {
     pos: Position;
     vel:Velocity
     accel:Acceleration
-    entity?: Entity | undefined;
+    entity: number;
     engineTag: string = "PHYSICS";
     componentId?: number | undefined;
     force:Force = {x:0, y:0, z:0}
     mass: number
-    constructor(entity: Entity, mass: number,
+    constructor(entity: number, mass: number,
         pos: Position={x:0, y: 0, z: 0},
         vel: Velocity={x:0, y: 0, z: 0},
         accel: Acceleration={x:0,y:0,z:0}) {
@@ -22,11 +22,14 @@ class RigidBody implements Forceable {
         } else {
             this.mass = mass
         }
-            
+        this.entity = entity
         this.pos = pos
         this.vel = vel
         this.accel = accel
 
+    }
+    copy<T>(): void {
+        throw new Error("Method not implemented.");
     }
     visible: boolean = true;
     alive: boolean = true;

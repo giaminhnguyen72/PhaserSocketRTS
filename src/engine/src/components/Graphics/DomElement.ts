@@ -6,7 +6,7 @@ import { System } from "../../types/system";
 class Div implements Renderable{
     context!: ContextInfo;
     system!: System<Component>;
-    entity?: Entity | undefined;
+    entity: number;
     visible: boolean = true;
     alive: boolean = true;
     engineTag: string = "GRAPHICS";
@@ -14,11 +14,15 @@ class Div implements Renderable{
     style: string
     divId: string
     hasId: boolean
-    constructor(entity: Entity, divId: string, style: string) {
+    constructor(entity: number = -1, divId: string, style: string) {
         this.entity = entity
         this.divId = divId
         this.style = style
         this.hasId = false
+    }
+    rendered: boolean = false;
+    copy<T>(): void {
+        throw new Error("Method not implemented.");
     }
     initialize(): void {
         

@@ -14,10 +14,11 @@ import { SceneManager } from "../../core/managers/SceneManager.js"
 export class GraphicsEngine implements System<Renderable>{
     tag: string = GRAPHICS_TAG
     components: Map<number, Renderable>
-
+    queue: PriorityQueue<Renderable> = new PriorityQueue()
     graphicsConfig: GraphicsConfig
     contextInfo: ContextInfo
     deleted: Component[]
+    rendering: Renderable[] = []
     constructor(graphicsConfig: GraphicsConfig, context: ContextInfo) {
         this.graphicsConfig = graphicsConfig
         this.components = new Map<number, Renderable>()
@@ -33,12 +34,22 @@ export class GraphicsEngine implements System<Renderable>{
     }
     register(comp: Renderable): void {
         if (comp.componentId == undefined || comp.componentId == null) {
+            console.log("Registering undefined id in Ggraphics")
             let id = SceneManager.getUniqueComponentId()
             comp.componentId = id
             comp.system = this
             comp.context = this.contextInfo
+            if (comp.rendered) {
+                this.rendering.push(comp)
+            }
             comp.initialize()
             this.components.set(id, comp)
+        } else {
+            console.log("Graphics Registering id" + comp.componentId)
+            comp.system = this
+            comp.context = this.contextInfo
+            comp.initialize()
+            this.components.set(comp.componentId, comp)
         }
     }
     unregister(id: number): void {
@@ -48,7 +59,7 @@ export class GraphicsEngine implements System<Renderable>{
             
             this.deleted.push(deleted)
 
-            console.log(deleted.entity?.id + " s Component with id " +  deleted.componentId + "is popped")
+            console.log(deleted.entity+ " s Component with id " +  deleted.componentId + "is popped")
        }
     }
     
@@ -58,8 +69,8 @@ export class GraphicsEngine implements System<Renderable>{
         var ctx = this.contextInfo.ctx
 
         console.log("Graphics engine running")
-        
-        for (var c of this.components) {
+        console.log("Graphics Components: " + this.components.size)
+        for (let c of this.components) {
             let comp = c[1]
 
             

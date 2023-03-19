@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import { EventHandler } from "../../systems/events/EventHandler.js";
 import { Component, Listenable, Renderable } from "../../types/components.js";
 import { System } from "../../types/system.js";
-import { EventConfig } from "../config.js";
+import { EventConfig, SocketClientConfig } from "../config.js";
 import { SceneManager } from "./SceneManager.js";
 
 export class SocketManager implements System<Listenable>{
@@ -14,30 +14,25 @@ export class SocketManager implements System<Listenable>{
 
     events: string[]
     deleted: Component[] = []
-    constructor(sceneManager: SceneManager) {
+    constructor(sceneManager: SceneManager, config: SocketClientConfig) {
         this.components = new Map<number, Listenable>()
         this.events = []
 
         this.sceneManager = sceneManager
         
         this.socket = io()
-        this.socket.on("connect", () => {
-
-            this.socket.on("create", (comp: Renderable) => {
-
-            })
-            this.socket.on("ypdate",() => {
-
-            })
-        })
+        
+        if (config.socketEventMap) {
+            config.socketEventMap(this.socket)       
+   
+        }
         window.addEventListener("click", (event) => {
             this.events.push("click")
-            
             
         })
         window.addEventListener("keydown", (event) => {
             this.events.push(event.key)
-
+            console.log(event.key)
         })
 
     }
@@ -47,6 +42,9 @@ export class SocketManager implements System<Listenable>{
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
+        } else {
+            comp.system = this
+            this.components.set(comp.componentId, comp)
         }
         console.log("Socket Manager registered")
     }

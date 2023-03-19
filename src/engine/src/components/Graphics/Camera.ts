@@ -9,7 +9,7 @@ export class Camera implements Renderable {
     context!: ContextInfo;
     
     system!: System<Renderable>;
-    entity?: Entity | undefined;
+    entity: number;
     visible: boolean = true;
     alive: boolean = true;
     engineTag: string = "GRAPHICS";
@@ -20,7 +20,8 @@ export class Camera implements Renderable {
     pos: Position
     height: number
     width:number
-    constructor(entity: Entity, width: number=-1, height: number = -1, curr: Position={x:0,y:0,z:0} , scale: {x: number, y: number} = {x: 1, y: 1}) {
+
+    constructor(entity: number = -1, width: number=-1, height: number = -1, curr: Position={x:0,y:0,z:0} , scale: {x: number, y: number} = {x: 1, y: 1}) {
         this.height = height
         this.width = width
         this.pos= curr
@@ -28,10 +29,22 @@ export class Camera implements Renderable {
         this.entity = entity
         this.scale = scale
     }
+    rendered: boolean = true;
+    copy<T>(camera: Camera): void {
+        this.entity = camera.entity
+        
+        this.componentId = camera.componentId
+        this.width =camera.width
+        this.height =camera.height
+        this.visible = camera.visible
+        this.alive = camera.alive
+        this.scale.x = camera.scale.x
+        this.scale.y = camera.scale.y
+    }
     initialize(): void {
 
     }
-    update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
+    update(dt: number): void {
         let context = this.context.ctx
         if (this.height < 0) {
             this.height = this.height * -1 * this.context.canvas.height
@@ -46,17 +59,17 @@ export class Camera implements Renderable {
         this.context.ctx.translate(this.transform.pos.x, this.transform.pos.y)
         context.clearRect(-1 * this.pos.x,-1 * this.pos.y,this.width, this.height)
 
-        let items = this.system.components
-        for (let i of items) {
-            i[1].render(this.context.ctx)
-        }
+        
         
         this.transform.pos.x = 0
         this.transform.pos.y = 0
         this.context.ctx.save()
     }
-    render(ctx: CanvasRenderingContext2D): void {
-        
+    render(ctx: CanvasRenderingContext2D, renderStrategy: Renderable): void {
+        let items = this.system.components
+        for (let i of items) {
+            i[1].render(ctx, renderStrategy)
+        }
     }
     
     

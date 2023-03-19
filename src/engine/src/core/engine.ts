@@ -22,19 +22,22 @@ export class Engine {
     time: number = 0
     graphics?: GraphicsEngine
     contextInfo?: ContextInfo
-    constructor(gameConfig: EngineConfig = {engineType: EngineType.CLIENTONLY}, systems?: System<Component>[]) {
+    constructor(gameConfig: EngineConfig = {
+        engineType: EngineType.CLIENTONLY,
+
+    }, systems?: System<Component>[]) {
         this.engineConfig = gameConfig
         if (gameConfig.graphicsConfig) {
             this.contextInfo = new ContextInfo(gameConfig.graphicsConfig)
         }
-        if (this.engineConfig.eventConfig) {
+        if (this.engineConfig.eventConfig && this.contextInfo) {
             this.systems.push(new EventHandler(this.engineConfig.eventConfig))
         }
         
         if (this.engineConfig.physicsConfig) {
             this.systems.push(new PhysicsEngine(this.engineConfig.physicsConfig))
         }
-        if (this.engineConfig.scriptingConfig && this.contextInfo) {
+        if (this.engineConfig.scriptingConfig) {
             this.systems.push( new ScriptingEngine())
         }
         
@@ -48,8 +51,7 @@ export class Engine {
         }
         
         if (this.engineConfig.graphicsConfig && this.contextInfo) {
-            console.log("Console.context info")
-            console.log(this.contextInfo)
+
             this.graphics = new GraphicsEngine(this.engineConfig.graphicsConfig, this.contextInfo)
             this.systems.push(this.graphics)
         }
@@ -60,16 +62,7 @@ export class Engine {
         }
         this.sceneManager = new SceneManager(this.engineConfig,this.engineConfig.sceneConfig, this.systems)
         this.running = true
-        for (var sys of this.systems) {
-            var comp = this.sceneManager.getCurrentScene().engineComponents.set(sys.tag, sys.components)
-            if (comp) {
-                
-
-            } else {
-                throw Error("error in start method")
-            }
-            
-        }
+        
 
         this.running = false
         /**
@@ -150,7 +143,35 @@ export class Engine {
    
     start(dt: number): void {
         this.running = true
+        console.log("Startng Engin ")
+        let curr = this.sceneManager.getCurrentScene()
         
+        for (var sys of this.systems) {
+
+
+            var comp = this.sceneManager.getCurrentScene().engineComponents.set(sys.tag, sys.components)
+            curr.engineComponents.set(sys.tag, sys.components)
+            this.sceneManager.systemTag.set(sys.tag, sys)
+            if (comp) {
+                
+ 
+            } else { 
+                throw Error("error in start method")
+            }
+            
+        }
+        let oldMap = curr.entities
+            curr.entities = new Map()
+
+            for (let e of oldMap) {
+                if (e[1].id) {
+                    curr.addEntity(curr, e[1], e[1].id)
+                } else {
+                    curr.addEntity(curr, e[1], 1)
+                }
+
+            } 
+
         if (this.engineConfig.engineType == EngineType.CLIENTONLY || this.engineConfig.engineType == EngineType.SOCKETCLIENT) {
 
 
@@ -161,6 +182,7 @@ export class Engine {
                 if (this.running) {
                     this.serverUpdate(dt)
                 }
+                console.log("Timeout runout")
 
             }, dt)
 
@@ -176,20 +198,23 @@ export class Engine {
             this.time += dt
             console.log(this.time)
             window.requestAnimationFrame((timestamp:number) => {
-                let dt = timestamp - this.time
+                let deltaTime = timestamp - this.time
+
                 this.update(dt)
-                this.time = timestamp
+                this.time = timestamp   
+                
             })
             
     }
     serverUpdate(dt: number) {
-
+            console.log("updating")
             for (var sys of this.systems) {
                 sys.update(dt)
             }
   
             this.time += dt
             console.log(this.time)
+            
             setTimeout(() => {
                 if (this.running) {
                     this.serverUpdate(dt)

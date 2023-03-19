@@ -10,7 +10,14 @@ export interface Entity {
     components: Component[]
     id?: number
     scene?: Scene
+    className: string
     
+}
+export interface EntityPacket {
+    components: Component[]
+    id: number
+    sceneId: string
+    entityClass: string
 }
 
 

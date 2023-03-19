@@ -2,7 +2,7 @@
 
 /* all imports */
 import * as path from 'path'
-import express, { Express } from 'express';
+import express, { Express } from 'express'
 
 
 import helmet from 'helmet';

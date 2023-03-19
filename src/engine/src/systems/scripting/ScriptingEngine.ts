@@ -14,7 +14,11 @@ export class ScriptingEngine implements System<Script> {
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
-        }  
+        }  else {
+            comp.componentId = comp.componentId
+            comp.system = this
+            this.components.set(comp.componentId, comp)
+        }
     }
     unregister(comp: number): void {
         let deleted = this.components.get(comp) 
@@ -29,6 +33,7 @@ export class ScriptingEngine implements System<Script> {
     
     update(dt: number): void {
         console.log("Scripting engine running")
+        console.log("Scripting Components: " + this.components.size)
         for (var comp of this.components) {
 
             comp[1].callback(dt)

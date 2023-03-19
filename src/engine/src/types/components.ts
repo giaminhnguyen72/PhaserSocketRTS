@@ -10,19 +10,25 @@ import { Entity} from "./Entity.js"
 import { System } from "./system.js"
 
 export interface Component {
-    system: System<Component>
-    entity?: Entity
+    
+    entity?: number
     visible: boolean
     alive: boolean
     engineTag: string
     componentId?: number
+    system: System<Component>
     update(dt: number, ctx?: CanvasRenderingContext2D): void
+
+    copy(component: Component):void
+    
     
 }
 export interface Renderable extends Component {
     context: ContextInfo
-    render(ctx: CanvasRenderingContext2D): void
+    rendered: boolean
+    render(ctx: CanvasRenderingContext2D, renderStrategy: Renderable): void
     initialize(): void
+
 }
 
 /**
@@ -41,14 +47,16 @@ export interface Renderable extends Component {
     checkCollision(collider: Collideable):boolean
     
 }
-export interface Listenable extends Component {
+export interface Listenable extends Component{
     eventMap: Map<string, () => void>
+
 }
 export interface Listener<T> extends Listenable {
 
 }
 export interface EventSource extends Listenable {
     generateEvent(event: string): string
+
 }
 export interface Transformable extends Component {
     pos:Position

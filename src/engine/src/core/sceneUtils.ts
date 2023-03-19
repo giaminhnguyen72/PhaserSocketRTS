@@ -6,6 +6,7 @@ import { SceneManager } from "./managers/SceneManager.js"
 import { Scene } from "./scene.js"
 
 export function addSocketEntity(scene: Scene, entity: Entity, id: number) {
+
     var uniqueId = SceneManager.getUniqueId()
     entity.id = uniqueId
     entity.scene = scene
@@ -18,7 +19,7 @@ export function addSocketEntity(scene: Scene, entity: Entity, id: number) {
             let system: System<Component> | undefined= scene.sceneManager.systemTag.get(comp.engineTag)
             if (system) {
                 system.register(comp)
-            }
+            } 
 
             
         } else {
@@ -26,36 +27,49 @@ export function addSocketEntity(scene: Scene, entity: Entity, id: number) {
             
         }
     }
-    console.log("successfully added entity")
+    console.log("successfully added entitys")
     return entity
-    
+      
 }
 
 export function addEntity(scene: Scene,entity: Entity) {
+    
+
     var uniqueId = SceneManager.getUniqueId()
+
     entity.id = uniqueId
     entity.scene = scene
+
     scene.entities.set(uniqueId, entity)
     
     for (var comp of entity.components) {
         var compList = scene.engineComponents.get(comp.engineTag)
+        comp.entity = entity.id
         if (compList) {
 
             let system: System<Component> | undefined= scene.sceneManager.systemTag.get(comp.engineTag)
             if (system) {
+
                 system.register(comp)
-            }
+            } 
+
 
             
-        } 
+        } else {
+            console.log(comp.engineTag + "does not exist")
+            comp.componentId = SceneManager.getUniqueComponentId()
+            
+        }
     }
     console.log("successfully added entity")
+    
     return entity
     
 
 }
 export function removeEntity(scene: Scene,id: number) {
     let entity : Entity | undefined = scene.entities.get(id)
+    
     if (entity) {
         scene.entities.delete(id)
         for (var c of entity.components) {
@@ -67,6 +81,7 @@ export function removeEntity(scene: Scene,id: number) {
             console.log(c.componentId)
             c.system.unregister(c.componentId as number)
         }
+        
         
     }
     return entity

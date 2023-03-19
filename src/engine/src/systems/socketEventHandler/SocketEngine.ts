@@ -23,7 +23,7 @@ export class SocketEngine implements System<Listenable> {
         })
         window.addEventListener("keydown", (event) => {
             this.events.push(event.key)
-
+            console.log(event.key)
         })
 
 

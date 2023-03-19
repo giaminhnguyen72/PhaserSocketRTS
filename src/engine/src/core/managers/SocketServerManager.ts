@@ -1,32 +1,56 @@
 
-import { Server } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events.js";
+import { Server, Socket } from "socket.io";
+
 import { EventHandler } from "../../systems/events/EventHandler.js";
 import { Component, Listenable } from "../../types/components.js";
+import { EntityPacket } from "../../types/Entity.js";
 import { System } from "../../types/system.js";
-import { EventConfig } from "../config.js";
+import { EventConfig, SocketServerConfig } from "../config.js";
+import { Scene } from "../scene.js";
 import { SceneManager } from "./SceneManager.js";
+import { SocketManager } from "./SocketManager.js";
 
 export class SocketServerManager implements System<Listenable>{
-    socket: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
-
+    static socket: Server
+    roomID?: string
     sceneManager: SceneManager
     tag: string = "EVENTHANDLER";
     components: Map<number, Listenable>;
 
     events: string[]
     deleted: Component[] = []
-    constructor(sceneManager: SceneManager) {
+    constructor(sceneManager: SceneManager, config: SocketServerConfig) {
         this.components = new Map<number, Listenable>()
         this.events = []
+        
 
         this.sceneManager = sceneManager
-        if (this.sceneManager.engineConfig.server) {
-            this.socket = this.sceneManager.engineConfig.server
-
-        } else {
-            this.socket = new Server()
+        if (config.roomId) {
+            this.roomID = config.roomId
         }
+        console.log("new Socket server has been madde " + this.roomID)
+        console.log("new Socket server has been madde "+ this.roomID) 
+        console.log("new Socket server has been madde " + this.roomID)
+        console.log("new Socket server has been madde "+ this.roomID)
+        if (!SocketServerManager.socket) {
+            
+            if (config.server) {
+                SocketServerManager.socket = config.server
+            
+            } else {
+                SocketServerManager.socket = new Server(3000)
+            }
+            
+            
+        }
+        Object.entries(config.socketEventMap).map(([k, v]) => {
+            console.log("Inside event Map entry parser "+ this.roomID)
+    console.log()
+            let func = (socket:Socket) => { v(this.roomID as string, this.events, socket)}
+            SocketServerManager.socket.on(k, func)
+        })
+        
+        
         
         
     }
@@ -78,7 +102,33 @@ export class SocketServerManager implements System<Listenable>{
             
         }
         this.events = []
-        console.log("Event Handler Components:"+this.components.size)
+        console.log("RoomId is " + this.roomID)
+        if (this.roomID) {
+            console.log("updating room" + this.roomID)
+            let entities: EntityPacket[] = []
+
+            let ent =  this.sceneManager.getCurrentScene().entities
+            console.log(ent.size + " entities have been sent")
+            for (let e of  ent){
+                let scene = e[1].scene as Scene
+                entities.push({
+                    components: e[1].components,
+                    id: e[1].id as number,
+                    sceneId: scene.name,
+                    entityClass: e[1].className
+                    
+                    
+                })
+
+
+            }
+            SocketServerManager.socket.to(this.roomID).emit("update", entities)
+        }
+        
+        console.log("Server Socket Components:"+this.components.size)
     }
     
+}
+function createServer() {
+    return new Server()
 }
