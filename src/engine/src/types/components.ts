@@ -1,4 +1,5 @@
 
+import { Transform } from "../components/Physics/transform.js"
 import { ContextInfo } from "../core/context.js"
 import { CollisionSystem } from "../systems/Collision/CollisionSystem.js"
 import { EventHandler } from "../systems/events/EventHandler.js"
@@ -26,7 +27,8 @@ export interface Component {
 export interface Renderable extends Component {
     context: ContextInfo
     rendered: boolean
-    render(ctx: CanvasRenderingContext2D, renderStrategy: Renderable): void
+    transform: Transform
+    render(strategyArr: Iterable<any>): void
     initialize(): void
 
 }

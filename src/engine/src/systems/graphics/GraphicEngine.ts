@@ -10,11 +10,12 @@ import { Entity } from "../../types/Entity.js"
 import { System } from "../../types/system.js"
 import { Scene } from "../../core/scene.js"
 import { SceneManager } from "../../core/managers/SceneManager.js"
-
+import { PriorityQueue } from "../../structs/PriorityQueue.js"
+import { PainterStrategy, RenderStrategy } from "../../types/components/graphics/RenderingStrategy.js"
 export class GraphicsEngine implements System<Renderable>{
     tag: string = GRAPHICS_TAG
     components: Map<number, Renderable>
-    queue: PriorityQueue<Renderable> = new PriorityQueue()
+    renderStrategy: RenderStrategy
     graphicsConfig: GraphicsConfig
     contextInfo: ContextInfo
     deleted: Component[]
@@ -28,7 +29,7 @@ export class GraphicsEngine implements System<Renderable>{
         document.body.style.height = "100%"
         document.body.style.width = "100%"
         document.body.style.margin = "0"
-
+        this.renderStrategy = new PainterStrategy()
 
         this.contextInfo = context
     }
@@ -39,7 +40,7 @@ export class GraphicsEngine implements System<Renderable>{
             comp.componentId = id
             comp.system = this
             comp.context = this.contextInfo
-            if (comp.rendered) {
+            if (comp.rendered == true) {
                 this.rendering.push(comp)
             }
             comp.initialize()
@@ -48,6 +49,9 @@ export class GraphicsEngine implements System<Renderable>{
             console.log("Graphics Registering id" + comp.componentId)
             comp.system = this
             comp.context = this.contextInfo
+            if (comp.rendered == true) {
+                this.rendering.push(comp)
+            }
             comp.initialize()
             this.components.set(comp.componentId, comp)
         }
@@ -75,9 +79,19 @@ export class GraphicsEngine implements System<Renderable>{
 
             
             comp.update(dt)
+            if (comp.rendered == false) {
+                this.renderStrategy.registerStrategy(comp)
+
+            }
+           
+            
 
 
         }
+        console.log("Rendering Components: " + this.rendering.length)
+        this.renderStrategy.render(this.rendering)
+
+        this.renderStrategy.clear()
         while (this.deleted.length > 0 ) {
             let comp = this.deleted.pop()
             this.components.delete(comp?.componentId as number)

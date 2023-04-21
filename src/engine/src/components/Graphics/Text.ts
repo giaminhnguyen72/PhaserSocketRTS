@@ -2,6 +2,7 @@ import { ContextInfo } from "../../core/context.js";
 import { Component, Renderable } from "../../types/components.js";
 import { Entity } from "../../types/Entity.js";
 import { System } from "../../types/system.js";
+import { Transform } from "../Physics/transform.js";
 
 export class Text implements Renderable {
     entity!: number;
@@ -11,13 +12,19 @@ export class Text implements Renderable {
     visible: boolean = true;
     alive: boolean = true;
     system!: System<Component>;
+    transform: Transform
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
 
     }
     constructor(text: string) {
-
+        this.transform = new Transform(this.entity, {
+            x: 0,
+            y:0,
+            z: 0
+        })
         this.text = text
     }
+
     rendered: boolean = false;
     copy<T>(text: Text): void {
         this.componentId = text.componentId
@@ -26,9 +33,9 @@ export class Text implements Renderable {
 
     }
     context!: ContextInfo;
-    render(ctx: CanvasRenderingContext2D): void {
-        if (ctx) {
-            ctx.fillText(this.text, 20, 20)
+    render(): void {
+        if (this.context) {
+            this.context.ctx.fillText(this.text, 20, 20)
         }
     }
     initialize() {

@@ -53,9 +53,9 @@ export class Sprite implements Component, Renderable {
     alive: boolean = true;
     system!: System<Component>;
     
-    render(ctx?: CanvasRenderingContext2D): void {
-        if (ctx) {
-            ctx.drawImage(this.image, this.transform.pos.x, this.transform.pos.y, 64, 64)
+    render(): void {
+        if (this.context.ctx) {
+            this.context.ctx.drawImage(this.image, this.transform.pos.x, this.transform.pos.y, 64, 64)
         }
         
     }

@@ -30,16 +30,16 @@ export class Rectangle implements Component, Renderable{
     visible: boolean = true;
     alive: boolean = true;
     system!: System<Component>;
-    render(ctx: CanvasRenderingContext2D): void {
-        if (ctx) {
+    render(): void {
+        if (this.context.ctx) {
             var r = Math.random()* 255
             var g = Math.random()* 255
             var b = Math.random()* 255
-            ctx.fillStyle = `rgb(
+            this.context.ctx.fillStyle = `rgb(
                 ${r},
                 ${g},
                 ${b})`;
-            ctx.fillRect(this.transform.pos.x, this.transform.pos.y,20,20)
+            this.context.ctx.fillRect(this.transform.pos.x, this.transform.pos.y,20,20)
 
         }
     }

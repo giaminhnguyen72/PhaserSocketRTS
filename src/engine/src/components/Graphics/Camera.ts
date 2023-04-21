@@ -59,16 +59,19 @@ export class Camera implements Renderable {
         this.context.ctx.translate(this.transform.pos.x, this.transform.pos.y)
         context.clearRect(-1 * this.pos.x,-1 * this.pos.y,this.width, this.height)
 
-        
+
         
         this.transform.pos.x = 0
         this.transform.pos.y = 0
         this.context.ctx.save()
     }
-    render(ctx: CanvasRenderingContext2D, renderStrategy: Renderable): void {
-        let items = this.system.components
+    render(array: Renderable[]): void {
+        let items = array
         for (let i of items) {
-            i[1].render(ctx, renderStrategy)
+            if (i != this) {
+                i.render(array)
+            }
+            
         }
     }
     

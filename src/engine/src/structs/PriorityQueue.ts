@@ -2,11 +2,13 @@ interface DataNode<T> {
     data: T
     priority: number
 }
-class PriorityQueue<T> {
+export class PriorityQueue<T> {
 
-    private items: DataNode<T>[] = [];
+    items: DataNode<T>[] = [];
     size: number = 0
-
+  clear() {
+    this.items.length = 0
+  }
     swap(idx1: number, idx2: number) {
         var tmp = this.items[idx1]
         this.items[idx1] = this.items[idx2]
@@ -34,11 +36,22 @@ class PriorityQueue<T> {
       if (this.size == 0) {
           return undefined
       }
+      if (this.size == 1) {
+        this.size--
+        return this.items[0].data
+      }
       let popped = this.items[0]
       this.size--
+      //console.log("Unpopped " + this.items.length)
       let last = this.items.pop()
+      //console.log("Popped " + this.items.length)
+      
       if (last) {
         this.items[0] = last
+        for (let i = 0; i < this.items.length; i++){
+            //console.log("Inlast" + this.items[i].data)
+        }
+        
       } 
       
       
@@ -50,17 +63,28 @@ class PriorityQueue<T> {
               let childIdx = this.items[left].priority > this.items[right].priority ? left : right
               if (this.items[childIdx].priority > this.items[idx].priority) {
                 this.swap(idx, childIdx)
+                idx = childIdx
+              } else {
+                //console.log("first break")
+                break
               }
 
           } else if (left <= this.size -1) {
               if (this.items[left].priority > this.items[idx].priority) {
                 this.swap(idx, left)
+                idx = left
+                
+              } else {
+                 //console.log("Second break")
+                break
               }
           } else {
-            
+             //console.log("Third break")
+            break
           }
 
       }
+      return popped.data
     }
 
   }
