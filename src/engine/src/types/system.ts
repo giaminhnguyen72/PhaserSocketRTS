@@ -1,4 +1,4 @@
-import { Component } from "./components.js"
+import { Component, Emitter, EngineEvent, Listenable, Listener } from "./components.js"
 
 
 export interface System<T extends Component> {
@@ -8,4 +8,10 @@ export interface System<T extends Component> {
     register(comp: T): void
     unregister(comp:number): void
 
+}
+export interface EventSystem extends System<Listenable> {
+
+    registerListener(component: Listenable): void
+    registerEmitter(component: Emitter<EngineEvent>): void
+    getConfig(): {}
 }

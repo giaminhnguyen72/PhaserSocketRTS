@@ -8,36 +8,42 @@ import { EngineType } from "../../constants/engineType.js";
 import { SocketManager } from "./SocketManager.js";
 import { Engine } from "../engine.js";
 import { SocketServerManager } from "./SocketServerManager.js";
+import e from "express";
 
 export class SceneManager {
-    scenes: Map<string, Scene>
-    sceneConfigs: SceneConfig[]
-    currentIdx: string
+    static sceneManager: SceneManager
+    static scenes: Map<string, Scene> = new Map()
+    sceneConfigs: Scene[]
+    static currentIdx: string
     static id: number = 0
     static componentId = 0
+    static EngineType:EngineType = EngineType.CLIENTONLY
     systems: System<Component>[]
     systemTag: Map<string, System<Component>>
     engineConfig: EngineConfig
-    addEntity: (scene: Scene, entity: Entity, id: number) => Entity
-    constructor(engineConfig: EngineConfig, scenes:SceneConfig[]=[], systems: System<Component>[]) {
+    addEntity: (scene: Scene, entity: Entity) => Entity
+    constructor(engineConfig: EngineConfig, scenes:Scene[]=[], systems: System<Component>[]) {
         this.systems = systems
         this.systemTag = new Map<string, System<Component>>()
-        this.scenes = new Map<string, Scene>()
+        SceneManager.sceneManager = this
         this.engineConfig = engineConfig
         let engineType = engineConfig.engineType
         if (engineType == EngineType.SOCKETCLIENT) {
             this.addEntity = addSocketEntity
+            SceneManager.EngineType = EngineType.SOCKETCLIENT
                 
         } else if (engineType == EngineType.SOCKETSERVER){
             this.addEntity = addEntity
+            SceneManager.EngineType = EngineType.SOCKETSERVER
             //systems.push(new SocketServerManager(this))
         } else {
             this.addEntity = addEntity
+            SceneManager.EngineType = EngineType.CLIENTONLY
         }
 
         for (let i = 0; i < scenes.length; i++) {
-            let newConfig:SceneConfig = scenes[i]
-            let newScene = newConfig.scene
+            let newConfig:Scene = scenes[i]
+            let newScene = newConfig
             newScene.sceneManager = this
             newScene.engineComponents = new Map()
             newScene.addEntity = this.addEntity
@@ -46,16 +52,16 @@ export class SceneManager {
             console.log("In Scene Manager")
 
             
-            this.scenes.set(newScene.name, newScene)
+            SceneManager.scenes.set(newScene.name, newScene)
 
             
         }
         this.sceneConfigs = scenes
-        this.currentIdx = this.sceneConfigs[0].scene.name
+        SceneManager.currentIdx = this.sceneConfigs[0].name
         this.systems = systems
     }
     switchScenes(key: string) {
-        let scene : Scene | undefined= this.scenes.get(key)
+        let scene : Scene | undefined= SceneManager.scenes.get(key)
         if (scene) {
             for (var sys of this.systems) {
                 var comp = scene.engineComponents.get(sys.tag)
@@ -71,7 +77,7 @@ export class SceneManager {
         
     }
     getCurrentScene() {
-        let curr = this.scenes.get(this.currentIdx)
+        let curr = SceneManager.scenes.get(SceneManager.currentIdx)
         if (curr) {
             return  curr
         } else {
@@ -80,24 +86,33 @@ export class SceneManager {
         
     }
 
-
+    static getInstance() {
+        return SceneManager.sceneManager
+    }
     static getUniqueId() {
-        return SceneManager.id++
+        if (SceneManager.EngineType == EngineType.SOCKETCLIENT) {
+            let id = SceneManager.id - 1
+            SceneManager.id--
+            return id
+        } else {
+            let id = SceneManager.id  + 1
+            SceneManager.id++
+            return id
+        }
+        
     }
     static getUniqueComponentId() {
-        return SceneManager.componentId++
+        if (SceneManager.EngineType == EngineType.SOCKETCLIENT) {
+            let id = SceneManager.componentId - 1
+            SceneManager.componentId--
+            return id
+        } else {
+            let id = SceneManager.componentId + 1
+            SceneManager.componentId++
+            return id
+        }
+        
     }
 }
 
 
-class DefaultScene implements Scene {
-    addEntity!: (scene: Scene, entity: Entity, id: number) => Entity;
-    name: string = "scene";
-    sceneManager!: SceneManager;
-    background?: string | undefined;
-    time: number = 0;
-    entities: Map<number, Entity> = new Map();
-    engineComponents: Map<string, Map<number, Component>> = new Map();
-    
-    
-}

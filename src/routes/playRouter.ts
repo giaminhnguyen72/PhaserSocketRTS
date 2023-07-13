@@ -22,7 +22,7 @@ export default class PlayRouter extends Route {
     play(): void {
         //for spectator mode
         this.router.get('/:id', (req:Request, res:Response, next:NextFunction) => {
-            var id: number= parseInt(req.params.id)
+            let id: number= parseInt(req.params.id)
             if (this.rooms?.rooms.has(id)) {
                 console.log("Get")
 
@@ -34,7 +34,7 @@ export default class PlayRouter extends Route {
         })
         //for joining a game
         this.router.post('/:id', (req:Request, res:Response, next:NextFunction) => {
-            var id: number= parseInt(req.params.id)
+            let id: number= parseInt(req.params.id)
             console.log("Request:" + req.body.roomID)
             if (req.body.roomID != undefined) {
                 id = parseInt(req.body.roomID)
@@ -45,7 +45,7 @@ export default class PlayRouter extends Route {
             if (!validateName(req.body.playerName)) {
                 //res.redirect('../')
             }
-            var playerName: string = req.body.playerName
+            let playerName: string = req.body.playerName
             playerName = playerName.trim()
             if (this.rooms?.rooms.has(id)) {
                 console.log("Post 32432")
@@ -69,8 +69,8 @@ export default class PlayRouter extends Route {
             if (req.body.roomID == undefined) {
                 res.redirect("../")
             } else {
-                var id: number = parseInt(req.body.roomID)
-                var URI: string = '/play'
+                let id: number = parseInt(req.body.roomID)
+                let URI: string = '/play'
                 res.redirect(307, URI + "/" + id)
             }
             
@@ -90,16 +90,16 @@ export default class PlayRouter extends Route {
         
         
         this.router.post('/createGame', (req:Request, res: Response) => {
-            var gameName: string = req.body.gameName
-            var playerName: string = req.body.playerName
-            var URI: string = '/play'
+            let gameName: string = req.body.gameName
+            let playerName: string = req.body.playerName
+            let URI: string = '/play'
             gameName = gameName.trim()
             playerName = playerName.trim()
 
             
             if (validateRoomName(gameName) && validateName(playerName)) {
 
-                var room = this.rooms?.addRoom(gameName)
+                let room = this.rooms?.addRoom(gameName)
                 console.log(room?.roomID)
                 res.redirect(307, URI + '/' + room?.roomID)
             } else {

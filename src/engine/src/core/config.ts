@@ -2,7 +2,7 @@
 import { Server, Socket } from "socket.io"
 import { Socket as SocketClient } from "socket.io-client"
 import { EngineType } from "../constants/engineType.js"
-import { Component } from "../types/components.js"
+import { Collideable, Component } from "../types/components.js"
 import { Entity } from "../types/Entity.js"
 import { System } from "../types/system.js"
 import { SocketManager } from "./managers/SocketManager.js"
@@ -20,13 +20,17 @@ export class GraphicsConfig {
     style: Object
     background?:string
     canvasID: string
+    width: number
+    height: number
     constructor(
         parent: string="engineDiv",
         canvasID: string ="engineCanvas",
         style:Object={},
-        background?: string
+        background?: string,
+        width: number=1000,height:number=500 
     ) {
-        
+        this.width = width
+        this.height = height
         this.parent = parent
         this.canvasID = canvasID
         this.style = style
@@ -39,7 +43,7 @@ export interface EngineConfig {
     engineType: EngineType
     graphicsConfig?: GraphicsConfig
     physicsConfig?: PhysicsConfig
-    sceneConfig?: SceneConfig[]
+    sceneConfig?: Scene[]
     eventConfig?: EventConfig
     collisionConfig?: CollisionConfig
     scriptingConfig?: ScriptingConfig
@@ -54,12 +58,13 @@ export interface EngineConfig {
 export class SceneConfig {
     
     entities: Entity[]
-    scene: Scene
-    constructor(scene: Scene,  entities: Entity[] =[]) {
-        this.scene = scene
+
+    constructor(entities: Entity[] =[]) {
+
         this.entities = entities
 
     }
+
 }
 export class EventConfig {
     keyboard: boolean
@@ -70,15 +75,15 @@ export class EventConfig {
     }
 }
 export class CollisionConfig {
-
+    bounds?: {topX: number, topY: number, bottomX: number, bottomY: number, wallCollide: (colider: Collideable) => void}
 }
 export class ScriptingConfig {
-
+    
 }
-export interface SocketServerConfig {
+export class SocketServerConfig {
     server?: Server
     roomId?: string
-    socketEventMap: {[key: string ]: (id: string, event: string[], socket: Socket) => void}
+    socketEventMap?: {[key: string ]: (id: string, event: string[], socket: Socket) => void}
     socketPrev?: (event: string[], socket: Server) => void
     
     

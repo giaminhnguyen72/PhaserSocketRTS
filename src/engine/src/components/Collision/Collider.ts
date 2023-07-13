@@ -4,6 +4,7 @@ import { Collideable, Component } from "../../types/components.js";
 import { Shape, Rectangle } from "../../types/components/collision/shape.js";
 import { Position } from "../../types/components/physics/transformType.js";
 import { Entity } from "../../types/Entity.js";
+
 import { Transform } from "../Physics/transform.js";
 
 
@@ -15,16 +16,15 @@ export class BoxCollider implements Collideable {
     collideType: string;
     shape: Rectangle
     system!: CollisionSystem;
-    visit(s: BoxCollider) {
-        
-    }
+    boundingBox: Rectangle
     onCollision: (otherCollider: Collideable) => void
-    constructor(entity: number = -1,  pos: Position ={x: 0, y:0, z:0}, onCollision: (otherCollider: Collideable) => void) {
+    constructor(entity: number = -1,  dim: {length: number, height:number} = {length:20, height: 20}, pos: Position ={x: 0, y:0, z:0}, onCollision: (otherCollider: Collideable) => void) {
         this.entity = entity
         this.collideType = "Box"
         this.shape = {
             pos: pos,
-            dim: { length: 20, height: 20},
+
+            dim: dim,
             rot: 0
         }
         this.prev = {
@@ -32,10 +32,31 @@ export class BoxCollider implements Collideable {
             y: pos.y,
             z: pos.z
         }
+        this.boundingBox= this.shape
         this.onCollision = onCollision
     }
-    copy<T>(collider: T): void {
+    copy<T>(collider: BoxCollider): void {
+        if (collider.entity) {
+            this.entity = collider.entity
+        }
+        this.prev.x = collider.prev.x
+        this.prev.y = collider.prev.y
 
+        this.prev.z = collider.prev.z
+
+        this.alive = collider.alive
+        this.collideType = collider.collideType
+        this.componentId = this.componentId
+        this.engineTag = this.engineTag
+        this.shape.dim.height = collider.shape.dim.height
+        this.shape.dim.length = collider.shape.dim.length
+        
+        this.shape.pos.x = collider.shape.pos.x
+        this.shape.pos.y = collider.shape.pos.y
+        this.shape.pos.z = collider.shape.pos.z
+        this.shape.rot = collider.shape.rot
+        this.visible =  collider.visible
+        
         
         
     }
@@ -53,11 +74,16 @@ export class BoxCollider implements Collideable {
             let rect = collider.shape
             let rectangle = this.shape
             if (rect.rot == 0 && rectangle.rot == 0) {
+                let rectX = rect.pos.x - rect.dim.length / 2
+                let rectY = rect.pos.y - rect.dim.height / 2
+
+                let rectangleX = rectangle.pos.x - rectangle.dim.length / 2
+                let rectangleY = rectangle.pos.y - rectangle.dim.height / 2
                 if (
-                    rect.pos.x + rect.dim.length > rectangle.pos.x &&
-                    rect.pos.x <  rectangle.pos.x +rectangle.dim.length &&
-                    rect.pos.y + rect.dim.height > rectangle.pos.y &&
-                    rect.pos.y < rectangle.pos.y + rectangle.dim.height 
+                    rectX + rect.dim.length > rectangleX &&
+                    rectX <  rectangleX + rectangle.dim.length &&
+                    rectY + rect.dim.height > rectangleY &&
+                    rectY < rectangleY + rectangle.dim.height 
         
                 ) {
                     return true
@@ -87,6 +113,19 @@ export class BoxCollider implements Collideable {
 
         
     }
+    toJSON() {
+        return {
+            entity: this.entity,
+            engineTag: this.engineTag,
+            componentId: this.componentId,
+            prev: this.prev,
+            collideType: this.collideType,
+            shape: this.shape,
+            boundingBox: this.boundingBox,
+            visible: this.visible,
+            alive: this.alive,
+        }
+    }
 
 
     
@@ -101,6 +140,7 @@ export class CircleCollider implements Collideable {
     collideType: string;
     shape: Rectangle
     system!: CollisionSystem
+    boundingBox: Rectangle
     onCollision: (otherCollider: Collideable) => void
     constructor(entity: number,  pos: Position, onCollision: (otherCollider: Collideable) => void) {
         this.entity = entity
@@ -111,7 +151,9 @@ export class CircleCollider implements Collideable {
             dim: { length: 20, height: 20},
             rot: 0
         }
+        this.boundingBox = this.shape
         this.onCollision = onCollision
+        this.boundingBox = this.shape
     }
     copy<T>(): void {
         throw new Error("Method not implemented.");
@@ -119,7 +161,7 @@ export class CircleCollider implements Collideable {
     visible: boolean = true;
     alive: boolean = true;
     
-    checkCollision(collider: BoxCollider): boolean {
+    checkCollision(collider: Collideable): boolean {
         var doesCollide = false
         return false
     }

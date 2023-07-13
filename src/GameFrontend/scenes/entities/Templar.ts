@@ -6,14 +6,23 @@ import { Scene } from "../../../engine/src/core/scene.js";
 import { Component } from "../../../engine/src/types/components.js";
 import { Entity } from "../../../engine/src/types/Entity.js";
 import { Script } from "../../../engine/src/components/Script/Script.js";
+import { Rectangle } from "../../../engine/src/types/components/collision/shape.js";
+import { Position } from "../../../engine/src/types/components/physics/transformType.js";
 
 export class Templar implements Entity {
     className: string = "Templar"
-    transform: Transform = new Transform(-1,{x:0,y:0,z:20}, {x:2, y: 2, z:0})
+    transform: Transform = new Transform(-1,{x:Math.random() * 20,y: Math.random() * 30,z:20}, {x:1, y: 0, z:0})
+    sprite: Sprite = new Sprite(-1,{pos: this.transform.pos, dim:{length:64, height: 64}, rot: 0}, "/images/Templar.png")
     components: Component[] = [
-        new Sprite(-1,this.transform, "/images/Templar.png")
+        this.sprite
     ];
     id?: number | undefined;
     scene?: Scene | undefined;
+    constructor(pos?: Position) {
+        if (pos) {
+            this.transform.pos.x = pos.x
+            this.transform.pos.y = pos.y
+        }
+    }
 }
   

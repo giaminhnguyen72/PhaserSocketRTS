@@ -39,9 +39,11 @@ export class GraphicsEngine implements System<Renderable>{
             let id = SceneManager.getUniqueComponentId()
             comp.componentId = id
             comp.system = this
+            
             comp.context = this.contextInfo
             if (comp.rendered == true) {
                 this.rendering.push(comp)
+                console.log("Pushing to rendering")
             }
             comp.initialize()
             this.components.set(id, comp)
@@ -51,13 +53,16 @@ export class GraphicsEngine implements System<Renderable>{
             comp.context = this.contextInfo
             if (comp.rendered == true) {
                 this.rendering.push(comp)
+                console.log("Pushing to rendering")
+                
             }
             comp.initialize()
             this.components.set(comp.componentId, comp)
         }
     }
     unregister(id: number): void {
-        let deleted = this.components.get(id) 
+
+    let deleted = this.components.get(id)
        if (deleted) {
             deleted.alive = false
             
@@ -70,7 +75,7 @@ export class GraphicsEngine implements System<Renderable>{
     
     
     update(dt: number) {
-        var ctx = this.contextInfo.ctx
+        let ctx = this.contextInfo.ctx
 
         console.log("Graphics engine running")
         console.log("Graphics Components: " + this.components.size)
@@ -81,7 +86,7 @@ export class GraphicsEngine implements System<Renderable>{
             comp.update(dt)
             if (comp.rendered == false) {
                 this.renderStrategy.registerStrategy(comp)
-
+                console.log("Registered Strategy")
             }
            
             
@@ -91,9 +96,11 @@ export class GraphicsEngine implements System<Renderable>{
         console.log("Rendering Components: " + this.rendering.length)
         this.renderStrategy.render(this.rendering)
 
-        this.renderStrategy.clear()
+
+
         while (this.deleted.length > 0 ) {
             let comp = this.deleted.pop()
+            
             this.components.delete(comp?.componentId as number)
         }
 
@@ -102,7 +109,7 @@ export class GraphicsEngine implements System<Renderable>{
         
     }
     setScene(scene: Scene): void {
-        var get = scene.engineComponents.get(this.tag)
+        let get = scene.engineComponents.get(this.tag)
         if(get) {
 
         }

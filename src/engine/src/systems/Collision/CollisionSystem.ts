@@ -2,16 +2,23 @@ import { CollisionConfig } from "../../core/config.js";
 import { SceneManager } from "../../core/managers/SceneManager.js";
 import { Collideable } from "../../types/components.js";
 import { System } from "../../types/system.js";
-
+import { CollisionStrategy, NaiveCollision } from "../../types/components/collision/CollisionStrategy.js";
 export class CollisionSystem implements System<Collideable> {
     tag: string = "COLLISION";
     components: Map<number, Collideable>;
     config: CollisionConfig
     deleted: Collideable[]
+    collisionStrategy: CollisionStrategy 
+    bounds?: {topX: number, topY: number, bottomX: number, bottomY: number, wallCollide: (colider:Collideable)=>void}
     constructor(config: CollisionConfig) {
         this.components = new Map<number, Collideable>()
         this.config = config
         this.deleted = []
+        if (config.bounds) {
+            this.bounds = config.bounds
+        }
+        this.collisionStrategy = new NaiveCollision(this)
+        
     }
     register(comp: Collideable): void {
         if (comp.componentId == undefined || comp.componentId == null) {
@@ -23,6 +30,7 @@ export class CollisionSystem implements System<Collideable> {
             comp.system = this
             this.components.set(comp.componentId, comp)
         }
+        this.collisionStrategy.registerComponent(comp)
         
     }
     unregister(comp: number): void {
@@ -39,20 +47,8 @@ export class CollisionSystem implements System<Collideable> {
     update(dt: number): void {
         console.log("Collision System Running")
         console.log("Collision Components: " + this.components.size)
-
-        for (var [key1, col1] of this.components) {
-            if (col1.visible) {
-                for (var [key2, col2] of this.components) {
-                    if (col2.visible && col1.checkCollision(col2) && col1 != col2) {
-                        col1.collides(col2)
-                    } else if (!col2.alive) {
-                        this.deleted.push(col2)
-                    }
-                }
-            }
-
-            
-        }
+        this.collisionStrategy.update(dt)
+        
         while (this.deleted.length > 0) {
             let popped = this.deleted.pop()
             if (popped) {

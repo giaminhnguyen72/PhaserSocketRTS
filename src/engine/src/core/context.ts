@@ -16,21 +16,21 @@ export class ContextInfo {
         document.body.style.margin = "0"
         this.setup()
         this.canvas = this.generateCanvas() as HTMLCanvasElement
-        this.canvas.width = 1000
-        this.canvas.height = 500
+        
+        
         this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D
         this.div = this.generateDiv(this.graphicsConfig.parent) ;
     }
         
     generateDiv(parent: string) {
-        var div: HTMLDivElement = document.createElement('div')
+        let div: HTMLDivElement = document.createElement('div')
         div.id = parent
-        div.style.position = "absolute"
+
         div.style.height = "100%" 
         div.style.width = "100%"
-        div.style.zIndex = "1"
-        div.style.backgroundImage = "/images/test.jpg"
-        
+        div.style.zIndex = "0"
+        div.style.display = "flex"
+        div.style.justifyContent = "center"
         div.appendChild(this.canvas)
         document.body.appendChild(div)
 
@@ -38,7 +38,7 @@ export class ContextInfo {
         return div
     }
     generateCanvas(): HTMLElement {
-        var canvas = document.createElement("CANVAS")
+        let canvas = document.createElement("CANVAS")
         canvas.id = this.graphicsConfig.canvasID
         console.log(this.parseStyle(this.graphicsConfig.style))
         console.log("Before")
@@ -46,11 +46,11 @@ export class ContextInfo {
         return canvas
     }
     getCtx() {
-        var canvas = this.getCanvas()
+        let canvas = this.getCanvas()
         return canvas.getContext("2d")
     }
     getCanvas(): HTMLCanvasElement {
-        var canvas = document.getElementById(this.graphicsConfig.canvasID)
+        let canvas = document.getElementById(this.graphicsConfig.canvasID)
         if (canvas instanceof HTMLCanvasElement) {
             return canvas
         } else {
@@ -59,15 +59,15 @@ export class ContextInfo {
         
     }
     parseStyle(styleObject: Object):  string {
-        var cssArray: string[] = Object.entries(styleObject).map(([k,v]) => k + ":" + v + ";")
+        let cssArray: string[] = Object.entries(styleObject).map(([k,v]) => k + ":" + v + ";")
         console.log(this.graphicsConfig.parent)
         return cssArray.join(" ")
     }
     setup() {
         
-        if (true) {
-            var image = new Image()
-            image.src = "/images/test.jpg"
+        if (this.graphicsConfig.background) {
+            let image = new Image()
+            image.src = this.graphicsConfig.background
             image.style.position ="absolute"
             image.style.zIndex = "-1"
             image.style.width = "100%"

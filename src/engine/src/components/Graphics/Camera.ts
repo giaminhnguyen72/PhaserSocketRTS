@@ -14,18 +14,18 @@ export class Camera implements Renderable {
     alive: boolean = true;
     engineTag: string = "GRAPHICS";
     componentId?: number | undefined;
-    transform: Transform
+    transform: Position
     scale: {x: number, y
         : number}
     pos: Position
     height: number
     width:number
 
-    constructor(entity: number = -1, width: number=-1, height: number = -1, curr: Position={x:0,y:0,z:0} , scale: {x: number, y: number} = {x: 1, y: 1}) {
+    constructor(entity: number = -1, width: number=-1, height: number = -1, curr: Position={x:0,y:0,z:-1} , scale: {x: number, y: number} = {x: 1, y: 1}) {
         this.height = height
         this.width = width
         this.pos= curr
-        this.transform = new Transform(entity,{x: 0, y: 0,z: 0})
+        this.transform = {x: 0, y: 0,z: 0}
         this.entity = entity
         this.scale = scale
     }
@@ -40,40 +40,62 @@ export class Camera implements Renderable {
         this.alive = camera.alive
         this.scale.x = camera.scale.x
         this.scale.y = camera.scale.y
+        this.rendered = camera.rendered
     }
     initialize(): void {
-
-    }
-    update(dt: number): void {
-        let context = this.context.ctx
         if (this.height < 0) {
             this.height = this.height * -1 * this.context.canvas.height
         }
         if (this.width < 0) {
             this.width = this.width * -1 * this.context.canvas.width
         }
-        this.pos.x += this.transform.pos.x
-        this.pos.y += this.transform.pos.y
+        if (this.rendered) {
+            this.context.canvas.height = this.height
+            this.context.canvas.width = this.width
+        }
+    }
+    update(dt: number): void {
+        let context = this.context.ctx
+
+        this.pos.x += this.transform.x
+        this.pos.y += this.transform.y
         
         
-        this.context.ctx.translate(this.transform.pos.x, this.transform.pos.y)
-        context.clearRect(-1 * this.pos.x,-1 * this.pos.y,this.width, this.height)
+        
 
 
         
-        this.transform.pos.x = 0
-        this.transform.pos.y = 0
-        this.context.ctx.save()
+        
     }
     render(array: Renderable[]): void {
+        this.context.ctx.translate(this.transform.x, this.transform.y)
+        this.context.ctx.clearRect(-1 * this.pos.x,-1 * this.pos.y,this.width, this.height)
         let items = array
         for (let i of items) {
             if (i != this) {
-                i.render(array)
+                i.render(array, -1)
+
             }
             
         }
+        this.transform.x = 0
+        this.transform.y = 0
+        this.context.ctx.save()
     }
-    
+    toJSON() {
+        return {
+            entity: this.entity,
+        
+            componentId: this.componentId,
+            width: this.width,
+            height: this.height,
+            visible: this.visible,
+            alive: this.alive,
+            scale: this.scale,
+            rendered: this.rendered,
+            pos: this.pos
+
+        }
+    }
     
 }

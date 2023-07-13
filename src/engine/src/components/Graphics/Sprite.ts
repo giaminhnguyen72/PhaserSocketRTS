@@ -5,22 +5,26 @@ import { Scene } from "../../core/scene.js";
 import { Transform } from "../Physics/transform.js";
 import { System } from "../../types/system.js";
 import { ContextInfo } from "../../core/context.js";
+import { getTopX, getTopY, Rectangle } from "../../types/components/collision/shape.js";
+import { Position } from "../../types/components/physics/transformType.js";
 
 export class Sprite implements Component, Renderable {
     entity: number;
     componentId?: number;
     engineTag: string = "GRAPHICS"
-    transform: Transform
-    
+    shape: Rectangle
+    transform: Position;
     context!: ContextInfo
     image!: HTMLImageElement
     src: string
-    constructor(entity: number, transform: Transform, src:string) {
+    constructor(entity: number, shape: Rectangle, src:string) {
         this.entity = entity
+        
 
-        this.transform = transform
 
         this.src = src
+        this.shape = shape
+        this.transform = this.shape.pos
         
 
     }
@@ -29,18 +33,18 @@ export class Sprite implements Component, Renderable {
     copy(element:Sprite): void {
         this.componentId = element.componentId
         this.entity = element.entity
-        this.src = element.src
-        this.transform.accel.x   = element.transform.accel.x,
-        this.transform.accel.y = element.transform.accel.y,
-        this.transform.accel.z = element.transform.accel.z,
 
-        this.transform.vel.x = element.transform.vel.x
-        this.transform.vel.y = element.transform.vel.y
-        this.transform.vel.z = element.transform.vel.z
-
-        this.transform.pos.x = element.transform.pos.x
-        this.transform.pos.y = element.transform.pos.y
-        this.transform.pos.z = element.transform.pos.z
+        this.shape.dim.height = element.shape.dim.height
+        this.shape.dim.length = element.shape.dim.length
+        
+        this.shape.pos.x = element.shape.pos.x
+        this.shape.pos.y = element.shape.pos.y
+        this.shape.pos.z = element.shape.pos.z
+        this.shape.rot = element.shape.rot
+        this.visible =  element.visible
+        this.transform.x = element.transform.x
+        this.transform.y = element.transform.y
+        this.transform.z = element.transform.z
 
 
     }
@@ -55,7 +59,9 @@ export class Sprite implements Component, Renderable {
     
     render(): void {
         if (this.context.ctx) {
-            this.context.ctx.drawImage(this.image, this.transform.pos.x, this.transform.pos.y, 64, 64)
+            let x = getTopX(this.shape)
+            let y = getTopY(this.shape)
+            this.context.ctx.drawImage(this.image, x, y, this.shape.dim.length, this.shape.dim.height)
         }
         
     }
@@ -67,6 +73,11 @@ export class Sprite implements Component, Renderable {
         this.image = new Image()
         this.image.src = this.src
     }
+    setSrc(src:string) {
+        console.log("Source changed")
+        this.src = src
+        this.image.src = src;
+    }
     toJSON() {
         return {
             entity: this.entity,
@@ -76,6 +87,8 @@ export class Sprite implements Component, Renderable {
             visible: this.visible,
             alive: this.alive,
             src: this.src,
+            shape:this.shape,
+            renderred: this.rendered
             
         }
     }

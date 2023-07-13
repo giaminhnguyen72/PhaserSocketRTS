@@ -7,7 +7,8 @@ export class PriorityQueue<T> {
     items: DataNode<T>[] = [];
     size: number = 0
   clear() {
-    this.items.length = 0
+    this.items = []
+    this.size = 0
   }
     swap(idx1: number, idx2: number) {
         var tmp = this.items[idx1]
@@ -38,14 +39,18 @@ export class PriorityQueue<T> {
       }
       if (this.size == 1) {
         this.size--
-        return this.items[0].data
+        let data = this.items[0].data
+        this.items.pop()
+        return data
       }
+      console.log(this.items)
       let popped = this.items[0]
       this.size--
-      //console.log("Unpopped " + this.items.length)
+      console.log("Unpopped " + this.size)
       let last = this.items.pop()
-      //console.log("Popped " + this.items.length)
-      
+      console.log("Popped " + this.size)
+      console.log(last )
+      console.log()
       if (last) {
         this.items[0] = last
         for (let i = 0; i < this.items.length; i++){
@@ -53,15 +58,18 @@ export class PriorityQueue<T> {
         }
         
       } 
-      
+     console.log("Size is" + this.size) 
       
       let idx = 0
       while (idx <= this.size - 1) {
           let left = 2 * idx + 1
           let right = 2 * idx + 2
+
           if (left <= this.size - 1 && right <= this.size - 1) {
+
               let childIdx = this.items[left].priority > this.items[right].priority ? left : right
               if (this.items[childIdx].priority > this.items[idx].priority) {
+
                 this.swap(idx, childIdx)
                 idx = childIdx
               } else {
@@ -70,7 +78,9 @@ export class PriorityQueue<T> {
               }
 
           } else if (left <= this.size -1) {
+
               if (this.items[left].priority > this.items[idx].priority) {
+
                 this.swap(idx, left)
                 idx = left
                 
@@ -84,6 +94,7 @@ export class PriorityQueue<T> {
           }
 
       }
+
       return popped.data
     }
 

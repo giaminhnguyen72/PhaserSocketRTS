@@ -49,18 +49,18 @@ export class SocketEngine implements System<Listenable> {
 
     update(dt: number): void {
         console.log("Event Handler")
-        var len = this.components.size
+        let len = this.components.size
         console.log("Event Handler Components:"+this.components.size)
         console.log("Event Handler Components:"+this.components.size)
         let keys = [...this.components.keys()]
-        for (var comp of keys) {
+        for (let comp of keys) {
             
 
-            var listenable: Listenable = this.components.get(comp) as Listenable
-            var eventMap = listenable.eventMap
-            for (var e of this.events) {
+            let listenable: Listenable = this.components.get(comp) as Listenable
+            let eventMap = listenable.eventMap
+            for (let e of this.events) {
                 if (eventMap) {
-                    var func = eventMap.get(e)
+                    let func = eventMap.get(e)
                     if (func) {
                         func()
 

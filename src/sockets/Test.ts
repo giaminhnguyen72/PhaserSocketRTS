@@ -11,6 +11,11 @@ import { Entity } from "../engine/src/types/Entity.js";
     time: number = 0;
     entities: Map<number, Entity> = new Map();
     engineComponents: Map<string, Map<number, Component>> = new Map();
-     addEntity!: (scene: Scene, entity: Entity, id: number) => Entity
+     addEntity!: (scene: Scene, entity: Entity) => Entity
+     getSceneConfig() {
+         return {
+          entities: []
+         }
+     }
  
 }

@@ -41,7 +41,7 @@ export class PhysicsEngine implements System<Transformable>{
     update(dt: number): void {
         console.log("Physics engine running")
         console.log("Physics Components: " + this.components.size)
-        for (var comp of this.components) {
+        for (let comp of this.components) {
 
             comp[1].update(dt)
             

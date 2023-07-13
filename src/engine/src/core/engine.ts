@@ -38,11 +38,11 @@ export class Engine {
             this.systems.push(new PhysicsEngine(this.engineConfig.physicsConfig))
         }
         if (this.engineConfig.scriptingConfig) {
-            this.systems.push( new ScriptingEngine())
+            this.systems.push( new ScriptingEngine(this.engineConfig.engineType))
         }
         
         if (systems) {
-            for (var sys of systems) {
+            for (let sys of systems) {
                 this.systems.push(sys)
             }
         }
@@ -56,7 +56,7 @@ export class Engine {
             this.systems.push(this.graphics)
         }
         if (systems) {
-            for (var sys of systems) {
+            for (let sys of systems) {
                 this.systems.push(sys)
             }
         }
@@ -65,6 +65,7 @@ export class Engine {
         
 
         this.running = false
+
         /**
          * 
          
@@ -81,14 +82,14 @@ export class Engine {
     }
     /**
     parseStyle(styleObject: Object):  string {
-        var cssArray: string[] = Object.entries(styleObject).map(([k,v]) => k + ":" + v + ";")
+        let cssArray: string[] = Object.entries(styleObject).map(([k,v]) => k + ":" + v + ";")
         console.log(this.engineConfig.parent)
         return cssArray.join(" ")
     }
     */
     /**
     generateDiv(parent: string) {
-        var div: HTMLDivElement = document.createElement('div')
+        let div: HTMLDivElement = document.createElement('div')
         div.id = parent
         div.style.position = "absolute"
         div.style.height = "100%" 
@@ -102,7 +103,7 @@ export class Engine {
         return div
     }
     generateCanvas(): HTMLElement {
-        var canvas = document.createElement("CANVAS")
+        let canvas = document.createElement("CANVAS")
         canvas.id = this.canvasID
         console.log(this.parseStyle(this.engineConfig.style))
         console.log("Before")
@@ -110,11 +111,11 @@ export class Engine {
         return canvas
     }
     getCtx() {
-        var canvas = this.getCanvas()
+        let canvas = this.getCanvas()
         return canvas.getContext("2d")
     }
     getCanvas(): HTMLCanvasElement {
-        var canvas = document.getElementById(this.canvasID)
+        let canvas = document.getElementById(this.canvasID)
         if (canvas instanceof HTMLCanvasElement) {
             return canvas
         } else {
@@ -126,9 +127,9 @@ export class Engine {
      * 
      
     setup() {
-        var config = this.engineConfig
+        let config = this.engineConfig
         if (true) {
-            var image = new Image()
+            let image = new Image()
             image.src = "/images/test.jpg"
             image.style.position ="absolute"
             image.style.zIndex = "-1"
@@ -146,10 +147,10 @@ export class Engine {
         console.log("Startng Engin ")
         let curr = this.sceneManager.getCurrentScene()
         
-        for (var sys of this.systems) {
+        for (let sys of this.systems) {
 
 
-            var comp = this.sceneManager.getCurrentScene().engineComponents.set(sys.tag, sys.components)
+            let comp = this.sceneManager.getCurrentScene().engineComponents.set(sys.tag, sys.components)
             curr.engineComponents.set(sys.tag, sys.components)
             this.sceneManager.systemTag.set(sys.tag, sys)
             if (comp) {
@@ -165,9 +166,9 @@ export class Engine {
 
             for (let e of oldMap) {
                 if (e[1].id) {
-                    curr.addEntity(curr, e[1], e[1].id)
+                    curr.addEntity(curr, e[1])
                 } else {
-                    curr.addEntity(curr, e[1], 1)
+                    curr.addEntity(curr, e[1])
                 }
 
             } 
@@ -191,7 +192,7 @@ export class Engine {
     }
     update(dt: number) {
 
-            for (var sys of this.systems) {
+            for (let sys of this.systems) {
                 sys.update(dt)
             }
   
@@ -208,7 +209,7 @@ export class Engine {
     }
     serverUpdate(dt: number) {
             console.log("updating")
-            for (var sys of this.systems) {
+            for (let sys of this.systems) {
                 sys.update(dt)
             }
   
