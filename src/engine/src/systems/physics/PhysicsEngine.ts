@@ -15,10 +15,8 @@ export class PhysicsEngine implements System<Transformable>{
         this.components = new Map<number, Transformable>()
         this.config = config
     }
-    register(comp: Transformable): void {
+    register(comp: Transformable, id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
-            let id = SceneManager.getUniqueComponentId()
-            comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
         } else {

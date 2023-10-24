@@ -6,7 +6,7 @@ import { Collideable, Component } from "../types/components.js"
 import { Entity } from "../types/Entity.js"
 import { System } from "../types/system.js"
 import { SocketManager } from "./managers/SocketManager.js"
-import { Scene } from "./scene.js"
+import { Scene, Stage } from "./scene.js"
 
 /**
  * Describes the CSS properties of the canvas element
@@ -43,7 +43,7 @@ export interface EngineConfig {
     engineType: EngineType
     graphicsConfig?: GraphicsConfig
     physicsConfig?: PhysicsConfig
-    sceneConfig?: Scene[]
+    sceneConfig?: Stage[]
     eventConfig?: EventConfig
     collisionConfig?: CollisionConfig
     scriptingConfig?: ScriptingConfig

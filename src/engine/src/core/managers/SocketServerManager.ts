@@ -22,6 +22,7 @@ export class SocketServerManager implements System<Listenable>, EventSystem{
     events: string[]
     deleted: Component[] = []
     config: SocketServerConfig
+    time: number = 0
     constructor(sceneManager: SceneManager, config: SocketServerConfig) {
         this.components = new Map<number, Listenable>()
         this.events = []
@@ -30,6 +31,8 @@ export class SocketServerManager implements System<Listenable>, EventSystem{
         this.sceneManager = sceneManager
         if (config.roomId) {
             this.roomID = config.roomId
+        } else {
+            throw new Error()
         }
         console.log("new Socket server has been madde " + this.roomID)
         console.log("new Socket server has been madde "+ this.roomID) 
@@ -46,14 +49,7 @@ export class SocketServerManager implements System<Listenable>, EventSystem{
             
             
         }
-        if (config && config.socketEventMap) {
-            Object.entries(config.socketEventMap).map(([k, v]) => {
-                console.log("Inside event Map entry parser "+ this.roomID)
-        console.log()
-                let func = (socket:Socket) => { v(this.roomID as string, this.events, socket)}
-                SocketServerManager.socket.on(k, func)
-            })
-        }
+
         
         
         
@@ -63,7 +59,7 @@ export class SocketServerManager implements System<Listenable>, EventSystem{
     register(comp: Listenable): void {
         
         if (comp.componentId == undefined || comp.componentId == null) {
-            let id = SceneManager.getUniqueComponentId()
+            let id = this.sceneManager.getUniqueComponentId()
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
@@ -96,41 +92,20 @@ export class SocketServerManager implements System<Listenable>, EventSystem{
     update(dt: number): void {
 
         let len = this.components.size
-
-        let keys = [...this.components.keys()]
-        console.log("Number of events: " + this.events.length)
-        console.log("Server Socket Components:"+this.components.size)
-        while (this.events.length != 0) {
-            console.log("Element has been popped")
-            console.log("Element has been popped")
-            console.log("Element has been popped")
-            console.log("Element has been popped")
-            console.log("Element has been popped")
-            let e = this.events.pop() 
-            for (let comp of keys) {
-            
- 
-                let listenable: Listenable = this.components.get(comp) as Listenable
-                let eventMap = listenable.eventMap
-                console.log("Event " + e + " has been recorded")  
-                    console.log("Event " + e + " has been recorded")
-                    console.log("Event " + e + " has been recorded")
-                    console.log("Event " + e + " has been recorded")
-                    if (eventMap && e) {
-                        let func = eventMap.get(e)
-                        if (func) {
-                            func() 
-    
-                        } else {
-                            console.log("Event not found " + listenable.entity)
-                        }
-                    }
-
-                
-                listenable.update(dt)
+        this.time += dt
+        for (let emitter of this.emitters) {
+            emitter[1].update(dt)
+        }
+        for (let i = this.listeners.length - 1; i >= 0; i--) {
+            let emitter = this.emitters.get(this.listeners[i].getEventType())
+            if (emitter) {
+                emitter.addListener(this.listeners[i])
+                this.listeners[i] = this.listeners[this.listeners.length - 1]
+                this.listeners.pop() 
             }
         }
-        
+
+    
         console.log("RoomId is " + this.roomID)
         if (this.roomID) {
             console.log("updating room" + this.roomID)
@@ -151,7 +126,9 @@ export class SocketServerManager implements System<Listenable>, EventSystem{
 
 
             }
-            SocketServerManager.socket.to(this.roomID).emit("update", entities)
+            let packet = {timestamp: this.time,data:entities}
+
+            SocketServerManager.socket.to(this.roomID).emit("update", packet)
         }
         
         

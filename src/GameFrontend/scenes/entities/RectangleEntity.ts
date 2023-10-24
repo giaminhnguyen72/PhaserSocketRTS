@@ -17,4 +17,11 @@ export class RectangleEntity implements Entity {
         this.dim = rect.shape.dim
         this.components.push(rect)
     }
+    getRectangle() {
+        return {
+            pos: this.rectangle.transform,
+            dim: this.dim,
+            rot: 0
+        }
+    }
 }

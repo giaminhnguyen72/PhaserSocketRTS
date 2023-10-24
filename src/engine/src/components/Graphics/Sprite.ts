@@ -28,6 +28,9 @@ export class Sprite implements Component, Renderable {
         
 
     }
+    unmount(): void {
+        
+    }
     rendered: boolean = false;
     
     copy(element:Sprite): void {
@@ -36,7 +39,16 @@ export class Sprite implements Component, Renderable {
 
         this.shape.dim.height = element.shape.dim.height
         this.shape.dim.length = element.shape.dim.length
-        
+        if (element.shape.pos.x != element.transform.x) {
+            
+            throw new Error()
+        }
+        if (element.shape.pos.y != element.transform.y) {
+            throw new Error()
+        }
+        if (element.shape.pos.z != element.transform.z) {
+            throw new Error()
+        }
         this.shape.pos.x = element.shape.pos.x
         this.shape.pos.y = element.shape.pos.y
         this.shape.pos.z = element.shape.pos.z
@@ -56,7 +68,9 @@ export class Sprite implements Component, Renderable {
     visible: boolean = true;
     alive: boolean = true;
     system!: System<Component>;
-    
+    getRectangle() {
+        return this.shape
+    }
     render(): void {
         if (this.context.ctx) {
             let x = getTopX(this.shape)

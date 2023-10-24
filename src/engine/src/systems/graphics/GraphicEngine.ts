@@ -12,6 +12,7 @@ import { Scene } from "../../core/scene.js"
 import { SceneManager } from "../../core/managers/SceneManager.js"
 import { PriorityQueue } from "../../structs/PriorityQueue.js"
 import { PainterStrategy, RenderStrategy } from "../../types/components/graphics/RenderingStrategy.js"
+import { QuadTreeStrategy } from "../../types/components/graphics/QuadTreeRendering.js"
 export class GraphicsEngine implements System<Renderable>{
     tag: string = GRAPHICS_TAG
     components: Map<number, Renderable>
@@ -29,14 +30,28 @@ export class GraphicsEngine implements System<Renderable>{
         document.body.style.height = "100%"
         document.body.style.width = "100%"
         document.body.style.margin = "0"
-        this.renderStrategy = new PainterStrategy()
-
         this.contextInfo = context
+        let size = {
+            pos: {
+                x:0,
+                y: 0,
+                z: 0
+            },
+            rot: 0,
+            dim: {
+                length: this.contextInfo.getCanvas().width,
+                height: this.contextInfo.getCanvas().height
+            }
+
+        }
+        this.renderStrategy = new QuadTreeStrategy(this, size)
+
+        
     }
-    register(comp: Renderable): void {
+    register(comp: Renderable, id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
             console.log("Registering undefined id in Ggraphics")
-            let id = SceneManager.getUniqueComponentId()
+
             comp.componentId = id
             comp.system = this
             
@@ -44,8 +59,10 @@ export class GraphicsEngine implements System<Renderable>{
             if (comp.rendered == true) {
                 this.rendering.push(comp)
                 console.log("Pushing to rendering")
+            } else {
+                
             }
-            comp.initialize()
+            comp.initialize(this)
             this.components.set(id, comp)
         } else {
             console.log("Graphics Registering id" + comp.componentId)
@@ -53,24 +70,31 @@ export class GraphicsEngine implements System<Renderable>{
             comp.context = this.contextInfo
             if (comp.rendered == true) {
                 this.rendering.push(comp)
+
                 console.log("Pushing to rendering")
                 
+            } else {
+                if (comp.rendered == false) {
+                    this.renderStrategy.registerStrategy(comp)
+                    console.log("Registered Strategy")
+                }
             }
-            comp.initialize()
+            comp.initialize(this)
             this.components.set(comp.componentId, comp)
         }
     }
     unregister(id: number): void {
 
-    let deleted = this.components.get(id)
-       if (deleted) {
-            deleted.alive = false
-            
-            this.deleted.push(deleted)
-
-            console.log(deleted.entity+ " s Component with id " +  deleted.componentId + "is popped")
-       }
-    }
+        let deleted = this.components.get(id)
+        if (deleted) {
+                deleted.alive = false
+                
+                this.deleted.push(deleted)
+                this.components.delete(id)
+                this.renderStrategy.deregisterStrategy(deleted)
+                console.log(deleted.entity+ " s Component with id " +  deleted.componentId + "is popped")
+            }
+        }
     
     
     
@@ -84,10 +108,7 @@ export class GraphicsEngine implements System<Renderable>{
 
             
             comp.update(dt)
-            if (comp.rendered == false) {
-                this.renderStrategy.registerStrategy(comp)
-                console.log("Registered Strategy")
-            }
+            
            
             
 
@@ -113,6 +134,9 @@ export class GraphicsEngine implements System<Renderable>{
         if(get) {
 
         }
+    }
+    registerDomElements(): void {
+        
     }
 
     

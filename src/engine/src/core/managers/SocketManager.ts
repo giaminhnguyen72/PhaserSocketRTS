@@ -16,18 +16,19 @@ export class SocketManager implements EventSystem{
     listeners: Listener<EngineEvent>[] = []
     config: SocketClientConfig
     deleted: Component[] = []
+    static getInstance(): Socket {
+        if (SocketManager.socket == undefined || SocketManager.socket == null) {
+            this.socket = io()
+        }
+        return SocketManager.socket
+    }
     constructor(sceneManager: SceneManager, config: SocketClientConfig) {
         this.components = new Map<number, Listenable>()
         this.config = config
 
         this.sceneManager = sceneManager
         
-        SocketManager.socket = io()
-        
-        if (config.socketEventMap) {
-            config.socketEventMap(SocketManager.socket)       
-   
-        }
+
         window.addEventListener("click", (event) => {
             SocketManager.socket.emit("click")
             
@@ -36,7 +37,7 @@ export class SocketManager implements EventSystem{
             SocketManager.socket.emit("keydown", event.key)
             
         })
-
+        
     }
     getConfig() {
         return this.config
@@ -56,7 +57,7 @@ export class SocketManager implements EventSystem{
     }
     register(comp: Listenable): void {
         if (comp.componentId == undefined || comp.componentId == null) {
-            let id = SceneManager.getUniqueComponentId()
+            let id = this.sceneManager.getUniqueComponentId()
             comp.componentId = id
             comp.system = this
             comp.initialize(this)
@@ -79,7 +80,7 @@ export class SocketManager implements EventSystem{
        
     }
     
-
+   
     update(dt: number): void {
         console.log("Client Socket Handler")
         console.log("Client Socket Handler Components:"+this.components.size)

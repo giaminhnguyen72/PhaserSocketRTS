@@ -29,9 +29,12 @@ export interface Renderable extends Component {
     context: ContextInfo
     rendered: boolean
     transform: Position
-    render(strategyArr: Iterable<any>, index: number): void
-    initialize(): void
+    render(strategyArr: Iterable<any>): void
+    initialize(graphicsEngine: GraphicsEngine): void
     update(dt: number, ctx?: CanvasRenderingContext2D): void
+    getRectangle(): Rectangle
+    unmount(): void
+    
 }
 
 /**

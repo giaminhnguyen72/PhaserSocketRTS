@@ -17,9 +17,13 @@ export class Text implements Renderable {
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
 
     }
+    
     constructor(text: string) {
         this.transform = {x:100, y:100, z:0}
         this.text = text
+    }
+    unmount(): void {
+        
     }
 
     rendered: boolean = false;
@@ -40,6 +44,13 @@ export class Text implements Renderable {
     initialize() {
 
 
+    }
+    getRectangle() {
+        return {
+            pos: this.transform,
+            dim: {length: 0, height: 0},
+            rot: 0
+        }
     }
     toJson() {
         return {

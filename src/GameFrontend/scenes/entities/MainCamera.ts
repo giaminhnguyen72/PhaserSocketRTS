@@ -21,7 +21,7 @@ export class MainCamera implements Entity{
                 this.camera.transform.x -= 1
             } else if (event.key == "d") {
                 this.camera.transform.x += 1
-            } else {
+            } else if (event.key == "s"){
                 this.camera.transform.y += 1
             }
         }

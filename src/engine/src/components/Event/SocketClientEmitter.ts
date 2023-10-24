@@ -3,7 +3,7 @@ import { EngineType } from "../../constants/engineType.js";
 import { SocketServerManager } from "../../core/managers/SocketServerManager.js";
 import { Component, Emitter, EngineEvent, Listener } from "../../types/components.js";
 import { EventSystem, System } from "../../types/system.js";
-class SocketServer implements Listener<SocketEvent>, Emitter<SocketEvent> {
+export class SocketServer implements Listener<SocketEvent>, Emitter<SocketEvent> {
     eventsMap: Map<string, (click: SocketEvent) => void> = new Map()
     listenerLock: boolean = false
     listenQueue: Map<string, SocketEvent> = new Map()
@@ -54,7 +54,10 @@ class SocketServer implements Listener<SocketEvent>, Emitter<SocketEvent> {
     getEvents(): Map<string, (evnt: SocketEvent) => void> {
         let map = new Map()
         Object.entries(this.events).map(([k, v]) => {
-            map.set(k, v)
+            Object.entries(v).map(([eventString, func]) => {
+                map.set(eventString, func)
+            })
+            
         })
         return map
     }
@@ -80,7 +83,7 @@ class SocketServer implements Listener<SocketEvent>, Emitter<SocketEvent> {
             if (func) {
                 func(i[1].data)
             } else {
-                throw new Error()
+                //throw new Error()
             }
             
         }

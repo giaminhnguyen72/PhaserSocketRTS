@@ -9,10 +9,10 @@ export class EntityManager {
         this.scene = scene
     }
     addEntity(entity: Entity) {
-        var uniqueId = SceneManager.getUniqueId()
-        entity.id = uniqueId
+
+        entity.id = entity.id
         entity.scene = this.scene
-        this.scene.entities.set(uniqueId, entity)
+        this.scene.entities.set(entity.id as number, entity)
         
         for (var comp of entity.components) {
             var compList = this.scene.engineComponents.get(comp.engineTag)
@@ -37,7 +37,7 @@ export class EntityManager {
     }
     createComponent(comp: Component): Component {
             
-            comp.componentId = SceneManager.getUniqueComponentId()
+            comp.componentId = comp.componentId
 
             return comp
     }

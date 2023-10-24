@@ -4,26 +4,19 @@ import { ContextInfo } from "../../../../../engine/src/core/context.js";
 import { Position } from "../../../../../engine/src/types/components/physics/transformType.js";
 import { System } from "../../../../../engine/src/types/system.js";
 import { Component, DomElement, Renderable } from "../../../types/components.js";
+import { Rectangle } from "../../../../../engine/src/types/components/collision/shape.js";
 export class Label implements DomElement {
     style: string;
     element!: HTMLElement;
     htmlTag: string
-    unmount(): void {
-        throw new Error("Method not implemented.");
-    }
+
     id:string
     context!: ContextInfo;
     rendered: boolean = true;
     transform: Position ={x:0, y:0, z:0};
     text: string
-    render(strategyArr: Iterable<any>, index: number): void {
-        if (!this.alive) {
-            
-            this.system.rendering[index] = this.system.rendering[this.system.rendering.length - 1]
-            this.system.rendering.pop()
-            this.element.remove()
-            
-        }
+    render(strategyArr: Iterable<any>): void {
+        
         if (!this.visible) {
             this.context.div.appendChild(this.element)
             this.visible = true
@@ -44,6 +37,10 @@ export class Label implements DomElement {
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
 
     }
+    unmount(): void {
+        this.system.components.delete(this.componentId as number)
+        this.element.remove()
+    }
     copy(component: Component): void {
         throw new Error("Method not implemented.");
     }
@@ -52,6 +49,13 @@ export class Label implements DomElement {
         this.id = id
         this.htmlTag = htmlTag
         this.text = text
+    }
+    getRectangle() {
+        return {
+            pos: this.transform,
+            dim: {height: parseInt(this.element.style.height), length: parseInt(this.element.style.width)},
+            rot: 0
+        }
     }
     
 }

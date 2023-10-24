@@ -5,6 +5,7 @@ import { Position } from "../../../../../engine/src/types/components/physics/tra
 import { System } from "../../../../../engine/src/types/system.js";
 import { Component, DomElement, Renderable } from "../../../types/components.js";
 
+
 export class Button implements DomElement {
     style: string;
     element!: HTMLElement;
@@ -23,6 +24,13 @@ export class Button implements DomElement {
     componentId?: number | undefined;
     system!: GraphicsEngine;
     onClick: ()=> void
+    getRectangle() {
+        return {
+            pos: this.transform,
+            dim: {height: parseInt(this.element.style.height), length: parseInt(this.element.style.width)},
+            rot: 0
+        }
+    }
     constructor(id: string, style: string, text: string = "", onclick: () => void = () => {}) {
         this.id = id
         this.style = style
@@ -36,14 +44,8 @@ export class Button implements DomElement {
     copy(component: Component): void {
         throw new Error("Method not implemented.");
     }
-    render(strategyArr: Iterable<any>, index: number): void {
-        if (!this.alive) {
-            
-            this.system.rendering[index] = this.system.rendering[this.system.rendering.length - 1]
-            this.system.rendering.pop()
-            this.element.remove()
-            
-        }
+    render(strategyArr: Iterable<any>): void {
+
         if (!this.visible) {
             this.context.div.appendChild(this.element)
             this.visible = true
@@ -86,22 +88,24 @@ export class ImageButton implements DomElement {
 
     }
     unmount(): void {
-        throw new Error("Method not implemented.");
+        this.system.components.delete(this.componentId as number)
+        this.childImage.remove()
     }
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
 
     }
+    getRectangle() {
+        return {
+            pos: this.transform,
+            dim: {height: parseInt(this.element.style.height), length: parseInt(this.element.style.width)},
+            rot: 0
+        }
+    }
     copy(component: Component): void {
         throw new Error("Method not implemented.");
     }
-    render(strategyArr: Iterable<any>, index: number): void {
-        if (!this.alive) {
-            
-            this.system.rendering[index] = this.system.rendering[this.system.rendering.length - 1]
-            this.system.rendering.pop()
-            
-            
-        }
+    render(strategyArr: Iterable<any>): void {
+
         if (!this.visible) {
             this.context.div.appendChild(this.element)
             this.visible = true
@@ -117,8 +121,5 @@ export class ImageButton implements DomElement {
         this.childImage = new Image()
         this.childImage.src = this.src
         this.element.appendChild(this.childImage)
-
-        
-
     }
 }

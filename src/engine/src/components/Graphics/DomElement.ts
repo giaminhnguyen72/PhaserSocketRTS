@@ -1,5 +1,6 @@
 import { ContextInfo } from "../../core/context";
 import { Component, Renderable } from "../../types/components";
+import { Rectangle } from "../../types/components/collision/shape";
 import { Position } from "../../types/components/physics/transformType";
 import { Entity } from "../../types/Entity";
 import { System } from "../../types/system";
@@ -23,6 +24,12 @@ class Div implements Renderable{
         this.style = style
         this.hasId = false
         this.transform = {x: 20, y:20, z:20}
+    }
+    getRectangle(): Rectangle {
+        throw new Error("Method not implemented.");
+    }
+    unmount(): void {
+        throw new Error("Method not implemented.");
     }
 
     rendered: boolean = false;

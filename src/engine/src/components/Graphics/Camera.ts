@@ -1,5 +1,6 @@
 import { ContextInfo } from "../../core/context.js";
 import { Component, Renderable } from "../../types/components.js";
+import { Rectangle } from "../../types/components/collision/shape.js";
 import { Position } from "../../types/components/physics/transformType.js";
 import { Entity } from "../../types/Entity.js";
 import { System } from "../../types/system.js";
@@ -9,7 +10,7 @@ export class Camera implements Renderable {
     context!: ContextInfo;
     
     system!: System<Renderable>;
-    entity: number;
+    entity!: number;
     visible: boolean = true;
     alive: boolean = true;
     engineTag: string = "GRAPHICS";
@@ -28,6 +29,19 @@ export class Camera implements Renderable {
         this.transform = {x: 0, y: 0,z: 0}
         this.entity = entity
         this.scale = scale
+    }
+    unmount(): void {
+        
+    }
+    getRectangle(): Rectangle {
+        return {
+            pos: this.pos,
+            dim: {
+                height: this.height,
+                length: this.width,
+            },
+            rot: 0
+        }
     }
     rendered: boolean = true;
     copy<T>(camera: Camera): void {
@@ -67,17 +81,20 @@ export class Camera implements Renderable {
         
         
     }
+
     render(array: Renderable[]): void {
         this.context.ctx.translate(this.transform.x, this.transform.y)
         this.context.ctx.clearRect(-1 * this.pos.x,-1 * this.pos.y,this.width, this.height)
         let items = array
         for (let i of items) {
             if (i != this) {
-                i.render(array, -1)
+                
+                i.render(array)
 
             }
             
         }
+        console.log("Camera is rendered " + items.length + "elements")
         this.transform.x = 0
         this.transform.y = 0
         this.context.ctx.save()

@@ -25,6 +25,9 @@ export class TimedSpriteSheet implements Renderable {
         this.delay = delay
         
     }
+    unmount(): void {
+        throw new Error("Method not implemented.");
+    }
     context!: ContextInfo;
     rendered: boolean= false;
     transform: Position;
@@ -58,6 +61,9 @@ export class TimedSpriteSheet implements Renderable {
             this.time = this.time % this.delay
 
         }
+    }
+    getRectangle() {
+        return this.shape
     }
     copy(component: TimedSpriteSheet): void {
         this.entity = component.entity

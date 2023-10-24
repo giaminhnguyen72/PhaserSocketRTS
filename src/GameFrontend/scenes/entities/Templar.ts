@@ -11,7 +11,7 @@ import { Position } from "../../../engine/src/types/components/physics/transform
 
 export class Templar implements Entity {
     className: string = "Templar"
-    transform: Transform = new Transform(-1,{x:Math.random() * 20,y: Math.random() * 30,z:20}, {x:1, y: 0, z:0})
+    transform: Transform = new Transform(-1,{x:Math.random() * 20,y: Math.random() * 30,z:20}, {x:10, y: 10, z:0})
     sprite: Sprite = new Sprite(-1,{pos: this.transform.pos, dim:{length:64, height: 64}, rot: 0}, "/images/Templar.png")
     components: Component[] = [
         this.sprite

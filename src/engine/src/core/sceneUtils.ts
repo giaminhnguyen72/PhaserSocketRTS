@@ -6,76 +6,7 @@ import { System } from "../types/system.js"
 import { SceneManager } from "./managers/SceneManager.js"
 import { Scene } from "./scene.js"
 //addin
-export function addSocketEntity(scene: Scene, entity: Entity): Entity {
 
-   
-    let uniqueId = SceneManager.getUniqueId()
-
-    entity.id = uniqueId
-    entity.scene = scene
-
-    scene.entities.set(uniqueId, entity)
-    
-    for (let comp of entity.components) {
-        let compList = scene.engineComponents.get(comp.engineTag)
-        comp.entity = entity.id
-        if (compList) {
-
-            let system: System<Component> | undefined= scene.sceneManager.systemTag.get(comp.engineTag)
-            if (system) {
-
-                system.register(comp)
-            } 
-
-
-            
-        } else {
-            console.log(comp.engineTag + "does not exist")
-            comp.componentId = SceneManager.getUniqueComponentId()
-            
-        }
-    }
-    console.log("successfully added entity")
-    
-    return entity
-      
-}
-//adding entity on server
-export function addEntity(scene: Scene,entity: Entity) {
-    
-
-    let uniqueId = SceneManager.getUniqueId()
-
-    entity.id = uniqueId
-    entity.scene = scene
-
-    scene.entities.set(uniqueId, entity)
-    
-    for (let comp of entity.components) {
-        let compList = scene.engineComponents.get(comp.engineTag)
-        comp.entity = entity.id
-        if (compList) {
-
-            let system: System<Component> | undefined= scene.sceneManager.systemTag.get(comp.engineTag)
-            if (system) {
-
-                system.register(comp)
-            } 
-
-
-            
-        } else {
-            console.log(comp.engineTag + "does not exist")
-            comp.componentId = SceneManager.getUniqueComponentId()
-            
-        }
-    }
-    console.log("successfully added entity")
-    
-    return entity
-    
-
-}
 export function serverAdd(scene:Scene, entity: Entity) {
     if (entity.id == null || entity.id == undefined) {
         throw new Error("Entity id is undefined")
@@ -92,7 +23,7 @@ export function serverAdd(scene:Scene, entity: Entity) {
         
                     let system: System<Component> | undefined= scene.sceneManager.systemTag.get(comp.engineTag)
                     if (system) {
-                        system.register(comp)
+                        system.register(comp, scene.getUniqueComponentId())
                     } 
         
                     
@@ -113,7 +44,7 @@ export function serverAdd(scene:Scene, entity: Entity) {
     
                 let system: System<Component> | undefined= scene.sceneManager.systemTag.get(comp.engineTag)
                 if (system) {
-                    system.register(comp)
+                    system.register(comp,scene.getUniqueComponentId())
                 } 
     
                 
@@ -147,16 +78,4 @@ export function removeEntity(scene: Scene,id: number) {
     
     
 }
-export function getEntity(scene: Scene, id: number) {
-    return scene.entities.get(id)
-}
-export function createComponent(scene: Scene,comp: Component): Component {
-        
-        comp.componentId = SceneManager.getUniqueComponentId()
 
-        return comp
-}
-export function createEntity<T extends Entity>(packet: T): T {
-    return packet
-
-}

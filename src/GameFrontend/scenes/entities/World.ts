@@ -23,6 +23,12 @@ export class World implements Entity{
     scene?: Scene | undefined;
     className: string = "World";
     constructor(engineType:EngineType) {
+        let map: Map<string, ()=>Entity> = new Map()
+        map.set("Templar", ()=>{ return new Templar()})
+        map.set("MainCamera", () => {console.log("camera made");return new MainCamera()})
+        map.set("Player", ()=> {return new Player()})
+        map.set("Label", () => {return new Label()})
+        map.set("SWORDANIM", ()=> {return new SwordAnim()})
         let quadtree = new QuadTree({pos:{x: 500, y: 250}, dim:{height: 500, length: 1000}})
         let node = quadtree.parentNode
         let list = [node]
@@ -49,6 +55,7 @@ export class World implements Entity{
             console.log("Position y is " + clickEvent.pos.y)
             console.log("Name is " + clickEvent.eventName)
             this.something++
+            socket.emit({event: "click", data: null})
             
             if (this.scene) {
                 let pos = {x: clickEvent.pos.x, y: clickEvent.pos.y, z: -20}
@@ -56,76 +63,25 @@ export class World implements Entity{
                 let dim = {length: Math.random() * 30 + 1 , height: Math.random() * 30 + 1}
                 let rect = new RectangleEntity(pos, dim)
                 this.scene.addEntity(this.scene, rect)
-                let quad = quadtree.insert(rect.rectangle.shape)
+                let quad = quadtree.insert(rect)
                 let quadRect = quadMap.get(quad)
                 if (quadRect) {
                     rect.rectangle.color = quadRect.color
                 }
 
             }
+            
         },
         "dblclick": (clickevnt) => {
             
         }
     })
-        let map: Map<string, ()=>Entity> = new Map()
-        map.set("Templar", ()=>{ return new Templar()})
-        map.set("MainCamera", () => {console.log("camera made");return new MainCamera()})
-        map.set("Player", ()=> {return new Player()})
-        map.set("Label", () => {return new Label()})
-        map.set("SWORDANIM", ()=> {return new SwordAnim()})
-        this.components.push(new MouseEmitter(engineType), mouse, new KeyBoardEmitter(engineType), new SocketClient(
-            {
-                "update": (data: EntityPacket[]) => {
-                    if (this.scene){
-                        let entities = data
-                    for (let entitySent of entities) {
-                        let getScene = this.scene
-                        if (getScene) {
-                            let queriedEntity = getScene.entities.get(entitySent.id)
-                            if (queriedEntity) {
-                                for (let i = 0; i < entitySent.components.length; i++) {
-                                    let engine = getScene.engineComponents.get(entitySent.components[i].engineTag)
-                                    let comp = engine?.get(entitySent.components[i].componentId as number)
-                                    if (comp) {
-                                        comp.copy(entitySent.components[i])
-                                    } 
-                                }
-                            } else {
-                                console.log("Adding new Entity")
-                                        let entityFactory = map.get(entitySent.entityClass)
-                                        if (entityFactory) {
-                                            let entity = entityFactory()
-                                            entity.id = entitySent.id
-                                            entity.scene = getScene as Scene
-                                            for (let j = 0; j < entity.components.length; j++) {
-                                                entity.components[j].copy(entitySent.components[j])
-                                            }
-                                            serverAdd(getScene, entity)
-                                        } 
+        let socket = new SocketClient(
+            {}
+            , {engineType: EngineType.SOCKETCLIENT, entityGeneratorMap: map})
         
-                                        
-                                    
-                                    
-                                    
-                                }
-                            
-                               
-    
-                            
-                        } else {
-                            throw new Error("Scene not found")
-                        }
-                    }
-    
-                }
-                    
-                    
-                    
-                    
-                }
-        }
-            , EngineType.SOCKETCLIENT)) 
+        
+        this.components.push(new MouseEmitter(engineType), mouse, new KeyBoardEmitter(engineType), socket) 
     }
 
 }

@@ -23,6 +23,9 @@ export class Rectangle implements Component, Renderable{
         this.color = color
         this.borderOutline = outline
     }
+    unmount(): void {
+        throw new Error("Method not implemented.");
+    }
     rendered: boolean = false;
 
     copy(rectangle: Rectangle): void {
@@ -52,6 +55,9 @@ export class Rectangle implements Component, Renderable{
             }
 
         }
+    }
+    getRectangle() {
+        return this.shape
     }
 
 }

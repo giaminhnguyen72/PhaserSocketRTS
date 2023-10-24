@@ -19,8 +19,9 @@ export class Engine {
     running:boolean
     sceneManager: SceneManager
     systems: System<Component>[] = []
-    time: number = 0
+    static time: number = 0
     graphics?: GraphicsEngine
+    startTime = 0n;
     contextInfo?: ContextInfo
     constructor(gameConfig: EngineConfig = {
         engineType: EngineType.CLIENTONLY,
@@ -161,25 +162,26 @@ export class Engine {
             }
             
         }
-        let oldMap = curr.entities
-            curr.entities = new Map()
-
-            for (let e of oldMap) {
-                if (e[1].id) {
-                    curr.addEntity(curr, e[1])
-                } else {
-                    curr.addEntity(curr, e[1])
-                }
-
-            } 
+            let config = curr.getSceneConfig()
+            let entities = config.entities.length   
+            for (let i = 0; i < entities; i++) {
+                curr.addEntity(curr, config.entities[i])
+            }
 
         if (this.engineConfig.engineType == EngineType.CLIENTONLY || this.engineConfig.engineType == EngineType.SOCKETCLIENT) {
 
 
 
-            this.update(dt)
+            window.requestAnimationFrame((timestamp:number) => {
+                let deltaTime = timestamp - Engine.time
+                this.update(deltaTime)
+                Engine.time = timestamp   
+                
+            })
         } else {
+            this.startTime = process.hrtime.bigint()
             setTimeout(() => {
+                
                 if (this.running) {
                     this.serverUpdate(dt)
                 }
@@ -196,25 +198,28 @@ export class Engine {
                 sys.update(dt)
             }
   
-            this.time += dt
-            console.log(this.time)
-            window.requestAnimationFrame((timestamp:number) => {
-                let deltaTime = timestamp - this.time
-
-                this.update(dt)
-                this.time = timestamp   
+            
+            console.log(dt)
+            let item =window.requestAnimationFrame((timestamp:number) => {
+                timestamp = timestamp
+                let deltaTime = timestamp - Engine.time
+                this.update(deltaTime)
+                Engine.time = timestamp   
                 
             })
             
     }
     serverUpdate(dt: number) {
             console.log("updating")
+            let currTime = process.hrtime.bigint() 
+            let realDelta =  (currTime - this.startTime) / 1000000n
+            console.log(realDelta)
             for (let sys of this.systems) {
-                sys.update(dt)
+                sys.update(Number(realDelta))
             }
-  
-            this.time += dt
-            console.log(this.time)
+            
+            Engine.time += Number(realDelta)
+            this.startTime = currTime
             
             setTimeout(() => {
                 if (this.running) {

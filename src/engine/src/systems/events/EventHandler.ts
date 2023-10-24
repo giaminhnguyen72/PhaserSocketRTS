@@ -37,9 +37,9 @@ export class EventHandler implements System<Listenable> {
     getConfig() {
         return this.eventConfig
     }
-    register(comp: Listenable): void {
+    register(comp: Listenable, id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
-            let id = SceneManager.getUniqueComponentId()
+
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)

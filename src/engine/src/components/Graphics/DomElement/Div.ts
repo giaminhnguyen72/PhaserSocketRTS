@@ -4,6 +4,7 @@ import { System } from "../../../../../engine/src/types/system.js";
 import { Component, DomElement, Renderable } from "../../../types/components.js";
 import { GRAPHICS_TAG } from "../../../../../engine/src/constants/componentType.js";
 import { GraphicsEngine } from "../../../../../engine/src/systems/graphics/GraphicEngine.js";
+import { Stage } from "../../../../../engine/src/core/scene.js";
 
 export class Div implements DomElement {
     context!: ContextInfo;
@@ -18,13 +19,26 @@ export class Div implements DomElement {
     componentId!: number;
     system!: GraphicsEngine;
     style: string
+    scene: Stage
     children: DomElement[]
-    constructor(id: string, style:string, ...children: DomElement[]) {
+    constructor(id: string, style:string, scene: Stage, ...children: DomElement[]) {
         this.id = id
         this.style= style
         this.children = children
+        this.scene = scene
 
 
+    }
+    getRectangle() {
+        return {
+            pos: this.transform,
+            rot: 0,
+
+            dim: {
+                length: 0,
+                height: 0
+            }
+        }
     }
     unmount(): void {
         this.element.remove()
@@ -42,17 +56,9 @@ export class Div implements DomElement {
 
         
     }
-    render(strategyArr: Iterable<any>, index: number): void {
+    render(strategyArr: Iterable<any>): void {
         
-        if (!this.alive) {
-            let temp = this.system.rendering[index]
-            this.system.rendering[index] = this.system.rendering[this.system.rendering.length - 1]
-            this.system.rendering[this.system.rendering.length - 1] = temp
-            this.system.rendering.pop()
-            this.unmount()
-            
-            
-        } else if (!this.visible) {
+        if (!this.visible) {
             this.context.div.appendChild(this.element)
             this.visible = true
         }
@@ -66,7 +72,7 @@ export class Div implements DomElement {
             this.children[i].entity = this.entity
             this.children[i].visible = true
 
-            this.system.register(this.children[i])
+            this.system.register(this.children[i], this.scene.getUniqueComponentId())
 
             this.element.appendChild(this.children[i].element)
         }

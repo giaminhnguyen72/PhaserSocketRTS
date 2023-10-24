@@ -1,11 +1,10 @@
 
-import {WaitingScene} from "./scenes/WaitingScene.js";
 
 import {Engine} from "../engine/src/core/engine.js"
-import { EngineConfig, GraphicsConfig, SocketClientConfig } from "../engine/src/core/config.js";
+import { EngineConfig, GraphicsConfig, SceneConfig, SocketClientConfig } from "../engine/src/core/config.js";
 import { GraphicsEngine } from "../engine/src/systems/graphics/GraphicEngine.js";
 import { Player } from "./scenes/entities/Player.js";
-import { Scene } from "../engine/src/core/scene.js";
+import { Scene, Stage } from "../engine/src/core/scene.js";
 import { SceneManager } from "../engine/src/core/managers/SceneManager.js";
 import { Component } from "../engine/src/types/components.js";
 import { Entity, EntityPacket } from "../engine/src/types/Entity.js";
@@ -20,7 +19,84 @@ import { serverAdd } from "../engine/src/core/sceneUtils.js";
 import { Div } from "../engine/src/components/Graphics/DomElement/Div.js";
 import { DivUI } from "./scenes/entities/DivUI.js";
 import { World } from "./scenes/entities/World.js";
+import { MouseListener } from "../engine/src/components/Event/Listener.js";
+import { SocketClient } from "../engine/src/components/Event/SocketServerEmitter.js";
+import { KeyBoardEmitter } from "../engine/src/components/Event/Keyboard.js";
 
+let map: Map<string, ()=>Entity> = new Map()
+    map.set("Templar", ()=>{ return new Templar()})
+    map.set("MainCamera", () => {console.log("camera made");return new MainCamera()})
+    map.set("Player", ()=> {return new Player()})
+    map.set("Label", () => {return new Label()})
+    map.set("SWORDANIM", ()=> {return new SwordAnim()})
+class Test extends Stage {
+    sceneConfig: SceneConfig
+   sceneManager!: SceneManager;
+   background?: string | undefined;
+   time: number = 0;
+   entities: Map<number, Entity> = new Map();
+   engineComponents: Map<string, Map<number, Component>> = new Map();
+    addEntity!: (scene: Scene, entity: Entity) => Entity
+    constructor(entities: Entity[]) {
+        super("Name")
+        this.sceneConfig = new SceneConfig(entities)
+        
+        let socket = new SocketClient(
+            {   "connect": () => {
+                console.log("connected")
+                let roomId: string = window.location.pathname
+                let roomArr: string[]  = roomId.split("/")
+                SocketManager.getInstance().emit("joined", window.sessionStorage.getItem("PlayerName"), roomArr[roomArr.length-1])
+
+                console.log("emitting")
+                socket.emit({event: "clientInitialize", data: null})
+                //engine.start(2000)
+                },
+                "disconnect": () => {
+                    throw new Error() 
+                }
+                
+                
+            }
+
+
+            , {engineType: EngineType.SOCKETCLIENT, entityGeneratorMap: map})
+        let mouse = new MouseListener({"click": (clickEvent) => {
+            console.log("Position x is " + clickEvent.pos.x)
+            console.log("Position y is " + clickEvent.pos.y)
+            console.log("Name is " + clickEvent.eventName)
+
+            socket.emit({event: "click", data: null})
+            /**
+            if (this.scene) {
+                let pos = {x: clickEvent.pos.x, y: clickEvent.pos.y, z: -20}
+
+                let dim = {length: Math.random() * 30 + 1 , height: Math.random() * 30 + 1}
+                let rect = new RectangleEntity(pos, dim)
+                this.scene.addEntity(this.scene, rect)
+                let quad = quadtree.insert(rect.rectangle.shape)
+                let quadRect = quadMap.get(quad)
+                if (quadRect) {
+                    rect.rectangle.color = quadRect.color
+                }
+
+            }
+             */
+        },
+        "dblclick": (clickevnt) => {
+            
+        }
+    })
+        this.components.push(socket, new KeyBoardEmitter(EngineType.SOCKETCLIENT))
+
+    }
+    getSceneConfig() {
+        let player = new Player({x: 20, y: 20, z: 20}, {x : 0.1, y: 0, z: 0}, EngineType.SOCKETCLIENT)
+        this.sceneConfig.entities.push(this, player)
+        return this.sceneConfig 
+    }
+
+}
 
 window.onload = () => {
     /**
@@ -59,56 +135,34 @@ window.onload = () => {
         socket.on("disconnect", () => {
             console.log('disconnected')
         })
-    let game: Phaser.Game = new Phaser.Game(CONFIG)
+    let game: Phaser.Game = new Phaser.Game(CONFIG)  
+    let player =  
     */
 
+        let scene = new Test([
+            new MainCamera(),
 
-   class Test implements Scene {
-       name: string = "test";
-       sceneManager!: SceneManager;
-       background?: string | undefined;
-       time: number = 0;
-       entities: Map<number, Entity> = new Map();
-       engineComponents: Map<string, Map<number, Component>> = new Map();
-        addEntity!: (scene: Scene, entity: Entity) => Entity
-        constructor(entities: Entity[]) {
-            for (let i = 0; i < entities.length; i++) {
-                this.entities.set(i, entities[i])
-            }
-        }
-        getSceneConfig() {
-            return {
-                entities: []
-            }
-        }
-    
-   }
+        ])
+        
+
+   
     let engine: Engine = new Engine({
         engineType: EngineType.SOCKETCLIENT,
         graphicsConfig: new GraphicsConfig("test", "193as", {"display:flex;background-color": "white", "width": "100%", "height": "100%", "z-index":"0"} ),
         sceneConfig: 
             [
                 
-                    new Test([
-                        new MainCamera(),
-                        new Templar(),
-                        new DivUI(),
-                        new World(EngineType.SOCKETCLIENT)
-                    ])
+                    scene
     
                 
             
             ],
+        physicsConfig: {}, 
 
         scriptingConfig: {}
 
     })
-    let map: Map<string, ()=>Entity> = new Map()
-    map.set("Templar", ()=>{ return new Templar()})
-    map.set("MainCamera", () => {console.log("camera made");return new MainCamera()})
-    map.set("Player", ()=> {return new Player()})
-    map.set("Label", () => {return new Label()})
-    map.set("SWORDANIM", ()=> {return new SwordAnim()})
+    
     
     engine.systems.push(new SocketManager(engine.sceneManager, {
         

@@ -31,23 +31,24 @@ export class Transform implements Transformable {
 
     }
     copy(transform: Transform): void {
+        
         this.pos.x = transform.pos.x
         this.pos.y = transform.pos.y
         this.pos.z = transform.pos.z
-        
+
         this.vel.x = transform.vel.x
-        this.vel.x = transform.vel.x
-        this.vel.x = transform.vel.x
+        this.vel.y = transform.vel.y
+        this.vel.z = transform.vel.z
 
         this.accel.x = transform.accel.x
-        this.accel.x = transform.accel.x
-        this.accel.x = transform.accel.x
+        this.accel.y = transform.accel.y
+        this.accel.z = transform.accel.z
 
         this.entity = transform.entity
         this.componentId = transform.componentId
         this.visible = transform.visible
         this.alive = transform.alive
-
+        
     }
     
     

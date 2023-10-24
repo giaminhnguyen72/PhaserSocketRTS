@@ -3,7 +3,7 @@
 import { Server, Socket } from "socket.io"
 import { io } from "socket.io-client"
 import { SceneManager } from "../engine/src/core/managers/SceneManager.js"
-import { Scene } from "../engine/src/core/scene.js"
+import { Scene, Stage } from "../engine/src/core/scene.js"
 import { Entity, EntityPacket } from "../engine/src/types/Entity.js"
 import { MainCamera } from "../GameFrontend/scenes/entities/MainCamera.js"
 
@@ -19,6 +19,7 @@ import { WorldScript } from "../GameFrontend/scenes/entities/WorldScriot.js"
 import { SwordAnim } from "../GameFrontend/scenes/entities/SwordAnim.js"
 import { World } from "../GameFrontend/scenes/entities/World.js"
 import { SceneConfig } from "../engine/src/core/config.js"
+import { SocketServer } from "../engine/src/components/Event/SocketClientEmitter.js"
 //Rooms are going to have more options than this. Will probably add a RoomConfig Interface
 export class Room {
     players: Map<number, Player>
@@ -46,13 +47,11 @@ export class Room {
             physicsConfig: {},
 
             scriptingConfig: {},
-            collisionConfig: {},
+
             sceneConfig: [
                 
                 new Test([
-                        new GamePlayer(),
-                        new Templar({x:0,y:0, z:0}),
-
+                        new GamePlayer()
                     ])
     
                 
@@ -60,7 +59,10 @@ export class Room {
             ]
         })
         this.func = (id: string, event: string[], socket: Socket) => {
-            
+            socket.on("click", () => {
+                let curr =  this.engine.sceneManager.getCurrentScene()
+                curr.addEntity(curr, new GamePlayer())
+            })
 
             socket.on("clientInitialize", () => {
                 console.log("Initalize received")
@@ -95,7 +97,7 @@ export class Room {
             
     
             console.log("Room id string before push is " + idString)
-        this.engine.systems.push(new SocketServerManager(this.engine.sceneManager, {server:this.roomManager.server, socketEventMap: socketEventMap, roomId:idString}))
+        this.engine.systems.push(new SocketServerManager(this.engine.sceneManager, {server:this.roomManager.server, socketEventMap: socketEventMap, roomId: idString}))
 
         this.engine.start(50)
     } 
@@ -156,25 +158,31 @@ export class Room {
 
 }
 
-class Test implements Scene {
-    name: string = "test";
-    sceneManager!: SceneManager;
-    background?: string | undefined;
-    time: number = 0;
-    entities: Map<number, Entity> = new Map();
-    engineComponents: Map<string, Map<number, Component>> = new Map();
-     addEntity!: (scene: Scene, entity: Entity) => Entity
-     constructor(entities: Entity[]) {
-         for (let i = 0; i < entities.length; i++) {
-             this.entities.set(i, entities[i])
-         }
-     }
-     getSceneConfig(): SceneConfig {
-         return {
-            entities: []
-         }
-     }
- 
+class Test extends Stage implements Entity{
+    sceneConfig: SceneConfig
+   sceneManager!: SceneManager;
+   background?: string | undefined;
+   time: number = 0;
+   entities: Map<number, Entity> = new Map();
+   engineComponents: Map<string, Map<number, Component>> = new Map();
+    constructor(entities: Entity[]) {
+        super("Name")
+        this.sceneConfig = new SceneConfig(entities)
+        this.components.push(new SocketServer({
+            "connection": {
+                "click": () => {
+                    
+                    this.addEntity(this, new GamePlayer())
+                }
+            }
+        }, EngineType.SOCKETSERVER))
+
+    }
+    getSceneConfig() {
+        this.sceneConfig.entities.push(this)
+        return this.sceneConfig
+    }
+
 }
 export default class RoomManager {
     rooms: Map<number, Room>;

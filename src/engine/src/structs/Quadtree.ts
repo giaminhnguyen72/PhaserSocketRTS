@@ -1,10 +1,14 @@
 interface Rectangle {
     pos: {x: number, y: number}
     dim: {length: number, height: number}
+
 }
-export class QuadTree<T extends Rectangle> {
+interface Rectangular {
+    getRectangle(): Rectangle
+}
+export class QuadTree<T extends Rectangular> {
     parentNode: QuadTreeNode<T>
-    getQuad: Map<T, QuadTreeNode<T>> = new Map()
+    getQuad: Map<T, QuadTreeNode<Rectangular>> = new Map()
     constructor(size: Rectangle) {
         this.parentNode = new QuadTreeNode(size)
 
@@ -37,7 +41,7 @@ export class QuadTree<T extends Rectangle> {
     }
 
 }
-class QuadTreeNode<T extends Rectangle> {
+class QuadTreeNode<T extends Rectangular> {
     area: Rectangle
     children: QuadTreeNode<T>[] = []
     items: T[] = []
@@ -56,7 +60,7 @@ class QuadTreeNode<T extends Rectangle> {
     private queryHelper(box: Rectangle, answer: T[]) {
 
         for (let i = 0; i < this.items.length; i++) {
-            if (collides(box, this.items[i])) {
+            if (collides(box, this.items[i].getRectangle())) {
                 answer.push(this.items[i])
             }
 
@@ -92,6 +96,9 @@ class QuadTreeNode<T extends Rectangle> {
         }
         return false
     }
+    getRectangle(): Rectangle {
+        return this.area
+    }
     resize(rectangle: Rectangle):void {
         this.clear()
         this.area = rectangle
@@ -119,7 +126,7 @@ class QuadTreeNode<T extends Rectangle> {
     }
     insert(item: T):QuadTreeNode<T> {
         for (let i = 0; i < this.children.length; i++) {
-            if (contains(this.children[i].area, item)) {
+            if (contains(this.children[i].area, item.getRectangle())) {
                 if (this.depth + 1 < this.maxDepth) {
 
                     return this.children[i].insert(item)
@@ -187,7 +194,7 @@ function collides(rectangle1: Rectangle, rectangle2: Rectangle): boolean {
 }
 
 
-function testChildren<T extends Rectangle>(quad: QuadTreeNode<T>): boolean {
+function testChildren<T extends Rectangular>(quad: QuadTreeNode<T>): boolean {
     let bool = true
     for (let child of quad.children) {
         bool = testChildren(child)

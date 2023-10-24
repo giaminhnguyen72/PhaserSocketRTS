@@ -4,7 +4,19 @@ import { Component } from "../../types/components.js";
 import { Entity } from "../../types/Entity.js";
 import { System } from "../../types/system.js";
 
-export class Script implements Component {
+export abstract class ScriptObject implements Component {
+    entity?: number | undefined;
+    visible: boolean = true;
+    alive: boolean = true;
+    componentId?: number | undefined;
+    system!: System<Component>;
+    abstract copy(component: Component): void 
+    engineTag: string = "SCRIPTING";
+    engineType: EngineType = EngineType.CLIENTONLY
+    abstract initialize(system: ScriptingEngine): void 
+    abstract update(dt: number): void
+}
+export class Script implements ScriptObject {
     entity?: number;
     engineTag: string = "SCRIPTING";
     componentId?: number | undefined;
@@ -20,6 +32,9 @@ export class Script implements Component {
     }
     visible: boolean = true;
     alive: boolean = true;
+    initialize() {
+
+    }
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
 
         this.callback(dt)
@@ -35,5 +50,8 @@ export class Script implements Component {
     }
     
 
+
+}
+export interface StatefulScript extends Component {
 
 }

@@ -20,9 +20,9 @@ export class CollisionSystem implements System<Collideable> {
         this.collisionStrategy = new NaiveCollision(this)
         
     }
-    register(comp: Collideable): void {
+    register(comp: Collideable,id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
-            let id = SceneManager.getUniqueComponentId()
+            
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)

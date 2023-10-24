@@ -6,6 +6,7 @@ import { SceneConfig } from "./config.js"
 import { Entity} from "../types/Entity.js"
 import { System } from "../types/system.js"
 import { EntityManager } from "./managers/EntityManager.js"
+import { EngineType } from "../constants/engineType.js"
 
 export interface Scene {
     name: string
@@ -17,16 +18,20 @@ export interface Scene {
     engineComponents: Map<string, Map<number, Component>>
     addEntity: (scene: Scene, entity: Entity) => Entity
     getSceneConfig() : SceneConfig
+    getUniqueId(): number
+    getUniqueComponentId(): number
 }
-class Stage implements Scene, Entity {
+export class Stage implements Scene, Entity {
     components: Component[] = []
-    
+    scene?: Scene = this
     className: string = "STAGE"
     name: string 
     time: number = 0
     entities: Map<number, Entity> = new Map()
     sceneManager!: SceneManager
     engineComponents: Map<string, Map<number, Component>> = new Map()
+    id: number = 0
+    componentId = 0
     constructor(stageName: string, ...components: Component[]) {
         this.name = stageName
         this.components = components
@@ -36,8 +41,9 @@ class Stage implements Scene, Entity {
             entities: [this]
         }
     }
+
     addEntity(scene:Scene, entity: Entity): Entity {
-        let uniqueId = SceneManager.getUniqueId()
+        let uniqueId = this.sceneManager.getUniqueId()
 
     entity.id = uniqueId
     entity.scene = this
@@ -51,14 +57,14 @@ class Stage implements Scene, Entity {
             let system: System<Component> | undefined= this.sceneManager.systemTag.get(comp.engineTag)
             if (system) {
 
-                system.register(comp)
+                system.register(comp, this.getUniqueComponentId())
             } 
 
 
             
         } else {
             console.log(comp.engineTag + "does not exist")
-            comp.componentId = SceneManager.getUniqueComponentId()
+            comp.componentId = this.sceneManager.getUniqueComponentId()
             
         }
     }
@@ -101,7 +107,7 @@ class Stage implements Scene, Entity {
             
                         let system: System<Component> | undefined= scene.sceneManager.systemTag.get(comp.engineTag)
                         if (system) {
-                            system.register(comp)
+                            system.register(comp, this.getUniqueComponentId())
                         } 
             
                         
@@ -122,7 +128,7 @@ class Stage implements Scene, Entity {
         
                     let system: System<Component> | undefined= scene.sceneManager.systemTag.get(comp.engineTag)
                     if (system) {
-                        system.register(comp)
+                        system.register(comp, this.getUniqueComponentId())
                     } 
         
                     
@@ -134,5 +140,30 @@ class Stage implements Scene, Entity {
             console.log("successfully added entitys")
             return entity
         }
+        
+    }
+    getUniqueId() {
+        if (SceneManager.EngineType == EngineType.SOCKETCLIENT) {
+            let id = this.id - 1
+            this.id--
+            return id
+        } else {
+            let id = this.id  + 1
+            this.id++
+            return id
+        }
+        
+    }
+    getUniqueComponentId() {
+        if (SceneManager.EngineType == EngineType.SOCKETCLIENT) {
+            let id = this.componentId - 1
+            this.componentId--
+            return id
+        } else {
+            let id = this.componentId + 1
+            this.componentId++
+            return id
+        }
+        
     }
 }
