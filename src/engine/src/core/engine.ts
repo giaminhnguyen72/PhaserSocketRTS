@@ -15,13 +15,14 @@ import { Server } from "socket.io";
 export class Engine {
     engineConfig: EngineConfig;
     canvasID: string = "engineCanvas"
-    
+    static updateTime = 0
     running:boolean
     sceneManager: SceneManager
     systems: System<Component>[] = []
     static time: number = 0
     graphics?: GraphicsEngine
-    startTime = 0n;
+    serverTime = 0n;
+    clientTime = 0
     contextInfo?: ContextInfo
     constructor(gameConfig: EngineConfig = {
         engineType: EngineType.CLIENTONLY,
@@ -32,7 +33,7 @@ export class Engine {
             this.contextInfo = new ContextInfo(gameConfig.graphicsConfig)
         }
         if (this.engineConfig.eventConfig && this.contextInfo) {
-            this.systems.push(new EventHandler(this.engineConfig.eventConfig))
+            this.systems.push(new EventHandler(this.engineConfig.eventConfig)) 
         }
         
         if (this.engineConfig.physicsConfig) {
@@ -170,63 +171,105 @@ export class Engine {
 
         if (this.engineConfig.engineType == EngineType.CLIENTONLY || this.engineConfig.engineType == EngineType.SOCKETCLIENT) {
 
-
-
+            
+            
             window.requestAnimationFrame((timestamp:number) => {
-                let deltaTime = timestamp - Engine.time
+                
+                
+                let deltaTime = 0
                 this.update(deltaTime)
-                Engine.time = timestamp   
+                Engine.time += deltaTime 
+                this.clientTime = timestamp
                 
             })
         } else {
-            this.startTime = process.hrtime.bigint()
+            
             setTimeout(() => {
                 
                 if (this.running) {
-                    this.serverUpdate(dt)
+                    this.serverUpdate(0, dt)
+                    this.serverTime = process.hrtime.bigint()
                 }
                 console.log("Timeout runout")
 
             }, dt)
+            
 
         }
         
     }
     update(dt: number) {
+            if (dt > 0 ) {
+                
+                for (let sys of this.systems) {
+                    sys.update(dt)
+                }
+      
+                
+                console.log(dt)
 
+                window.requestAnimationFrame((timestamp:number) => {
+                
+                    let currTime = timestamp
+                    let deltaTime = currTime - this.clientTime
+                    this.update(deltaTime)
+                    Engine.time += deltaTime 
+                    this.clientTime = currTime
+                    
+                })
+            } else {
+                window.requestAnimationFrame((timestamp:number) => {
+                
+                    let currTime = timestamp
+                    let deltaTime = currTime - this.clientTime
+                    this.update(deltaTime)
+                    Engine.time += deltaTime 
+                    this.clientTime = currTime
+                    
+                })
+            }
+            
+            
+    }
+    serverUpdate(dt: number, timeout: number) {
+        if (dt > 0) {
+            console.log("updating")
+            
+            
+            
             for (let sys of this.systems) {
                 sys.update(dt)
             }
-  
             
-            console.log(dt)
-            let item =window.requestAnimationFrame((timestamp:number) => {
-                timestamp = timestamp
-                let deltaTime = timestamp - Engine.time
-                this.update(deltaTime)
-                Engine.time = timestamp   
-                
-            })
             
-    }
-    serverUpdate(dt: number) {
-            console.log("updating")
-            let currTime = process.hrtime.bigint() 
-            let realDelta =  (currTime - this.startTime) / 1000000n
-            console.log(realDelta)
-            for (let sys of this.systems) {
-                sys.update(Number(realDelta))
-            }
-            
-            Engine.time += Number(realDelta)
-            this.startTime = currTime
             
             setTimeout(() => {
                 if (this.running) {
-                    this.serverUpdate(dt)
+                    let currTime = process.hrtime.bigint()
+                    let realDelta =  Number(currTime - this.serverTime) / 1000000
+                    this.serverUpdate(Number(realDelta), timeout)
+                    Engine.time += Number(realDelta)
+                    this.serverTime = currTime
+                    console.log(Engine.time) 
                 }
 
-            }, dt)
+            }, timeout)
+             
+        } else {
+            setTimeout(() => { 
+                if (this.running) {
+                    let currTime = process.hrtime.bigint()
+                    let realDelta =  (currTime - this.serverTime) / 1000000n
+                    this.serverUpdate(Number(realDelta), timeout)
+                    
+                    Engine.time += Number(realDelta)
+                    this.serverTime = currTime
+                     
+                }
+
+            }, timeout)
+        }
+            
     }
 
 

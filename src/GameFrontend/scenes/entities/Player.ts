@@ -58,7 +58,7 @@ export class Player implements Entity{
                 } else {
                     console.log("Server Hit 500: " + Engine.time)
                 }
-                transform.pos.x = 250
+                transform.pos.x = 430
                 transform.vel.x *= -1
             }
             if (transform.pos.y < 0) {
@@ -66,7 +66,7 @@ export class Player implements Entity{
                 transform.vel.y *= -1
             }
             if (transform.pos.y + shape.dim.height  > 300) {
-                transform.pos.y = 150
+                transform.pos.y = 300
                 transform.vel.y *= -1
             }
         }, EngineType.BOTH)

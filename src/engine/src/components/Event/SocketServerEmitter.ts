@@ -1,5 +1,6 @@
 
 import { EngineType } from "../../constants/engineType.js";
+import { Engine } from "../../core/engine.js";
 import { SceneManager } from "../../core/managers/SceneManager.js";
 import { SocketManager } from "../../core/managers/SocketManager.js";
 import { Scene } from "../../core/scene.js";
@@ -48,9 +49,10 @@ export class SocketClient implements Emitter<SocketEvent>, Listener<SocketEvent>
                 }
             })
         })
-        this.events.set("update", (serverData: {timestamp: number, data: EntityPacket[]}) => {
+        this.events.set("update", (serverData: {timestamp: number, data: EntityPacket[], time: number}) => {
             let scene = SceneManager.currScene 
-            console.log( "Time Difference " + (serverData.timestamp - this.time))
+            
+            console.log( "Client Time Difference " + (serverData.time - Engine.time))
             if (scene){
                 
                 for (let entitySent of serverData.data) { 
@@ -94,12 +96,11 @@ export class SocketClient implements Emitter<SocketEvent>, Listener<SocketEvent>
 
         }
         })
-        SocketManager.getInstance().on("update", (serverData: {timestamp: number, entities: EntityPacket[]}) => {
+        SocketManager.getInstance().on("update", (serverData: {timestamp: number, entities: EntityPacket[], time: number}) => {
             let func = this.events.get("update")
-                
-                if (func && !this.listenerLock) {
-                    console.log("In updat")
-                    console.log(serverData)
+                console.log("On update " + (serverData.timestamp - Engine.time))
+                if (!this.listenerLock) {
+
                     this.listenQueue.set("update", {
                         event: "update",
                         data: serverData
@@ -142,6 +143,7 @@ export class SocketClient implements Emitter<SocketEvent>, Listener<SocketEvent>
 
 
                 func(i[1].data)
+
 
             } else {
                 throw new Error()
@@ -199,4 +201,5 @@ export class SocketClient implements Emitter<SocketEvent>, Listener<SocketEvent>
 interface SocketEvent extends EngineEvent {
     event: string
     data: any
+    
 }

@@ -84,6 +84,7 @@ export class SocketManager implements EventSystem{
     update(dt: number): void {
         console.log("Client Socket Handler")
         console.log("Client Socket Handler Components:"+this.components.size)
+
         for (let emitter of this.emitters) {
             emitter[1].update(dt)
         }

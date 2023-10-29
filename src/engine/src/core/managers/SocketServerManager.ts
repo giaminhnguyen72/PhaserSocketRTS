@@ -6,6 +6,7 @@ import { Component, Emitter, EngineEvent, Listenable, Listener } from "../../typ
 import { EntityPacket } from "../../types/Entity.js";
 import { EventSystem, System } from "../../types/system.js";
 import { EventConfig, SocketServerConfig } from "../config.js";
+import { Engine } from "../engine.js";
 import { Scene } from "../scene.js";
 import { SceneManager } from "./SceneManager.js";
 import { SocketManager } from "./SocketManager.js";
@@ -126,7 +127,7 @@ export class SocketServerManager implements System<Listenable>, EventSystem{
 
 
             }
-            let packet = {timestamp: this.time,data:entities}
+            let packet = {timestamp: this.time,data:entities, time: Engine.time}
 
             SocketServerManager.socket.to(this.roomID).emit("update", packet)
         }
