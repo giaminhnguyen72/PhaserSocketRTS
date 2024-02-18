@@ -33,7 +33,15 @@ app.set('env', 'dev');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        "directives": {
+            "script-src": ["'self'"],
+            "default-src": ["ws:*"],
+            "connect-src": ["ws://localhost:8080/", "'self'"]
+        }
+    }
+}));
 app.use(cors);
 /* initialise API routes */
 const __dirname = path.resolve()

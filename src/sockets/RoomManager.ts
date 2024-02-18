@@ -13,19 +13,21 @@ import { Engine } from "../engine/src/core/engine.js"
 import { Player } from "../interfaces/Player.js"
 import { Component } from "../engine/src/types/components.js"
 import { Player as GamePlayer} from "../GameFrontend/scenes/entities/Player.js"
-import { SocketServerManager } from "../engine/src/core/managers/SocketServerManager.js"
+import { SocketServerManager } from "../engine/src/systems/MultiplayerServer/SocketServerManager.js"
 import { Label } from "../GameFrontend/scenes/entities/Label.js"
 import { WorldScript } from "../GameFrontend/scenes/entities/WorldScriot.js"
-import { SwordAnim } from "../GameFrontend/scenes/entities/SwordAnim.js"
+
 import { World } from "../GameFrontend/scenes/entities/World.js"
-import { SceneConfig } from "../engine/src/core/config.js"
-import { SocketServer } from "../engine/src/components/Event/SocketClientEmitter.js"
+import { PhysicsConfig, SceneConfig } from "../engine/src/core/config.js"
+import { SocketServer } from "../engine/src/systems/MultiplayerServer/components/SocketServerHandler.js"
+import { MultiplayerStage } from "../engine/src/core/MultiplayerScene.js"
+import { Knight } from "../GameFrontend/scenes/entities/Player/Knight.js"
 //Rooms are going to have more options than this. Will probably add a RoomConfig Interface
 export class Room {
     players: Map<number, Player>
     roomID: number
     joinable: boolean
-    roomName: string
+    roomName: string 
     engine: Engine
     disconnected: number = 0
     roomManager: RoomManager
@@ -44,60 +46,26 @@ export class Room {
             {
 
             engineType: EngineType.SOCKETSERVER,
-            physicsConfig: {},
+            physicsConfig: new PhysicsConfig(),
 
             scriptingConfig: {},
-
+            collisionConfig: {},
             sceneConfig: [
                 
-                new Test([
-                        new GamePlayer()
-                    ])
+                new Test(
+                    new Knight()
+                    )
     
                 
             
             ]
         })
-        this.func = (id: string, event: string[], socket: Socket) => {
-            socket.on("click", () => {
-                let curr =  this.engine.sceneManager.getCurrentScene()
-                curr.addEntity(curr, new GamePlayer())
-            })
 
-            socket.on("clientInitialize", () => {
-                console.log("Initalize received")
-                
-                let entities: EntityPacket[] = []
-
-                let ent =  this.engine.sceneManager.getCurrentScene().entities
-                console.log(ent.size + " entities have been sent")
-                for (let e of  ent){
-                    let scene = e[1].scene as Scene
-                    console.log("Entity id is " + e[1].id)
-                    entities.push({
-                        components: e[1].components,
-                        id: e[1].id as number,
-                        sceneId: scene.name,
-                        entityClass: e[1].className
-                        
-                        
-                    })
-
-
-                }
-                console.log("clientInitialize room id is " + id)
-                server.to(id).emit("clientInitialize",entities)
-                
-                
-            }
-        )}
-        
-        let socketEventMap =  {"connection": this.func}
                 
             
     
             console.log("Room id string before push is " + idString)
-        this.engine.systems.push(new SocketServerManager(this.engine.sceneManager, {server:this.roomManager.server, socketEventMap: socketEventMap, roomId: idString}))
+        this.engine.systems.push(new SocketServerManager(this.engine.sceneManager, {server:this.roomManager.server,  roomId: idString, buffer: 0, delay: 100}))
 
         this.engine.start(50)
     } 
@@ -125,7 +93,7 @@ export class Room {
                         console.log("deleting room " + this.roomID)
                         this.roomManager.deleteRoom(this.roomID)
                     }
-                }, 5000)
+                }, 50)
             }
         }) 
         console.log("player added in rooms")
@@ -154,37 +122,48 @@ export class Room {
             playerID = Math.round(Math.random() * totalFactor);
         }
         return playerID
-    }
+    } 
 
 }
 
-class Test extends Stage implements Entity{
-    sceneConfig: SceneConfig
-   sceneManager!: SceneManager;
+class Test extends MultiplayerStage implements Entity{
+
    background?: string | undefined;
    time: number = 0;
-   entities: Map<number, Entity> = new Map();
-   engineComponents: Map<string, Map<number, Component>> = new Map();
-    constructor(entities: Entity[]) {
-        super("Name")
-        this.sceneConfig = new SceneConfig(entities)
-        this.components.push(new SocketServer({
-            "connection": {
-                "click": () => {
-                    
-                    this.addEntity(this, new GamePlayer())
+   
+    
+    constructor(...entities: Entity[]) {
+        super("MainScene",{xMin: -10000, xMax: 10000, yMin: -10000, yMax: 10000, zMin: -10000, zMax: 10000 }, ...entities)
+        
+        let comp = new SocketServer({},{}, EngineType.SOCKETSERVER)
+        let knight = new Knight()
+        this.sceneConfig.entities.push(knight) 
+        comp.initializeEventCallback({"connection": {
+            "click": (pos) => {
+                let socket = SocketServer.SocketServerMap.get(pos.socketId)
+                if (socket) {
+                    let knight = new Knight()
+                knight.transform.pos.x = pos.data.x
+                knight.transform.pos.y = pos.data.y
+                
+                knight.script.properties.set("Destination", pos.data)
+                console.log("click has been received " + JSON.stringify(pos))
                 }
+                
+        },
+            "keydown": (data) => { 
+                console.log("Key down is pressed with data " + data)
             }
-        }, EngineType.SOCKETSERVER))
+        }})
 
-    }
-    getSceneConfig() {
-        this.sceneConfig.entities.push(this)
-        return this.sceneConfig
+        this.components.push(comp) 
+        
     }
 
-}
-export default class RoomManager {
+
+
+} 
+export default class RoomManager {       
     rooms: Map<number, Room>;
     server: Server
 

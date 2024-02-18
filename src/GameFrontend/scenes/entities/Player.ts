@@ -1,87 +1,75 @@
 import { Collideable, Component } from "../../../engine/src/types/components.js";
-import { Scene } from "../../../engine/src/core/scene.js";
+import { Scene, Stage } from "../../../engine/src/core/scene.js";
 import { Entity } from "../../../engine/src/types/Entity.js";
-import { Transform } from "../../../engine/src/components/Physics/transform.js";
+import { Transform } from "../../../engine/src/systems/physics/components/transform.js";
 import { Rectangle as Rect } from "../../../engine/src/types/components/collision/shape.js";
-import {  Sprite } from "../../../engine/src/components/Graphics/Sprite.js";
-import { Rectangle } from "../../../engine/src/components/Graphics/Rectangle.js";
-import { MouseListener } from "../../../engine/src/components/Event/Listener.js";
-import { Script } from "../../../engine/src/components/Script/Script.js";
+import {  Sprite } from "../../../engine/src/systems/graphics/components/2d/Sprite.js";
+import { Rectangle } from "../../../engine/src/systems/graphics/components/Rectangle.js";
+import { MouseListener } from "../../../engine/src/systems/events/components/MouseHandler.js";
+import { Script } from "../../../engine/src/systems/scripting/components/Script.js";
 import { Position, Velocity } from "../../../engine/src/types/components/physics/transformType.js";
-import { BoxCollider } from "../../../engine/src/components/Collision/Collider.js";
+import { BoxCollider } from "../../../engine/src/systems/Collision/components/Collider.js";
 import { Templar } from "./Templar.js";
 import { EngineType } from "../../../engine/src/constants/engineType.js";
-import { KeyboardListener } from "../../../engine/src/components/Event/Keyboard.js";
+import { KeyboardListener } from "../../../engine/src/systems/events/components/KeyboardHandler.js";
 import { SceneManager } from "../../../engine/src/core/managers/SceneManager.js";
 import { Engine } from "../../../engine/src/core/engine.js";
+import { TimedSpriteSheet } from "../../../engine/src/systems/graphics/components/2d/Spritesheet.js";
+import { MainScene } from "../MainScene.js";
+import { ScriptingEngine } from "../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { CollisionSystem } from "../../../engine/src/systems/Collision/CollisionSystem.js";
 
 export class Player implements Entity{
     components: Component[];
     id?: number | undefined;
-    scene?: Scene | undefined;
+    scene?: Stage | undefined;
     className: string = "Player"
-    listener!: KeyboardListener
+    transform: Transform
 
-    constructor(pos: Position={x:20,y: 20,z:0}, vel: Velocity={x: 0.1, y: 0,z: 0}, engineType: EngineType = EngineType.SOCKETSERVER) {
+    constructor(length: number = 32, height: number = 32, pos: Position={x:0,y: 0,z:0}, vel: Velocity={x: 0, y: 0.1,z: 0}, engineType: EngineType = EngineType.SOCKETSERVER) {
         
         
-        let colliderCallback = (coll: Collideable) => {
 
-        }
-        let shape = {dim: {length: 64, height: 64}, rot: 0, pos: pos}
+        
+        
+        let transform: Transform = new Transform(pos, vel)
+        this.transform = transform
+        let shape = {dim: {length: length, height: height}, rot: 0, pos: pos}
         //let collider: BoxCollider = new BoxCollider(-1,{length:64, height:64}, pos,colliderCallback)
-        let sprite: Sprite = new Sprite(-1, shape, "/images/Knight_Forward.png")
-        if (engineType == EngineType.SOCKETCLIENT) {
-            sprite.rendered = true
-            sprite.src = "/images/Templar.png"
-        }
-        let transform: Transform = new Transform(-1, pos, vel)
-        let script: Script = new Script((dt:number) => {
-             
-            console.log("Script runing")
-            
-            if (transform.pos.x < 0) {
-                transform.pos.x = 0
-                transform.vel.x *= -1
-                if (engineType == EngineType.SOCKETCLIENT) {
-                    console.log(sprite.src)
-                    console.log("Client Hit 0: " + Engine.time)
-                } else {
-                    console.log(sprite.src)
-                    console.log("Server Hit 0: " + Engine.time)
-                }
+        let sprite: TimedSpriteSheet = new TimedSpriteSheet("/images/SwordSpriteSheet.png", shape, 40, 20)
+        
+
+
+        
+
+        let script: Script = new Script(this.className, EngineType.SOCKETSERVER)
+        
+        script.setInit((engine: ScriptingEngine) => {
+            let system = this.scene?.querySystem(CollisionSystem,"COLLISION")
+            if (system) {
                 
             }
-            if (transform.pos.x + shape.dim.length > 500) {
-                if (engineType == EngineType.SOCKETCLIENT) {
-                    console.log("Client Hit 500: " + Engine.time)
-                } else {
-                    console.log("Server Hit 500: " + Engine.time)
-                }
-                transform.pos.x = 430
-                transform.vel.x *= -1
-            }
-            if (transform.pos.y < 0) {
-                transform.pos.y = 0
-                transform.vel.y *= -1
-            }
-            if (transform.pos.y + shape.dim.height  > 300) {
-                transform.pos.y = 300
-                transform.vel.y *= -1
-            }
-        }, EngineType.BOTH)
-        let listener = new MouseListener({"click": (click) => {
-            console.log("Click")
-        }})
+
+        })
+        script.setCallBack((dt:number) => {
+             
+            //console.log("Script runing")
+            
+            
+        })
+        
+
 
         this.components = [
             transform,
             sprite,
 
-            script,
-            listener
+            script
         ]
        
+    }
+    clone() {
+        return new Player()
     }
     
 

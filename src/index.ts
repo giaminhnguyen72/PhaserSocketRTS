@@ -6,14 +6,16 @@ import {app, playRoutes} from './app.js';
 import { createServer} from 'http'
 import { Server, Socket } from 'socket.io';
 import GameManager from './sockets/GameManager.js';
-
+import parser from 'socket.io-msgpack-parser'
 import RoomManager from './sockets/RoomManager.js';
 import { Engine } from './engine/src/core/engine.js';
-
+import {WebSocketServer} from 'ws'
 
 const serv = createServer(app);
 
-const io: Server = new Server(serv)
+const io: Server = new Server(serv, {
+  parser: parser
+})
 
 
 let roomManager: RoomManager = new RoomManager(io)

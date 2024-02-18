@@ -1,11 +1,11 @@
 import { EngineType } from "../../../engine/src/constants/engineType.js";
-import { Script } from "../../../engine/src/components/Script/Script.js";
+import { Script } from "../../../engine/src/systems/scripting/components/Script.js";
 import { Scene } from "../../../engine/src/core/scene.js";
 import { Component } from "../../../engine/src/types/components.js";
 import { Entity } from "../../../engine/src/types/Entity.js"
 import { Label } from "./Label.js";
 import {Templar} from "./Templar.js"
-import { MouseListener } from "../../../engine/src/components/Event/Listener.js";
+import { MouseListener } from "../../../engine/src/systems/events/components/MouseHandler.js";
 import { Player } from "./Player.js";
 export class WorldScript implements Entity {
     
@@ -31,7 +31,7 @@ export class WorldScript implements Entity {
         var func1 = () => {
             if (this.scene) {
                 for (let i = 0; i < 5; i++) {
-                    this.scene.addEntity(this.scene, new Player({x: Math.random() * 100, y:Math.random() *100, z:0}, {x: Math.random() * 3 -1, y: Math.random() * 3 - 1, z:0}))
+                    this.scene.addEntity(new Player(32,32,{x: Math.random() * 100, y:Math.random() *100, z:0}, {x: Math.random() * 3 -1, y: Math.random() * 3 - 1, z:0}))
                 }
                 
             }
@@ -42,7 +42,7 @@ export class WorldScript implements Entity {
                 "click": func1,
                 "test2": () => {}
             })
-        let bounds = new Script((dt) => {
+        let bounds = new Script(this.className, EngineType.SOCKETCLIENT,(dt) => {
             var topRight = paladin.transform.pos.x + 20
 
 
@@ -64,9 +64,12 @@ export class WorldScript implements Entity {
                 paladin.transform.pos.y = 500 - 20
                 paladin.transform.vel.y *= -1 
             }
-        }, EngineType.SOCKETCLIENT)
-        let script = new Script(func,EngineType.SOCKETSERVER)
+        })
+        let script = new Script(this.className, EngineType.SOCKETSERVER, func)
         this.components.push(script,bounds, listener )
+    }
+    clone(): Entity {
+        throw new Error("Method not implemented.");
     }
     
 }

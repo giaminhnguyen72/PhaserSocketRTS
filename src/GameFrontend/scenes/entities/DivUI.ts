@@ -1,10 +1,10 @@
-import { removeEntity } from "../../../engine/src/core/sceneUtils.js";
-import { Button, ImageButton } from "../../../engine/src/components/Graphics/DomElement/Button.js";
-import { Div } from "../../../engine/src/components/Graphics/DomElement/Div.js";
+
+import { Button, ImageButton } from "../../../engine/src/systems/graphics/components/DomElement/Button.js";
+import { Div } from "../../../engine/src/systems/graphics/components/DomElement/Div.js";
 import { Scene, Stage } from "../../../engine/src/core/scene.js";
 import { Component } from "../../../engine/src/types/components.js";
 import { Entity } from "../../../engine/src/types/Entity.js";
-import { Label } from "../../../engine/src/components/Graphics/DomElement/Text.js";
+import { Label } from "../../../engine/src/systems/graphics/components/DomElement/Text.js";
 
 
 export class DivUI implements Entity {
@@ -28,10 +28,15 @@ export class DivUI implements Entity {
     generateButton(id: string, path:string, characterName: string) {
         let divId = "buttonDiv" + id
         let buttonId = characterName + id
-        let button = new ImageButton(buttonId, "display:flex;justify-content:center;align-items:center;background-color: #1a1818", path, () =>{removeEntity(this.scene as Scene, this.id as number)})
+        let button = new ImageButton(buttonId, "display:flex;justify-content:center;align-items:center;background-color: #1a1818", path, () =>{
+            this.scene.removeEntity(this.id as number)
+        })
         let text = new Label(characterName+ "label","", "h5",characterName)
         let containerDiv = new Div(divId, "display:flex;position:relative;flex-direction:column;justify-content:center;align-items: center;background-color:#1a1818;height: 100%; width: 100%;z-index: 4;border-radius:15px", this.scene,button, text)
         return containerDiv
 
     } 
+    clone() {
+        return new DivUI(this.scene)
+    }
 }

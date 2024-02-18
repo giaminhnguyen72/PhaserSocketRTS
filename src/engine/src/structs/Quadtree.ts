@@ -26,6 +26,7 @@ export class QuadTree<T extends Rectangular> {
         this.getQuad.set(item, quadNode)
         return quadNode
     }
+    //Error
     remove(item: T) {
         let quadNode = this.getQuad.get(item)
         if (quadNode) {
@@ -39,6 +40,12 @@ export class QuadTree<T extends Rectangular> {
     toString() {
         return this.parentNode.toString()
     }
+    findAllIntersections() {
+        let intersections: T[][] = []
+        this.parentNode.findAllIntersections( intersections)
+        return intersections
+
+    }
 
 }
 class QuadTreeNode<T extends Rectangular> {
@@ -51,6 +58,40 @@ class QuadTreeNode<T extends Rectangular> {
         this.area = size
         this.depth = depth
         this.resize(size)
+    }
+    findAllIntersections( intersections: T[][]) {
+        for (let i = 0; i < this.items.length; i++) {
+            for (let j = 0; j < i; j++) {
+                let col1 = this.items[i]
+                let col2= this.items[j]
+                if (collides(col1.getRectangle(), col2.getRectangle())) { 
+                    intersections.push([col1,col2])
+                }
+                //console.log("THis element is mapped: " + i.componentId)
+            }
+        }
+        if (this.children.length > 0 ) {
+            for (let c of this.children) {
+                for (let v of this.items) {
+                    this.findDescendentIntersections(v,intersections)
+                }
+            }
+            for (let c of this.children) {
+                c.findAllIntersections(intersections)
+            }
+        }
+    }
+    findDescendentIntersections( col: T, intersections: T[][]) {
+        for (let v of this.items) {
+            if (collides(col.getRectangle(),v.getRectangle())) {
+                intersections.push([v, col])
+            }
+        }
+        if (this.children.length > 0 ) {
+            for (let c of this.children) {
+                c.findDescendentIntersections(col, intersections)
+            }
+        }
     }
     query(box: Rectangle): T[] {
         let list: T[] = []
@@ -82,16 +123,19 @@ class QuadTreeNode<T extends Rectangular> {
         }
     }
     remove(item: T): boolean {
-        for (let i = this.items.length - 1; i >= 0; i --) {
+        console.log(item)
+        for (let i = this.items.length - 1; i >= 0; i--) {
             if (this.items[i] == item) {
                 this.items[i] = this.items[this.items.length - 1]
                 this.items.pop()
                 return true
             } 
         }
+
+        
         for (let i of this.children) {
             if (i.remove(item)) {
-                return true
+                return true 
             }
         }
         return false

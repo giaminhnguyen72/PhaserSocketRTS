@@ -1,5 +1,5 @@
 
-import { Transform } from "../components/Physics/transform.js"
+import { Transform } from "../systems/physics/components/transform.js"
 import { EngineType } from "../constants/engineType.js"
 import { ContextInfo } from "../core/context.js"
 import { CollisionSystem } from "../systems/Collision/CollisionSystem.js"
@@ -7,9 +7,11 @@ import { EventHandler } from "../systems/events/EventHandler.js"
 import { GraphicsEngine } from "../systems/graphics/GraphicEngine.js"
 import { PhysicsEngine } from "../systems/physics/PhysicsEngine.js"
 import { Shape, Rectangle } from "./components/collision/shape.js"
-import { Acceleration, Force, Position, Velocity } from "./components/physics/transformType.js"
+import { Acceleration, Force, Position, Vector3, Velocity } from "./components/physics/transformType.js"
 import { Entity} from "./Entity.js"
 import { EventSystem, System } from "./system.js"
+import { Camera } from "../systems/graphics/components/2d/Camera.js"
+
 
 export interface Component {
     
@@ -28,9 +30,9 @@ export interface Component {
 export interface Renderable extends Component {
     context: ContextInfo
     rendered: boolean
-    transform: Position
-    render(strategyArr: Iterable<any>): void
-    initialize(graphicsEngine: GraphicsEngine): void
+    pos: Position
+    render(camera: Camera): void
+    initialize: ((graphicsEngine: GraphicsEngine)=>  void  )
     update(dt: number, ctx?: CanvasRenderingContext2D): void
     getRectangle(): Rectangle
     unmount(): void
@@ -52,36 +54,39 @@ export interface Renderable extends Component {
     collides(collider: Collideable): void
     checkCollision(collider: Collideable):boolean
     update(dt: number, ctx?: CanvasRenderingContext2D): void
+    getRectangle(): Rectangle
     
 }
 export interface Listenable extends Component{
 
     eventMap?: Map<string, () => void>
-    initialize(system: EventSystem): void
+    initialize(system: System<Component>): void
     getEventType(): string
     update(dt: number, ctx?: CanvasRenderingContext2D): void
 }
 export interface Listener<T extends EngineEvent> extends Listenable {
-    initialize(system: EventSystem): void
+    initialize(system: EventSystem<T>): void
     execute(event: T): void
-    getEventType(): string
+
     getEvents(): Map<string, (evnt: T)=> void>
 }
 export interface Emitter<T extends EngineEvent> extends Listenable {
     
-    initialize(system: EventSystem): void
-    addListener(component: Listener<T>):void
-    getEventType(): string
+    initialize(system: EventSystem<T>): void
+    addListener(component: Listener<T>):void 
+
     update(dt: number): void
+    removeListener(id: number): void
+    getListeners(): Iterable<Listener<T>>
 }
 export interface EngineEvent {
 
 }
 export interface Transformable extends Component {
-    pos:Position
-    vel:Velocity
+    pos:Vector3
+    vel:Vector3
     
-    accel:Acceleration
+    accel:Vector3
     update(dt: number, ctx?: CanvasRenderingContext2D): void
 }
 export interface Forceable extends Transformable {

@@ -1,19 +1,19 @@
 import { EngineType } from "../../../engine/src/constants/engineType.js";
-import { MouseEmitter, MouseListener } from "../../../engine/src/components/Event/Listener.js";
+import { MouseEmitter, MouseListener } from "../../../engine/src/systems/events/components/MouseHandler.js";
 import { Scene } from "../../../engine/src/core/scene.js";
 import { Component } from "../../../engine/src/types/components.js";
 import { Entity, EntityPacket } from "../../../engine/src/types/Entity.js";
-import { KeyBoardEmitter } from "../../../engine/src/components/Event/Keyboard.js";
-import { SocketClient} from "../../../engine/src/components/Event/SocketServerEmitter.js";
+import { KeyBoardEmitter } from "../../../engine/src/systems/events/components/KeyboardHandler.js";
+import { SocketClient} from "../../../engine/src/systems/MultiplayerClient/components/SocketClientHandler.js";
 import { Templar } from "./Templar.js";
 import { MainCamera } from "./MainCamera.js";
 import { Player } from "./Player.js";
 import { Label } from "./Label.js";
-import { SwordAnim } from "./SwordAnim.js";
-import { serverAdd } from "../../../engine/src/core/sceneUtils.js";
+
+
 import { QuadTree } from "../../../engine/src/structs/Quadtree.js";
-import { Script } from "../../../engine/src/components/Script/Script.js";
-import { Rectangle } from "../../../engine/src/components/Graphics/Rectangle.js";
+import { Script } from "../../../engine/src/systems/scripting/components/Script.js";
+import { Rectangle } from "../../../engine/src/systems/graphics/components/Rectangle.js";
 import { RectangleEntity } from "./RectangleEntity.js";
 
 export class World implements Entity{
@@ -28,7 +28,7 @@ export class World implements Entity{
         map.set("MainCamera", () => {console.log("camera made");return new MainCamera()})
         map.set("Player", ()=> {return new Player()})
         map.set("Label", () => {return new Label()})
-        map.set("SWORDANIM", ()=> {return new SwordAnim()})
+
         let quadtree = new QuadTree({pos:{x: 500, y: 250}, dim:{height: 500, length: 1000}})
         let node = quadtree.parentNode
         let list = [node]
@@ -55,14 +55,14 @@ export class World implements Entity{
             console.log("Position y is " + clickEvent.pos.y)
             console.log("Name is " + clickEvent.eventName)
             this.something++
-            socket.emit({event: "click", data: null})
+
             
             if (this.scene) {
                 let pos = {x: clickEvent.pos.x, y: clickEvent.pos.y, z: -20}
 
                 let dim = {length: Math.random() * 30 + 1 , height: Math.random() * 30 + 1}
                 let rect = new RectangleEntity(pos, dim)
-                this.scene.addEntity(this.scene, rect)
+                this.scene.addEntity( rect)
                 let quad = quadtree.insert(rect)
                 let quadRect = quadMap.get(quad)
                 if (quadRect) {
@@ -76,6 +76,7 @@ export class World implements Entity{
             
         }
     })
+    /** 
         let socket = new SocketClient(
             {}
             , {engineType: EngineType.SOCKETCLIENT, entityGeneratorMap: map})
@@ -83,7 +84,11 @@ export class World implements Entity{
         
         this.components.push(new MouseEmitter(engineType), mouse, new KeyBoardEmitter(engineType), socket) 
     }
-
+    */
+    }
+    clone(): Entity {
+        throw new Error("Method not implemented.");
+    }
 }
 function getRandomColor() {
     var letters = '0123456789ABCDEF';
