@@ -140,16 +140,14 @@ class Test extends MultiplayerStage implements Entity{
         this.sceneConfig.entities.push(knight) 
         comp.initializeEventCallback({"connection": {
             "click": (pos) => {
-                let socket = SocketServer.SocketServerMap.get(pos.socketId)
-                if (socket) {
-                    let knight = new Knight()
-                knight.transform.pos.x = pos.data.x
-                knight.transform.pos.y = pos.data.y
-                
-                knight.script.properties.set("Destination", pos.data)
-                console.log("click has been received " + JSON.stringify(pos))
-                }
-                
+                let knight = new Knight()
+                    knight.transform.pos.x = pos.data.x
+                    knight.transform.pos.y = pos.data.y
+                    comp.system.sceneManager.getCurrentScene().addEntity(knight)
+                    knight.script.properties.set("Destination", pos.data)
+                    
+                    console.log("click has been received " + JSON.stringify(pos))
+                 
         },
             "keydown": (data) => { 
                 console.log("Key down is pressed with data " + data)
@@ -178,6 +176,7 @@ export default class RoomManager {
 
             socket.on("joined", (playerName: string, roomID:string) => {
                 this.addPlayer(playerName,  socket, parseInt(roomID))
+                SocketServer.addPlayerToRoom(socket, roomID)
                 console.log(playerName)
                 console.log(roomID)
                 let room = this.rooms.get(parseInt(roomID))
@@ -196,11 +195,13 @@ export default class RoomManager {
         let roomID: number = this.generateRoomID()
         let room:Room = new Room(this, roomID, roomName, this.server)
         this.rooms.set(roomID, room)
+        
         return room 
     }
     deleteRoom(id: number): boolean {
         if (this.rooms.has(id)) {
             let isDeleted: boolean = this.rooms.delete(id)
+            SocketServer.removeRoom(id.toString() )
         }
         return false
     }
