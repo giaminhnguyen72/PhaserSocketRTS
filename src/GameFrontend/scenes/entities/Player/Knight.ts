@@ -71,6 +71,7 @@ export class Knight implements Entity {
 
             let HP = script.properties.get("HP")
             let Destination = script.properties.get("Destination")
+            this.transform.vel.x = 1
             if (Destination) {
                 
                 this.transform.moveTowards(Destination, dt, 0.01)

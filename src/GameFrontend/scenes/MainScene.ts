@@ -85,7 +85,7 @@ export class MainScene extends Stage {
         let mouseListener = new MouseListener(
             {
                 "click": (event) => {
-                    
+                    console.log("Click has been registered")
                     var vec = new THREE.Vector3(); // create once and reuse
                     var pos = new THREE.Vector3(); // create once and reuse
 
