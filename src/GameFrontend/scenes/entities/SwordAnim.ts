@@ -1,4 +1,4 @@
-import { TimedSpriteSheet3d } from "../../../engine/src/systems/graphics/components/3d/Spritesheet3d.js";
+import { TimedSpriteSheet3d } from "../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
 import { Scene } from "../../../engine/src/core/scene.js";
 import { Component } from "../../../engine/src/types/components.js";
 import { Entity } from "../../../engine/src/types/Entity.js";

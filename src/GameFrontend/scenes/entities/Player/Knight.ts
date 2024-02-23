@@ -12,7 +12,15 @@ import { KeyboardListener } from "../../../../engine/src/systems/events/componen
 import { MainScene } from "../../MainScene.js";
 import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
+import { MultiplayerSyncronizer } from "../../../../engine/src/systems/MultiplayerClient/components/Syncronizer.js";
+import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
 
+type Data = {
+    componentId: number[],
+
+    position: Vector3
+
+}
 export class Knight implements Entity {
     components: Component[]= [];
     id?: number | undefined;
@@ -48,6 +56,20 @@ export class Knight implements Entity {
 
 
         let script = new Script(this.className, EngineType.SOCKETSERVER)
+        let script2 = new Script(this.className, EngineType.SOCKETCLIENT) 
+        script2.setCallBack(() => {
+
+            let absDiffX = Math.abs(transform.pos.x - sprite.pos.x)
+            let absDiffY = Math.abs(transform.pos.y - sprite.pos.y)
+
+            if (absDiffX > 0.001) {
+                throw new Error("X is different ")
+            }
+            if (absDiffY > 0.001) {
+                throw new Error("Y is different ")
+            }
+
+        })
         this.script = script
         script.setProperty("HP", 100)
         script.setProperty("EXP", 0)
@@ -56,7 +78,7 @@ export class Knight implements Entity {
         script.setProperty("Time", 5000)
         script.setProperty("Speed", 3)
         script.setProperty("InventoryID", 0 )
-        script.setProperty("Destination", {x: 0, y:0})
+
         script.setInit(() =>{
             let inventory = new Inventory()
             this.scene.addEntity(inventory)
@@ -72,6 +94,7 @@ export class Knight implements Entity {
             let HP = script.properties.get("HP")
             let Destination = script.properties.get("Destination")
             this.transform.vel.x = 1
+            
             if (Destination) {
                 
                 this.transform.moveTowards(Destination, dt, 0.01)
@@ -89,9 +112,35 @@ export class Knight implements Entity {
 
 
         })
+        let sync = new MultiplayerSyncronizer<Knight, Data>(this, (data: Data) =>{
+
+            //script.properties.set("Destination", data.destination)
+            transform.pos.x = data.position.x
+            transform.pos.y = data.position.y
+
+            if (this.components.length != data.componentId.length) {
+                throw new Error("Components dont match up")
+            }
+            for (let i = 0; i < data.componentId.length; i++) {
+                this.components[i].componentId = data.componentId[i]
+            }
+            
+            
+
+        }, ()=> {
+            let array = []
+            for (let i of this.components) {
+                array.push(i.componentId as number)
+            }
+            return {
+
+                position: this.transform.pos,
+                componentId: array
+            }
+        })
         
 
-        this.components.push(transform, sprite,collider, script)
+        this.components.push(transform, sprite, script, sync, script2)
         
         
         

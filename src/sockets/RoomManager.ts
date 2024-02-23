@@ -53,6 +53,7 @@ export class Room {
             sceneConfig: [
                 
                 new Test(
+                    new Knight(),
                     new Knight()
                     )
     
@@ -65,7 +66,7 @@ export class Room {
             
     
             console.log("Room id string before push is " + idString)
-        this.engine.systems.push(new SocketServerManager(this.engine.sceneManager, {server:this.roomManager.server,  roomId: idString, buffer: 0, delay: 100}))
+        this.engine.systems.push(new SocketServerManager(this.engine.sceneManager, {server:this.roomManager.server,  roomId: idString, buffer: 0, delay: 0}))
 
         this.engine.start(50)
     } 
@@ -140,11 +141,11 @@ class Test extends MultiplayerStage implements Entity{
         this.sceneConfig.entities.push(knight) 
         comp.initializeEventCallback({"connection": {
             "click": (pos) => {
-                let knight = new Knight()
-                    knight.transform.pos.x = pos.data.x
-                    knight.transform.pos.y = pos.data.y
-                    comp.system.sceneManager.getCurrentScene().addEntity(knight)
-                    knight.script.properties.set("Destination", pos.data)
+                let knight2 = new Knight()
+                    knight2.transform.pos.x = pos.data.x
+                    knight2.transform.pos.y = pos.data.y
+                    comp.system.sceneManager.getCurrentScene().addEntity(knight2)
+
                     
                     console.log("click has been received " + JSON.stringify(pos))
                  
