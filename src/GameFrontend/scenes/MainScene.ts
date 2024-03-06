@@ -21,6 +21,8 @@ import * as THREE from 'three'
 import { PhysicsEngine } from "../../engine/src/systems/physics/PhysicsEngine.js";
 import { Transformable } from "../../engine/src/types/components.js";
 import { PlayerUIForm } from "./entities/DomComponents/PlayerSelect/PlayerSelectForm.js";
+import { Script } from "../../engine/src/systems/scripting/components/Script.js";
+import { Fireball } from "./entities/Attacks/Fireball.js";
 export class MainScene extends Stage {
     sceneConfig: SceneConfig
     sceneManager!: SceneManager;
@@ -31,11 +33,11 @@ export class MainScene extends Stage {
     constructor(entities: Entity[]) {
          super("MainScene", {xMin: -1024, xMax: 1024, yMin: -1024, yMax: 1024, zMin: -10000, zMax: 10000 })
          this.sceneConfig = new SceneConfig(entities)
-         let knight:Knight = new Knight()
+        this.sceneConfig.entities.push(new Templar())
 
          
          let camera = new OrthographicCamera3d(2000,1000 , {x:0, y:0, z:50})
-         let UIForm = new PlayerUIForm(camera)
+         let UIForm = new PlayerUIForm()
          this.sceneConfig.entities.push( UIForm)
          camera.visible = true
          let socket = new SocketClient(this,
@@ -81,7 +83,6 @@ export class MainScene extends Stage {
             }
         })
         let mouseEmit = new MouseEmitter3d(EngineType.SOCKETCLIENT)
-        
         let mouseListener = new MouseListener(
             {
                 "click": (event) => {
@@ -93,8 +94,7 @@ export class MainScene extends Stage {
                     vector.set(
                     (event.pos.x / (window.innerWidth)) * 2  - 1,
                     - (event.pos.y / (window.innerHeight)) * 2 + 1,
-                    0,
-                    );
+                    0);
                     let vecd =vector.unproject(camera.component);
                     let position = {
                         x: vector.x,
@@ -109,7 +109,8 @@ export class MainScene extends Stage {
                     
                 }
             }
-        )  
+        )
+
 
          socket.addClass<Templar>("Templar", Templar)
          socket.addClass<MainCamera>("MainCamera", MainCamera)
@@ -117,6 +118,7 @@ export class MainScene extends Stage {
          socket.addClass<Label>("Label", Label)
          socket.addClass<SwordAttack>("SWORDANIM", SwordAttack)
          socket.addClass<Knight>("KNIGHT", Knight)
+         socket.addClass<Fireball>("FIREBALL", Fireball)
          
          this.components.push(socket, keyEmitter, keyListener, mouseEmit, mouseListener, camera)
  

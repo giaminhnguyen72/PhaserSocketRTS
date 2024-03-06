@@ -22,6 +22,9 @@ import { PhysicsConfig, SceneConfig } from "../engine/src/core/config.js"
 import { SocketServer } from "../engine/src/systems/MultiplayerServer/components/SocketServerHandler.js"
 import { MultiplayerStage } from "../engine/src/core/MultiplayerScene.js"
 import { Knight } from "../GameFrontend/scenes/entities/Player/Knight.js"
+import { ScriptingEngine } from "../engine/src/systems/scripting/ScriptingEngine.js"
+import { Script } from "..//engine/src/systems/scripting/components/Script.js"
+import { getDirection, moveTowards } from "../engine/src/math/Vector.js"
 //Rooms are going to have more options than this. Will probably add a RoomConfig Interface
 export class Room {
     players: Map<number, Player>
@@ -48,13 +51,12 @@ export class Room {
             engineType: EngineType.SOCKETSERVER,
             physicsConfig: new PhysicsConfig(),
 
-            scriptingConfig: {},
+            scriptingConfig: {engineType: EngineType.SOCKETSERVER},
             collisionConfig: {},
             sceneConfig: [
                 
                 new Test(
-                    new Knight(),
-                    new Knight()
+                
                     )
     
                 
@@ -137,25 +139,80 @@ class Test extends MultiplayerStage implements Entity{
         super("MainScene",{xMin: -10000, xMax: 10000, yMin: -10000, yMax: 10000, zMin: -10000, zMax: 10000 }, ...entities)
         
         let comp = new SocketServer({},{}, EngineType.SOCKETSERVER)
-        let knight = new Knight()
-        this.sceneConfig.entities.push(knight) 
+
+        let script = new Script("Scene", EngineType.SOCKETSERVER,(dt: number) => {
+            let c = script.system.queryClass("Livable")
+            let players = script.system.queryClass("KNIGHT")
+            if (players) {
+                for (let script of players) {
+                    let destination = script.properties.get("Destination")
+                    let position = script.properties.get("Position")
+                    if (destination && position) {
+                        moveTowards(position, destination, dt, 0.1, 5)
+                    }
+                }
+            }
+            if (c) {
+                for (let script of c) {
+                    let healthy = script.properties.get("HP")
+                    if (healthy) {
+                        if (healthy <= 0) {
+                            this.removeEntity(script.entity as number)
+                        }
+                    }
+                }
+            }
+        })
         comp.initializeEventCallback({"connection": {
             "click": (pos) => {
-                let knight2 = new Knight()
-                    knight2.transform.pos.x = pos.data.x
-                    knight2.transform.pos.y = pos.data.y
-                    comp.system.sceneManager.getCurrentScene().addEntity(knight2)
+                    let character = comp.playerCharacter.get(pos.socketId)
+                    let engine = this.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING", ScriptingEngine)
+                    if (engine && character) {
+
+                        for (let i = 0; i < character.components.length;i++) {
+                            let script = engine.components.get(character.components[i].componentId as number)
+                            if (script) {
+                                let position = script.properties.get("Position")
+                                if (position) {
+                                    script.properties.set("Direction", getDirection(position, pos.data))
+                                }
+                                
+                                script.properties.set("Destination", pos.data)
+                                break
+                            }
+                        }
+
+
+                    }
 
                     
                     console.log("click has been received " + JSON.stringify(pos))
                  
         },
             "keydown": (data) => { 
-                console.log("Key down is pressed with data " + data)
+                    let character = comp.playerCharacter.get(data.socketId)
+                    let engine = this.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING", ScriptingEngine)
+                    console.log("Key down has been pressed")
+                    if (engine && character ) {
+                        console.log("found character")
+                        for (let i = 0; i < character.components.length;i++) {
+                            let script = engine.components.get(character.components[i].componentId as number)
+                            if (script) {
+                                let Inventory = script.properties.get("Inventory")
+                                if (Inventory) {
+                                    console.log("found Inventory")
+                                    Inventory[0].use(script)
+                                }
+                            }
+                        }
+
+
+                    }
+
             }
         }})
 
-        this.components.push(comp) 
+        this.components.push(comp, script) 
         
     }
 
@@ -178,6 +235,12 @@ export default class RoomManager {
             socket.on("joined", (playerName: string, roomID:string) => {
                 this.addPlayer(playerName,  socket, parseInt(roomID))
                 SocketServer.addPlayerToRoom(socket, roomID)
+                let item = SocketServer.SocketServerMap.get(roomID)
+                if (item) {
+                    let knight =  new Knight()
+                    item.playerCharacter.set(socket.id,knight)
+                    item.system.sceneManager.getCurrentScene().addEntity(knight)
+                }
                 console.log(playerName)
                 console.log(roomID)
                 let room = this.rooms.get(parseInt(roomID))

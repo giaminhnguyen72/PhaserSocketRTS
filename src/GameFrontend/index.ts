@@ -88,7 +88,7 @@ window.onload = () => {
             ],
         physicsConfig: new PhysicsConfig(), 
         eventConfig: {keyboard: false,mouse: false },
-        scriptingConfig: {}
+        scriptingConfig: {engineType: EngineType.SOCKETSERVER}
 
     })
     
