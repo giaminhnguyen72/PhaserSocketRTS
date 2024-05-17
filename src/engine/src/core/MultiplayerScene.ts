@@ -36,6 +36,13 @@ export class MultiplayerStage implements Scene, Entity {
     }
     newEntityQueue?: Map<number, Entity> | undefined
     background?: string | undefined
+    createEntity(className: string, components: Component[] = []): Entity {
+        return {
+            components: components,
+            className: className,
+            scene: this
+        }
+    }
     update(dt: number): void {
         while (this.addedEntities.length > 0) {
             let ent = this.addedEntities.pop()
@@ -110,8 +117,9 @@ export class MultiplayerStage implements Scene, Entity {
     }
   
     addEntity( entity: Entity): Entity {
-        console.log("Entity added")
+        
         let uniqueId = this.sceneManager.getUniqueId()
+        entity.scene= this
         entity.id = uniqueId
         this.addedEntities.push(entity)
         return entity

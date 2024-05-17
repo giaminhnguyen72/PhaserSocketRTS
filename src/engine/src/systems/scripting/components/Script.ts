@@ -5,6 +5,10 @@ import { Entity } from "../../../types/Entity.js";
 import { System } from "../../../types/system.js";
 import { Engine } from "../../../../../engine/src/core/engine.js";
 
+interface Get {
+    get(s: any): Get
+    set(s: string, d:any): void
+}
 export abstract class ScriptObject implements Component {
     entity?: number | undefined;
     visible: boolean = true;
@@ -15,6 +19,9 @@ export abstract class ScriptObject implements Component {
     abstract copy(component: Component): void 
     engineTag: string = "SCRIPTING";
     engineType: EngineType = EngineType.CLIENTONLY
+    abstract className: string 
+    abstract properties: any
+    abstract destructor(): void
     abstract initialize(system: ScriptingEngine): void 
     abstract update(dt: number): void
 }
@@ -48,9 +55,38 @@ export class Script implements ScriptObject {
     }
     visible: boolean = true;
     alive: boolean = true;
-    initialize(script: ScriptingEngine) {
+    destructor() {
+        if (this.destroy) {
+            this.destroy()
+        }
+        let deleted = this
+        if (deleted.callback) {
+            this.system.updateSystems.delete(this.componentId as number)
+        }
+        if (deleted.destroy) {
+            deleted.destroy()
+        }
+        let set = this.system.objectDB.get(deleted.className)
+        if (set) {
+            set.delete(deleted)
+        }
+    }
+    initialize(system: ScriptingEngine) {
+        let list = system.objectDB.get(this.className)
+        let comp = this
+        if (list) {
+            list.add(this)
+        } else {
+            let set: Set<Script> = new Set()
+            set.add(this)
+            system.objectDB.set(this.className, set)
+        }
+
+        if (comp.callback) {
+            system.updateSystems.set(comp.componentId as number, comp)
+        }
         if (this.init) {
-            this.init(script)
+            this.init(system)
         }
     }
     getClasses(classId: string) {
@@ -65,6 +101,9 @@ export class Script implements ScriptObject {
     }
     removeEntity(id: number) {
         this.system.sceneManager.getCurrentScene().removeEntity(id)
+    }
+    getProperty(property: string) {
+        return this.properties.get(property)
     }
 
 
@@ -101,6 +140,41 @@ export class Script implements ScriptObject {
 
 
 }
-export interface StatefulScript extends Component {
+abstract class Policy{
+    
+    abstract initialize(scripting: ScriptingEngine): void
+    abstract update(dt: number): void
 
 }
+
+// class ScriptPolicy implements Policy {
+//     constructor() {
+        
+//     }
+//     initialize(scripting: ScriptingEngine): void {
+//         throw new Error("Method not implemented.");
+//     }
+//     update(dt: number): void {
+//         throw new Error("Method not implemented.");
+//     }
+
+// }
+// export class NativeScript<T extends Policy> extends T {
+
+//     initialize(scripting: ScriptingEngine): void {
+//         throw new Error("Method not implemented.");
+//     }
+//     update(dt: number): void {
+//         throw new Error("Method not implemented.");
+//     }
+//     entity?: number | undefined;
+//     visible: boolean = true;
+//     alive: boolean = true;
+//     engineTag: string = "SCRIPTING";
+//     componentId?: number | undefined;
+//     system!: System<Component>;
+//     copy(component: Component): void {
+//         throw new Error("Method not implemented.");
+//     }
+    
+// }

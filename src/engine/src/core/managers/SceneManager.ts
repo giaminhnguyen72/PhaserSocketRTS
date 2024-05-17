@@ -8,22 +8,24 @@ import { SocketManager } from "../../systems/MultiplayerClient/SocketManager.js"
 import { Engine } from "../engine.js";
 import { SocketServerManager } from "../../systems/MultiplayerServer/SocketServerManager.js";
 import e from "express";
+import { ResourceManager } from "./ResourceManager.js";
+import { Resource } from "../Resource.js";
 
 
 export class SceneManager {
-    currScene: Scene
+    currScene!: Scene
     scenes: Map<string, Scene> = new Map()
-    sceneConfigs: Scene[]=[]
-    currentIdx: string
+    resourceManager: ResourceManager = new ResourceManager()
+    currentIdx!: string
     id: number = 0
     componentId = 0
     static EngineType:EngineType = EngineType.CLIENTONLY
 
     systems: Map<string, System<Component>>
     engineConfig: EngineConfig
-
-    constructor(engineConfig: EngineConfig,  systems: System<Component>[]) {
-        
+    engine:Engine
+    constructor(engine: Engine, engineConfig: EngineConfig,  systems: System<Component>[]) {
+        this.engine = engine
         this.systems = new Map<string, System<Component>>()
 
         this.engineConfig = engineConfig
@@ -39,9 +41,41 @@ export class SceneManager {
         } else {
             SceneManager.EngineType = EngineType.CLIENTONLY
         }
+
+        this.addScene()
+
+
+        
+        
+        
+
+    }
+    loadResource<T extends Resource>(type: new (n: string) => T, name: string) {
+        return this.resourceManager.loadResource<T>(type, name)
+    }
+    addResource<T extends Resource>(type: new (n: string) => T, name: string) {
+        return this.resourceManager.addResource<T>(type, name)
+    }
+    removeResource<T extends Resource>(type: new (n: string) => T, name: string)  {
+        return this.resourceManager.removeResource<T>(type, name)
+    }
+    addScene() : void {
         if ( this.engineConfig.sceneConfig) {
-            for (let i = 0; i < this.engineConfig.sceneConfig.length; i++) {
-                let newConfig:Scene = this.engineConfig.sceneConfig[i]
+            let newConfig:Scene = new this.engineConfig.sceneConfig[0](this, [])
+            let newScene = newConfig
+            newScene.sceneManager = this
+
+            this.currScene = (newScene)
+
+            this.currentIdx =newScene.name
+            
+            
+            console.log("In Scene Manager")
+
+            
+            this.scenes.set(newScene.name, newScene)
+            for (let i = 1; i < this.engineConfig.sceneConfig.length; i++) {
+                let newConfig:Scene = new this.engineConfig.sceneConfig[i](this,[])
                 let newScene = newConfig
                 newScene.sceneManager = this
 
@@ -56,16 +90,9 @@ export class SceneManager {
                 
             }
             
+        } else {
+            throw new Error(" No scene found")
         }
-        this.currScene = (this.engineConfig.sceneConfig[0])
-        this.sceneConfigs = this.engineConfig.sceneConfig
-        this.currentIdx = this.sceneConfigs[0].name
-
-
-        
-        
-        
-
     }
     initialize(systems: System<Component>[]) {
         for (let sys of systems) {

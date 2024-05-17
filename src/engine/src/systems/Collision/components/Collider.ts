@@ -6,6 +6,7 @@ import { Position, Vector3 } from "../../../types/components/physics/transformTy
 import { Entity } from "../../../types/Entity.js";
 
 import { Transform } from "../../physics/components/transform.js";
+import { getRectangleNormals, SATCollision } from "../utils/collisionUtils.js";
 
 
 export class BoxCollider implements Collideable {
@@ -17,6 +18,7 @@ export class BoxCollider implements Collideable {
     shape: Rectangle
     system!: CollisionSystem;
     boundingBox: Rectangle
+    normals : Vector3[]
     onCollision: (otherCollider: Collideable) => void
     constructor( shape: Rectangle= {pos:{x:0, y:0, z:0}, dim: {length: 0, height: 0}, rot: 0}, onCollision: (otherCollider: Collideable) => void) {
 
@@ -29,9 +31,31 @@ export class BoxCollider implements Collideable {
         }
         this.boundingBox= this.shape
         this.onCollision = onCollision
+        this.normals = getRectangleNormals(this.boundingBox)
     }
     getRectangle(): Rectangle {
-        return this.boundingBox
+        if (this.boundingBox.rot == 0) {
+            return this.boundingBox
+        } else {
+            let thetaCos = Math.cos(this.boundingBox.rot)
+            let thetaSin = Math.sin(this.boundingBox.rot)
+            let height = this.boundingBox.dim.length * Math.abs(thetaSin) + this.boundingBox.dim.height * Math.abs(thetaCos )
+            let width = this.boundingBox.dim.length * Math.abs(thetaCos) + this.boundingBox.dim.height * Math.abs(thetaSin )
+            let rectangle = {
+                rot: 0,
+                dim: {
+                    height: height,
+                    length: width
+                },
+                pos: {
+                    x:this.boundingBox.pos.x,
+                    y: this.boundingBox.pos.x,
+                    z: 0
+                }
+            }
+            return rectangle
+        }
+        
     }
     copy<T>(collider: BoxCollider): void {
         if (collider.entity) {
@@ -91,14 +115,14 @@ export class BoxCollider implements Collideable {
                     return false
                 }
             } else {
-
+                return SATCollision(this, collider)
             }
             
             
         } else {
-
+            return ret
         }
-        return ret
+        
     }
 
     collides(collider: Collideable): void {
@@ -141,10 +165,11 @@ export class CircleCollider implements Collideable {
     shape: Rectangle
     system!: CollisionSystem
     boundingBox: Rectangle
+    normals : Vector3[]
     onCollision: (otherCollider: Collideable) => void
     constructor(entity: number,  pos: Position, onCollision: (otherCollider: Collideable) => void) {
         this.entity = entity
-
+        this.normals = []
         this.collideType = "Box"
         this.shape = {
             pos: pos,

@@ -40,5 +40,15 @@ export function getDirection(init: Vector3, target:Vector3): Vector3 {
     let xDiff = target.x - init.x
     let yDiff = target.y - init.y
     let mag = Math.sqrt(xDiff ** 2 + yDiff ** 2)
+    if (mag == 0) {
+        return {x: 0, y:0, z: init.z}
+    }
     return {x: xDiff / mag, y : yDiff/mag, z: init.z}
+}
+export function getDistance(init: Vector3, target:Vector3): number {
+
+    let xDiff = target.x - init.x
+    let yDiff = target.y - init.y
+    let mag = Math.sqrt(xDiff ** 2 + yDiff ** 2)
+    return mag
 }

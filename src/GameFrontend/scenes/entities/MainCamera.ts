@@ -27,6 +27,9 @@ export class MainCamera implements Entity{
             }
         }
     })];
+    constructor() {
+        
+    }
     clone() {
         return new MainCamera()
     }

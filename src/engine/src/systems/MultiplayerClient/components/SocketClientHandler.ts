@@ -108,7 +108,7 @@ export class SocketClient implements Emitter<SocketEvent>, SocketListener<Socket
                     console.log("Entity " + entity.id + " has been removed")
 
                 } else {
-                    throw new Error(" Entity is not found")
+                    console.error(" Entity is not found " + i)
                 }
             }
 

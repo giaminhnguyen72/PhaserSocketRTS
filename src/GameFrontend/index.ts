@@ -66,12 +66,7 @@ window.onload = () => {
     let player =  
     */
 
-        let scene = new MainScene([
 
-            
-
-
-        ])
         
 
    
@@ -81,86 +76,86 @@ window.onload = () => {
         sceneConfig: 
             [
                 
-                    scene
+                    MainScene
     
                 
             
             ],
         physicsConfig: new PhysicsConfig(), 
         eventConfig: {keyboard: false,mouse: false },
-        scriptingConfig: {engineType: EngineType.SOCKETSERVER}
+        scriptingConfig: {engineType: EngineType.SOCKETSERVER},
+        system: [[SocketManager, {
+        
+
+            socketEventMap: (socket: any) => {
+                /**
+                socket.on("clientInitialize", (entities: EntityPacket[]) => {
+                    console.log("clientInitialize activated")
+                    
+    
+                    for (let entitySent of entities) {
+                        let getScene = engine.sceneManager.scenes.get(entitySent.sceneId)
+                        if (getScene) {
+                            let newEntityFactory = map.get(entitySent.entityClass)
+                            if (newEntityFactory) {
+                                let newEntity = newEntityFactory()
+                                newEntity.id = entitySent.id
+                                newEntity.scene = engine.sceneManager.scenes.get(entitySent.sceneId)
+                                for (let i = 0; i < newEntity.components.length; i++) {
+                                    
+                                    newEntity.components[i].copy(entitySent.components[i])
+                                    
+                                }
+                                getScene.addEntity(getScene, newEntity, -1)
+                                console.log("Added "+ newEntity.className)
+    
+                            
+                            } else {
+                                //throw new Error("Cannot find entity; Class name: " + entitySent.entityClass)
+                            }
+    
+    
+                            
+                        } else {
+                            throw new Error("Scene not found")
+                        }
+                        
+                    }
+                    
+                    */
+                    
+    
+                    /** 
+                    for (let e of entity) {
+                        let id = 0
+                        if (e.id ) {
+                            id = e.id
+                        } else {
+                            throw new Error("Sent items is " + entity )
+                        }
+                        engine.sceneManager.getCurrentScene().addEntity(engine.sceneManager.getCurrentScene(),e , e.id)
+                    }
+                    */
+                //})
+                socket.on("connect", () => {
+                    console.log("connected")
+                    let roomId: string = window.location.pathname
+                    let roomArr: string[]  = roomId.split("/")
+                    socket.emit("joined", window.sessionStorage.getItem("PlayerName"), roomArr[roomArr.length-1])
+    
+                    console.log("emitting")
+                    socket.emit("clientInitialize")
+                    //engine.start(2000)
+                })
+                
+                
+        }
+    
+    }]]
 
     })
     
-    
-    engine.systems.push(new SocketManager(engine.sceneManager, {
-        
 
-        socketEventMap: (socket) => {
-            /**
-            socket.on("clientInitialize", (entities: EntityPacket[]) => {
-                console.log("clientInitialize activated")
-                
-
-                for (let entitySent of entities) {
-                    let getScene = engine.sceneManager.scenes.get(entitySent.sceneId)
-                    if (getScene) {
-                        let newEntityFactory = map.get(entitySent.entityClass)
-                        if (newEntityFactory) {
-                            let newEntity = newEntityFactory()
-                            newEntity.id = entitySent.id
-                            newEntity.scene = engine.sceneManager.scenes.get(entitySent.sceneId)
-                            for (let i = 0; i < newEntity.components.length; i++) {
-                                
-                                newEntity.components[i].copy(entitySent.components[i])
-                                
-                            }
-                            getScene.addEntity(getScene, newEntity, -1)
-                            console.log("Added "+ newEntity.className)
-
-                        
-                        } else {
-                            //throw new Error("Cannot find entity; Class name: " + entitySent.entityClass)
-                        }
-
-
-                        
-                    } else {
-                        throw new Error("Scene not found")
-                    }
-                    
-                }
-                
-                */
-                
-
-                /** 
-                for (let e of entity) {
-                    let id = 0
-                    if (e.id ) {
-                        id = e.id
-                    } else {
-                        throw new Error("Sent items is " + entity )
-                    }
-                    engine.sceneManager.getCurrentScene().addEntity(engine.sceneManager.getCurrentScene(),e , e.id)
-                }
-                */
-            //})
-            socket.on("connect", () => {
-                console.log("connected")
-                let roomId: string = window.location.pathname
-                let roomArr: string[]  = roomId.split("/")
-                socket.emit("joined", window.sessionStorage.getItem("PlayerName"), roomArr[roomArr.length-1])
-
-                console.log("emitting")
-                socket.emit("clientInitialize")
-                //engine.start(2000)
-            })
-            
-            
-    }
-
-    }))
     engine.start(10)
     
 

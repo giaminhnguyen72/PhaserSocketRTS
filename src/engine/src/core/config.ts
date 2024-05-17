@@ -8,6 +8,7 @@ import { Entity } from "../types/Entity.js"
 import { System } from "../types/system.js"
 import { SocketManager } from "../systems/MultiplayerClient/SocketManager.js"
 import { Scene, Stage } from "./scene.js"
+import { SceneManager } from "./managers/SceneManager.js"
 
 /**
  * Describes the CSS properties of the canvas element
@@ -74,14 +75,14 @@ export interface EngineConfig {
     engineType: EngineType
     graphicsConfig?: GraphicsConfig
     physicsConfig?: PhysicsConfig
-    sceneConfig: Scene[]
+    sceneConfig: ((new (sceneManager: SceneManager,entities: Entity[])=>Scene))[]
     eventConfig?: EventConfig
     collisionConfig?: CollisionConfig
     scriptingConfig?: ScriptingConfig
 
     socketServerConfig?: SocketServerConfig
     socketClientConfig?: SocketClientConfig
-    system?: System<Component>[]
+    system?: [(new (sceneManager: SceneManager, config: any)=>System<Component>), any][]
 
 }
 

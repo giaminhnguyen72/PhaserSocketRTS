@@ -5,7 +5,7 @@ import { FireWandItem } from "./FireWand.js";
 
 
 export interface Item {
-    
+    itemID: number
     use(script: Script): void
 }
 export interface Action {

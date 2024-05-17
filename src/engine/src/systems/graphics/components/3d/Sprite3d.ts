@@ -10,9 +10,10 @@ import { getTopX, getTopY, Rectangle } from "../../../..../../../types/component
 import { OrthographicCamera3d } from "./OrthographicCamera3d.js";
 import { Position } from "../../../../../../engine/src/types/components/physics/transformType.js";
 import { System } from "../../../../../../engine/src/types/system.js";
-import { BoxGeometry, Material, Mesh, MeshBasicMaterial,  Scene as SceneGraph,  Sprite, SpriteMaterial, Texture, TextureLoader } from "three/src/Three.js";
+import { BoxGeometry, Material, Mesh, MeshBasicMaterial,  NearestFilter,  Scene as SceneGraph,  Sprite, SpriteMaterial, SRGBColorSpace, Texture, TextureLoader } from "three/src/Three.js";
 import { GraphicsEngine } from "../../GraphicEngine.js";
-import { mapLinear } from "three/src/math/MathUtils.js";
+import { TextureResource } from "./Texture.js";
+
 
 export class Sprite3d implements Component, Renderable {
     
@@ -106,24 +107,26 @@ export class Sprite3d implements Component, Renderable {
             this.component.position.x = this.pos.x
             this.component.position.y = this.pos.y
             this.component.position.z = this.pos.z
-
+            this.material.rotation = this.shape.rot
             this.component.scale.set(this.shape.dim.length , this.shape.dim.height, 1)
+            if (this.material.map && this.reflect != 0) {
+                this.material.map.center.set(0.5,0.5)
+                this.material.map.repeat.set(this.reflect,1)
+            }
         }
     }
     initialize(graphics:GraphicsEngine) {
-        let loader =  new TextureLoader()
-        let loaded = loader.load(this.src, (data) => {
-
-            this.material = new SpriteMaterial({map: data})
-            data.center.set(0.5,0.5)
+        let w = graphics.sceneManager.loadResource<TextureResource>(TextureResource, this.src)
+        if (w) {
+            let texture = w.clone()
+            this.material = new SpriteMaterial({map: texture, toneMapped:false, fog: false})
+            texture.center.set(0.5,0.5)
             this.component = new Sprite(this.material)
             this.component.position.x = this.pos.x
             this.component.position.y = this.pos.y
             this.component.position.z = this.pos.z
             this.loaded = true
-            if (this.reflect == -1) {
-                this.flipX()
-            }
+
             
             //let box = new BoxGeometry(64,64,1)
             //let BoxMaterial = new MeshBasicMaterial({
@@ -133,23 +136,48 @@ export class Sprite3d implements Component, Renderable {
 
             //graphics.sceneGraph.add(mesh)
             graphics.sceneGraph.add(this.component)
-
-        
-        }, () => {
-            console.log("progressing")
-        }, () => {
-            throw new Error("Picture failed to load")
-        })
-        
-
-
-        
-        //this.component.position.set(this.pos.x, this.shape.pos.y, this.shape.pos.z)
-
-
-        //graphics.sceneGraph.add( cube );
-        
-
+        } else {
+            console.log("LCant find loaded asset")
+            let loader =  new TextureLoader()
+            let loaded = loader.load(this.src, (data) => {
+                data.magFilter = NearestFilter
+                data.colorSpace = SRGBColorSpace
+                this.material = new SpriteMaterial({map: data, toneMapped:false, fog: false})
+                data.center.set(0.5,0.5)
+                this.component = new Sprite(this.material)
+                this.component.position.x = this.pos.x
+                this.component.position.y = this.pos.y
+                this.component.position.z = this.pos.z
+                this.loaded = true
+    
+                
+                //let box = new BoxGeometry(64,64,1)
+                //let BoxMaterial = new MeshBasicMaterial({
+                //    map: data
+                //})
+                //let mesh = new Mesh(box,BoxMaterial)
+    
+                //graphics.sceneGraph.add(mesh)
+                graphics.sceneGraph.add(this.component)
+    
+            
+            }, () => {
+                console.log("progressing")
+            }, () => {
+                throw new Error("Picture failed to load")
+            })
+            
+    
+    
+            
+            //this.component.position.set(this.pos.x, this.shape.pos.y, this.shape.pos.z)
+    
+    
+            //graphics.sceneGraph.add( cube );
+            
+    
+            
+        }
         this.system = graphics
 
     }

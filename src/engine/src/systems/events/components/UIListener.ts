@@ -40,19 +40,23 @@ export class UIListener implements Listener<ClickEvent>{
 
         
     }
-    isClicked(event: ClickEvent): boolean {
+    isClicked(event: ClickEvent, parent?: UIListener): boolean {
         let x = (event.pos.x / (window.innerWidth)) * 2 -1
         let y = (event.pos.y / (window.innerHeight)) * -2 + 1
-        console.log(x)
-        console.log(y)
+        if (parent) {
+            x -= parent.boundingBox.pos.x
+            y -= parent.boundingBox.pos.y
+
+        }
         let minX = this.boundingBox.pos.x - this.boundingBox.dim.length / 2
         let maxX =  this.boundingBox.pos.x + this.boundingBox.dim.length / 2
         let minY = this.boundingBox.pos.y - this.boundingBox.dim.height / 2
         let maxY =  this.boundingBox.pos.y + this.boundingBox.dim.height / 2
+        
         if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
             let clicked = false
             for (let i of this.children) {
-                clicked = clicked || i.isClicked(event)
+                clicked = clicked || i.isClicked(event, this)
             }
             if (!clicked) {
                 if (this.onClick) {

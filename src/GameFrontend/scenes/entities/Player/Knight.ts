@@ -17,12 +17,12 @@ import { Vector3 } from "../../../../engine/src/types/components/physics/transfo
 import { Item } from "../items/Items.js";
 import { NoItem } from "../items/NoItem.js";
 import { FireWandItem } from "../items/FireWand.js";
+import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
 
 type Data = {
     componentId: number[],
-    inventory: Item[]
     position: Vector3
-
+    direction: Vector3
 }
 
 export class Knight implements Entity {
@@ -39,20 +39,25 @@ export class Knight implements Entity {
         transform.pos.z = 10
         transform.vel.x = 0
         transform.vel.y = 0
-        let sprite = new Sprite3d( {
-            pos: {x:0, y: 0, z:0},
-            dim: {
+        
+        let sprite = new TimedSpriteSheet3d("/images/Characters/Orc_S.png", {
+            rot:0,
+            dim:{
                 length: 64,
-                height: 64
+                height:64
             },
-            rot: 0
-        },"/images/Knight_Side.png",)
+            pos: {
+                x:0,
+                y:0,
+                z:0
+            }
+    }, 50, 32, [1,1])
         this.transform = transform
         let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
             transform.vel.x *= -1
             transform.vel.y *= -1
         })
-        sprite.reflect = -1
+
         
 
         collider.bindPos(transform)
@@ -66,31 +71,21 @@ export class Knight implements Entity {
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
-        script.setProperty("Time", 5000)
-        script.setProperty("Speed", 3)
+        script.setProperty("Speed", 0.1)
         script.setProperty("Position",transform.pos)
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
 
         script.setProperty("Direction", {x:1,y:0,z:0})
-        let inventory: Item[] = []
-        for (let i = 0; i < 8; i++) {
-            inventory.push(new NoItem())
-        }
-        inventory[0] = new FireWandItem()
-        script.setProperty("Inventory", inventory)
-        
+        script.setProperty("Graphics", 1)
+        script.setInit((system) =>{
 
-        script.setInit(() =>{
-
-            script.system.addSuperClass(script, "Livable")
+            system.addSuperClasses(script, "Livable", "Moveable", "Player", "SpriteSheet")
 
             sprite.visible = true
             collider.visible = true
         })
-        script.destroy = () => {
-            script.system.removeSuperClass(script, "Livable")
-        }
+
         
         // script.setCallBack((dt: number) => {
 
@@ -125,19 +120,18 @@ export class Knight implements Entity {
             }
         }, ()=> {
             let array = []
+            let direction = script.properties.get("Direction")
+            if (!direction) {
+                direction = {x: 1, y: 0, z: 0 }
+            }
             for (let i of this.components) {
                 array.push(i.componentId as number)
             }
-            let inventory = script.properties.get("Inventory")
-            if (inventory) {
 
-            } else {
-                inventory = []
-            }
             return {
-                inventory: [],
-                position: this.transform.pos,
-                componentId: array
+                position: transform.pos,
+                componentId: array,
+                direction: direction
             }
         }, (currtime: number, timestamp: number, data) => {
             let total = timestamp - sync.time
@@ -145,10 +139,14 @@ export class Knight implements Entity {
             let dt = elapsed / total
 
 
-            let component = data as unknown as MultiplayerSyncronizer<Knight,Data>
+            let component = data 
             if (component.data && sync.data) {
                 transform.pos.x = lerp(transform.pos.x, component.data.position.x, dt)
                 transform.pos.y = lerp(transform.pos.y, component.data.position.y, dt)
+                let direction = script.properties.get("Direction")
+                direction.x = component.data.direction.x
+                direction.y = component.data.direction.y
+
             }
         })
         

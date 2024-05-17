@@ -121,6 +121,7 @@ export class MouseEmitter implements Emitter<ClickEvent> {
     }
     removeListener(id: number): void {
         this.listeners.delete(id)
+        
     }
     getListeners() {
         return []
@@ -196,10 +197,10 @@ export class MouseEmitter3d implements Emitter<ClickEvent> {
     addListener(component: Listener<ClickEvent>): void {
 
         if (component instanceof UIListener) {
-            console.log("UI Listener is registered")
+            
             this.UIListener.set(component.componentId as number, component)
         } else {
-            console.log("Mouse Listener is registered")
+            
             this.listeners.set(component.componentId as number, component)
         }
     }
@@ -210,6 +211,7 @@ export class MouseEmitter3d implements Emitter<ClickEvent> {
     }
     removeListener(id: number): void {
         this.listeners.delete(id)
+        this.UIListener.delete(id)
     }
     getListeners() {
         return []
@@ -222,7 +224,7 @@ export class MouseEmitter3d implements Emitter<ClickEvent> {
         
         for (let i = this.events.length - 1; i >= 0; i--) {
             let clicked = false
-            console.log("There are " + this.UIListener.size )
+
             for (let listener of this.UIListener) {
                 clicked = clicked || listener[1].isClicked(this.events[i])
 

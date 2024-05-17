@@ -19,18 +19,20 @@ import { Fireball } from "../Attacks/Fireball.js";
 import { Action, Item, ProjectileComponent } from "./Items.js";
 
 export class FireWandItem implements Item {
+    itemID: number = 1;
 
     use(script: Script): void {
         let Direction = script.properties.get("Direction")
         let Position = script.properties.get("Position")
-        if (Direction && Position) {
+        let Owner = script.properties.get("Owner")
+        if (Direction && Position && Owner) {
             let item = {
                 x: Position.x,
                 y: Position.y,
                 z: Position.z
 
             }
-            let fireball = new Fireball(item, Direction)
+            let fireball = new Fireball(Owner, Direction)
             script.system.sceneManager.getCurrentScene().addEntity(fireball)
         }
     }

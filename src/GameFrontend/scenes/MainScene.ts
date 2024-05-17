@@ -23,6 +23,36 @@ import { Transformable } from "../../engine/src/types/components.js";
 import { PlayerUIForm } from "./entities/DomComponents/PlayerSelect/PlayerSelectForm.js";
 import { Script } from "../../engine/src/systems/scripting/components/Script.js";
 import { Fireball } from "./entities/Attacks/Fireball.js";
+import { BasicAxe } from "./entities/Attacks/BasicAxe.js";
+import { Fist } from "./entities/Attacks/Fist.js";
+import { SwordSwing } from "./entities/Attacks/SwordSwing.js";
+import { SwordSlash } from "./entities/Attacks/SwordSlash.js";
+import { Transform } from "../../engine/src/systems/physics/components/transform.js";
+import { TimedSpriteSheet } from "../../engine/src/systems/graphics/components/2d/Spritesheet.js";
+import { Bear } from "./entities/Mobs/Bear.js";
+import { getDirection } from "../../engine/src/math/Vector.js";
+import { TimedSpriteSheet3d } from "../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
+import { CandoWisp } from "./entities/Mobs/Candowisp.js";
+import { DarkMage } from "./entities/Mobs/DarkMage.js";
+import { EarthEater } from "./entities/Mobs/EarthEater.js";
+import { EarthTortoise } from "./entities/Mobs/EarthTortoise.js";
+import { Gargoyle } from "./entities/Mobs/Gargoyle.js";
+import { GiantRat } from "./entities/Mobs/GiantRat.js";
+import { GiantSpider } from "./entities/Mobs/GiantSpider.js";
+import { MindFlayer } from "./entities/Mobs/MindFlayer.js";
+import { Skeleton } from "./entities/Mobs/Skeleton.js";
+import { Snake } from "./entities/Mobs/Snake.js";
+import { WilloWisp } from "./entities/Mobs/WilloWisp.js";
+import { Wolf } from "./entities/Mobs/Wolf.js";
+import { Arrow } from "./entities/Attacks/Arrow.js";
+import { BasicIce } from "./entities/Attacks/BasicIce.js";
+import { DarkOrb } from "./entities/Attacks/DarkOrb.js";
+import { HealBall } from "./entities/Attacks/HealBall.js";
+import { Earthquake } from "./entities/Attacks/Earthquake.js";
+import { Web } from "./entities/Attacks/Structures/Web.js";
+import { Icicle } from "./entities/Attacks/Icicle.js";
+import { Snowball } from "./entities/Attacks/Snowball.js";
+import { TileSheet3d } from "../../engine/src/systems/graphics/components/3d/TileSheet3d.js";
 export class MainScene extends Stage {
     sceneConfig: SceneConfig
     sceneManager!: SceneManager;
@@ -30,16 +60,80 @@ export class MainScene extends Stage {
     time: number = 0;
     engineComponents: Map<string, Map<number, Component>> = new Map();
     static SocketHandler: SocketClient
-    constructor(entities: Entity[]) {
+    constructor(sceneManager: SceneManager, entities: Entity[]) {
          super("MainScene", {xMin: -1024, xMax: 1024, yMin: -1024, yMax: 1024, zMin: -10000, zMax: 10000 })
          this.sceneConfig = new SceneConfig(entities)
-        this.sceneConfig.entities.push(new Templar())
-
-         
+        this.sceneManager = sceneManager
+        let offsets = [{x:0, y:5/8, width:16,height:16},{x:0, y:0, width:16,height:16},{x:0, y:7/8, width:16,height:16}]
+        let tile = new TileSheet3d("/images/Background/tileset.png",{pos: {x:0, y:0, z:0}, dim:{length: (this.worldBounds.xMax - this.worldBounds.xMin) * 2, height: 2* (this.worldBounds.yMax - this.worldBounds.yMin)}, rot: 0}, 
+        128, 128, 64,64, offsets
+        )
+        tile.setTile(3,4, 2)
+        this.components.push(tile)
+    
          let camera = new OrthographicCamera3d(2000,1000 , {x:0, y:0, z:50})
          let UIForm = new PlayerUIForm()
          this.sceneConfig.entities.push( UIForm)
          camera.visible = true
+         let script = new Script("MainScene", EngineType.SOCKETCLIENT)
+         script.properties.set("Position", camera.pos)
+         script.properties.set("Following", 0)
+         script.properties.set("Component", 0)
+         script.setCallBack((dt) => {
+            let Following = script.properties.get("Following")
+            let Sprite = script.system.queryClass("SpriteSheet")
+            
+            if (Sprite) {
+                
+                for (let i of Sprite) {
+                    let entity = this.entities.get(i.entity as number)
+
+                    let idx = i.properties.get("Graphics")
+                    let direction = i.properties.get("Direction")
+                    
+                    if (direction && entity && idx != null && idx != undefined) {
+
+                        let spritesheet = entity.components[idx] as TimedSpriteSheet3d
+
+                        if (direction.x < 0) {
+
+                            spritesheet.row = 1
+                        } else {
+
+                            spritesheet.row = 0
+                        }
+
+                    } 
+                        
+                }
+            }
+
+            if (Following) {
+                let entity = this.entities.get(Following)
+                let component = script.properties.get("Component")
+
+                if (entity && component == 0) {
+                    for (let i of entity.components) {
+                        
+                        if (i instanceof Transform) {
+
+                            script.properties.set("Component", i.componentId)
+                        }
+                    }
+                } 
+            }
+            let sys = this.sceneManager.queryEngine<PhysicsEngine>("PHYSICS", PhysicsEngine)
+            let component = script.properties.get("Component")
+            if (sys && component) {
+                let transform = sys.components.get(component)
+                if (transform) {
+                    camera.pos.x = transform.pos.x
+                    camera.pos.y = transform.pos.y
+                }
+                
+
+            }
+        })
          let socket = new SocketClient(this,
              {   "connect": () => {
                  console.log("connected")
@@ -54,12 +148,9 @@ export class MainScene extends Stage {
                  "disconnect": () => {
                      throw new Error() 
                  },
-                 "getComponentID": (id: any) =>{
-                    let player = this.entities.get(id)
-                    let system = this.sceneManager.queryEngine<PhysicsEngine>("PHYSICS", PhysicsEngine)
-                    if (system) {
-                        
-                    }
+                 "PlayerID": (id: any) =>{
+                    script.properties.set("Following", id)
+
                     
                  }
                  
@@ -87,9 +178,6 @@ export class MainScene extends Stage {
             {
                 "click": (event) => {
                     console.log("Click has been registered")
-                    var vec = new THREE.Vector3(); // create once and reuse
-                    var pos = new THREE.Vector3(); // create once and reuse
-
                     let vector = new THREE.Vector3();
                     vector.set(
                     (event.pos.x / (window.innerWidth)) * 2  - 1,
@@ -106,6 +194,7 @@ export class MainScene extends Stage {
                         event: "click",
                         data: position
                     })
+
                     
                 }
             }
@@ -118,10 +207,39 @@ export class MainScene extends Stage {
          socket.addClass<Label>("Label", Label)
          socket.addClass<SwordAttack>("SWORDANIM", SwordAttack)
          socket.addClass<Knight>("KNIGHT", Knight)
+
+
+         socket.addClass<SwordSwing>("SWORDSWING", SwordSwing)
+         socket.addClass<SwordSlash>("SWORDSLASH", SwordSlash)
+         socket.addClass<Bear>("BEAR", Bear)
+         socket.addClass<CandoWisp>("CANDOWISP", CandoWisp)
+         socket.addClass<DarkMage>("DARKMAGE", DarkMage)
+         socket.addClass<EarthEater>("EARTHEATER", EarthEater)
+         socket.addClass<EarthTortoise>("EARTHTORTOISE", EarthTortoise)
+         socket.addClass<Gargoyle>("GARGOYLE", Gargoyle)
+         socket.addClass<GiantRat>("GIANTRAT", GiantRat)
+         socket.addClass<GiantSpider>("GIANTSPIDER", GiantSpider)
+         socket.addClass<MindFlayer>("MINDFLAYER", MindFlayer)
+         socket.addClass<Skeleton>("SKELETON",Skeleton)
+         socket.addClass<Snake>("SNAKE", Snake)
+         socket.addClass<WilloWisp>("WILLOWISP", WilloWisp)
+         socket.addClass<Wolf>("WOLF", Wolf)
+
+
+         socket.addClass<Arrow>("Arrow", Arrow)
+         socket.addClass<BasicAxe>("BASICAXE", BasicAxe)
+         socket.addClass<BasicIce>("BASICICE", BasicIce)
+         socket.addClass<DarkOrb>("DARKORB", DarkOrb)
+         socket.addClass<Earthquake>("EARTHQUAKE", Earthquake)
          socket.addClass<Fireball>("FIREBALL", Fireball)
-         
-         this.components.push(socket, keyEmitter, keyListener, mouseEmit, mouseListener, camera)
- 
+         socket.addClass<Fist>("FIST", Fist)
+         socket.addClass<HealBall>("HEALBALL", HealBall)
+         socket.addClass<Web>("WEB", Web)
+         socket.addClass<Icicle>("ICICLE", Icicle)
+         socket.addClass<Snowball>("SNOWBALL", Snowball)
+
+         this.components.push(socket, keyEmitter, keyListener, mouseEmit, mouseListener, camera, script)
+  
      }
      getSceneConfig() {
          this.sceneConfig.entities.push(this)

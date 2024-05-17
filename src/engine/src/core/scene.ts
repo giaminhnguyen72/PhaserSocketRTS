@@ -8,7 +8,7 @@ import { System } from "../types/system.js"
 import { EngineType } from "../constants/engineType.js"
 
 
-export interface Scene {
+export interface Scene extends Entity {
     name: string
     newEntityQueue?: Map<number, Entity>
     sceneManager: SceneManager
@@ -26,6 +26,7 @@ export interface Scene {
     querySys (engineTag: string): System<Component> | undefined
     queryComponent<T extends Component>(type: {new(...args: any[]): T}, entityTag: string):  T[]
     update(dt: number): void
+    createEntity(className:string, components: Component[]): Entity
 }
 export class Stage implements Scene, Entity {
     components: Component[] = []
@@ -50,6 +51,17 @@ export class Stage implements Scene, Entity {
     }
     newEntityQueue?: Map<number, Entity> | undefined
     background?: string | undefined
+    createEntity(className: string, components: Component[] = []): Entity {
+
+        
+        let entity:Entity = {
+            scene:this,
+            components: components,
+            className: className
+        }
+        return entity
+
+    }
     update(dt: number): void {
         while (this.addedEntities.length > 0) {
             let ent = this.addedEntities.pop()
@@ -130,35 +142,35 @@ export class Stage implements Scene, Entity {
         if (!entity.id ) {
             throw new Error()
         }
-    entity.scene = this
-    let uniqueId = entity.id as number
-    this.entities.set(uniqueId, entity)
-    let entityMap = this.classMap.get(entity.className)
-        if (entityMap) {
-            entityMap.set(entity.id as number, entity)
-        } else {
-            let newMap = new Map()
-            newMap.set(entity.id, entity)
-            this.classMap.set(entity.className, newMap)
-        }
-    
-    for (let comp of entity.components) {
-        let compList = this.querySys(comp.engineTag)
-        comp.entity = entity.id
-        if (compList) {
-            let system: System<Component> | undefined= this.sceneManager.systems.get(comp.engineTag)
-            if (system) {
+        entity.scene = this
+        let uniqueId = entity.id as number
+        this.entities.set(uniqueId, entity)
+        let entityMap = this.classMap.get(entity.className)
+            if (entityMap) {
+                entityMap.set(entity.id as number, entity)
+            } else {
+                let newMap = new Map()
+                newMap.set(entity.id, entity)
+                this.classMap.set(entity.className, newMap)
+            }
+        
+        for (let comp of entity.components) {
+            let compList = this.querySys(comp.engineTag)
+            comp.entity = entity.id
+            if (compList) {
+                let system: System<Component> | undefined= this.sceneManager.systems.get(comp.engineTag)
+                if (system) {
 
-                system.register(comp, this.getUniqueComponentId())
-            } 
+                    system.register(comp, this.getUniqueComponentId())
+                } 
 
 
-            
-        } else {
-            console.log(comp.engineTag + "does not exist")
-            comp.componentId = this.getUniqueComponentId()
-            
-        }
+                
+            } else {
+                console.log(comp.engineTag + "does not exist")
+
+                
+            }
     }
     console.log("successfully added entity")
     
@@ -209,6 +221,7 @@ export class Stage implements Scene, Entity {
             let isInQueue = scene.newEntityQueue.has(entity.id as number)
             if (!isInQueue) {
                 for (let comp of entity.components) {
+                    comp.entity = entity.id
                     let compList = this.querySys(comp.engineTag)
                     if (compList) {
             
@@ -232,7 +245,7 @@ export class Stage implements Scene, Entity {
             for (let comp of entity.components) {
                 let compList = this.querySys(comp.engineTag)
                 if (compList) {
-        
+                    comp.entity = entity.id
                     let system: System<Component> | undefined= scene.sceneManager.systems.get(comp.engineTag)
                     if (system) {
                         system.register(comp, this.getUniqueComponentId())

@@ -29,7 +29,7 @@ export class World implements Entity{
         map.set("Player", ()=> {return new Player()})
         map.set("Label", () => {return new Label()})
 
-        let quadtree = new QuadTree({pos:{x: 500, y: 250}, dim:{height: 500, length: 1000}})
+        let quadtree = new QuadTree({pos:{x: 500, y: 250}, dim:{height: 500, length: 1000}, rot: 0})
         let node = quadtree.parentNode
         let list = [node]
         let padding = 2

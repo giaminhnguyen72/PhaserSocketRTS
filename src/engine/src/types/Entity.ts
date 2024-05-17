@@ -11,7 +11,7 @@ export interface Entity {
     id?: number
     scene?: Scene
     className: string
-    clone() : Entity
+
     
 }
 export interface EntityPacket {

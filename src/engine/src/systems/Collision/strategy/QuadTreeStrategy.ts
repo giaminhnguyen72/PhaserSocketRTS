@@ -30,7 +30,8 @@ export class QuadTreeStrategy implements CollisionStrategy {
         return this.quadtree.query(rectangle)
     }
     update(dt: number): void {
-
+        
+        this.quadtree.clear()
         for (let i of this.registeredElements.values()) {
 
             if (i.visible) {
@@ -51,7 +52,6 @@ export class QuadTreeStrategy implements CollisionStrategy {
             }
         }
 
-        this.quadtree.clear()
     }
     registerComponent(component: Collideable): void {
         this.registeredElements.set(component.componentId as number, component)

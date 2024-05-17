@@ -6,7 +6,12 @@ import { Script } from "../../../../engine/src/systems/scripting/components/Scri
 import { EngineType } from "../../../../engine/src/constants/engineType.js";
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 import { TileSheet3d } from "../../../../engine/src/systems/graphics/components/3d/TileSheet3d.js";
-
+type TextureOffset = {
+    x: number,
+    y: number,
+    width: number,
+    height: number
+}
 export class Grass implements Entity {
     components: Component[] = [];
     id?: number | undefined;
@@ -27,9 +32,15 @@ export class Grass implements Entity {
                 },
                 rot: 0
             }
-            let sprite = new TileSheet3d("/images/GrassTileSheet.png", rect, 3)
-            this.components.push(sprite)
+            let offsets = [{x:0, y:5/8, width:16,height:16},{x:0, y:0, width:16,height:16},{x:0, y:7/8, width:16,height:16}]
+            // let sprite = new TileSheet3d("/images/GrassTileSheet.png", rect, 3)
+            // this.components.push(sprite)
+            let tile = new TileSheet3d("/images/Background/tileset.png",{pos: {x:0, y:0, z:0}, dim:{length: scene.worldBounds.xMax - scene.worldBounds.xMin, height: scene.worldBounds.yMax - scene.worldBounds.yMin}, rot: 0}, 
+            128, 128, 128,128, offsets
+            )
+            this.components.push(tile)
         }
+        
         
         
         

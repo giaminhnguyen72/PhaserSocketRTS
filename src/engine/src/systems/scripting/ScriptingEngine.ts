@@ -3,18 +3,24 @@ import { EngineType } from "../../constants/engineType.js";
 import { SceneManager } from "../../core/managers/SceneManager.js";
 import { System } from "../../types/system.js";
 import { ScriptingConfig } from "../../core/config.js";
+import { ScriptOperable, ScriptOperationManager } from "./types/Operations.js";
+import { TypeMap } from "./types/HelperTypes.js";
 export class ScriptingEngine implements System<ScriptObject> {
     tag: string ="SCRIPTING"  ;
-    components: Map<number, Script>;
+    components: Map<number, ScriptObject>;
     deleted: ScriptObject[] = []
     engineType: EngineType
     sceneManager!: SceneManager
     objectDB: Map<string, Set<Script>> = new Map()
     updateSystems:Map<number, Script> = new Map()
+    operations: ScriptOperationManager = new ScriptOperationManager(this)
     constructor(sceneManager: SceneManager, engineType: ScriptingConfig) {
-        this.components = new Map<number, Script>()
+        this.components = new Map<number, ScriptObject>()
         this.engineType = engineType.engineType
         this.sceneManager = sceneManager
+    }
+    addOperation<T extends TypeMap<ScriptOperable[]>>(sys: T) {
+        this.operations.addOperation(sys)
     }
     addSuperClass(script:Script, superclass:string) {
         let objectSet = this.objectDB.get(superclass)
@@ -58,7 +64,7 @@ export class ScriptingEngine implements System<ScriptObject> {
 
     
 
-    register(comp: Script, id: number): void {
+    register(comp: ScriptObject, id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
             
             comp.componentId = id
@@ -70,18 +76,7 @@ export class ScriptingEngine implements System<ScriptObject> {
             comp.system = this
             this.components.set(comp.componentId, comp)
         }
-        let list = this.objectDB.get(comp.className)
-        if (list) {
-            list.add(comp)
-        } else {
-            let set: Set<Script> = new Set()
-            set.add(comp)
-            this.objectDB.set(comp.className, set)
-        }
 
-        if (comp.callback) {
-            this.updateSystems.set(comp.componentId, comp)
-        }
         this.initialize(comp)
 
         
@@ -93,24 +88,14 @@ export class ScriptingEngine implements System<ScriptObject> {
             deleted.alive = false
 
             this.deleted.push(deleted)
-            if (deleted.callback) {
-                this.updateSystems.delete(comp)
-            }
-            if (deleted.destroy) {
-                deleted.destroy()
-            }
-            let set = this.objectDB.get(deleted.className)
-            if (set) {
-                set.delete(deleted)
-            }
+            deleted.destructor()
+
 
        }
     
     }
-    initialize(comp: Script) {
-        if (comp.init) {
-            comp.init(this)
-        }
+    initialize(comp: ScriptObject) {
+        comp.initialize(this)
 
     }
     update(dt: number): void {
@@ -124,6 +109,7 @@ export class ScriptingEngine implements System<ScriptObject> {
             }
             
         }
+        this.operations.update(dt)
         while (this.deleted.length > 0 ) {
 
             let comp = this.deleted.pop()

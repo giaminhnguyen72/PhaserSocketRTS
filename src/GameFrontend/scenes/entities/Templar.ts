@@ -20,7 +20,7 @@ type Data = {
 export class Templar implements Entity {
     className: string = "Templar"
     transform: Transform = new Transform({x: 0,y: 0,z:5}, {x:0, y: 0, z:0})
-    sprite: Sprite3d = new Sprite3d({pos: this.transform.pos, dim:{length:64, height: 64}, rot: 0}, "/images/Templar.png")
+    sprite: Sprite3d = new Sprite3d({pos: this.transform.pos, dim:{length:128, height: 128}, rot: 0}, "/images/Templar.png")
     components: Component[] = [
         this.sprite,
         this.transform

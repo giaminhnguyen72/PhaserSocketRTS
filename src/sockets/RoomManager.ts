@@ -24,7 +24,15 @@ import { MultiplayerStage } from "../engine/src/core/MultiplayerScene.js"
 import { Knight } from "../GameFrontend/scenes/entities/Player/Knight.js"
 import { ScriptingEngine } from "../engine/src/systems/scripting/ScriptingEngine.js"
 import { Script } from "..//engine/src/systems/scripting/components/Script.js"
-import { getDirection, moveTowards } from "../engine/src/math/Vector.js"
+import { getDirection, getDistance, moveTowards } from "../engine/src/math/Vector.js"
+import { FindSkill } from "../GameFrontend/scenes/Skills/SkillNavigation.js"
+import { SpawnMonsters } from "../GameFrontend/scenes/Skills/SpawnSkills/Spawn.js"
+import { BearSystem } from "../GameFrontend/scenes/entities/Mobs/Bear.js"
+import { CandowispSystem } from "../GameFrontend/scenes/entities/Mobs/Candowisp.js"
+import { DarkMageSystem } from "../GameFrontend/scenes/entities/Mobs/DarkMage.js"
+import { EarthTortoiseSystem } from "../GameFrontend/scenes/entities/Mobs/EarthTortoise.js"
+import { GiantSpider, SpiderSystem } from "../GameFrontend/scenes/entities/Mobs/GiantSpider.js"
+import { MindFlayerSystem } from "../GameFrontend/scenes/entities/Mobs/MindFlayer.js"
 //Rooms are going to have more options than this. Will probably add a RoomConfig Interface
 export class Room {
     players: Map<number, Player>
@@ -45,6 +53,7 @@ export class Room {
         let templar = new Templar()
         console.log(roomID + " is room id")
         let idString = roomID.toString()
+
         this.engine = new Engine(
             {
 
@@ -55,20 +64,19 @@ export class Room {
             collisionConfig: {},
             sceneConfig: [
                 
-                new Test(
-                
-                    )
+                Test
     
                 
             
-            ]
+            ],
+            system: [[SocketServerManager,  {server:this.roomManager.server,  roomId: idString, buffer: 0, delay: 0}]]
+            
         })
 
                 
             
-    
-            console.log("Room id string before push is " + idString)
-        this.engine.systems.push(new SocketServerManager(this.engine.sceneManager, {server:this.roomManager.server,  roomId: idString, buffer: 0, delay: 0}))
+
+        // this.engine.systems.push(new SocketServerManager(this.engine.sceneManager, {server:this.roomManager.server,  roomId: idString, buffer: 0, delay: 0}))
 
         this.engine.start(50)
     } 
@@ -135,23 +143,122 @@ class Test extends MultiplayerStage implements Entity{
    time: number = 0;
    
     
-    constructor(...entities: Entity[]) {
+    constructor(scene:SceneManager, entities: Entity[]) {
         super("MainScene",{xMin: -10000, xMax: 10000, yMin: -10000, yMax: 10000, zMin: -10000, zMax: 10000 }, ...entities)
-        
+        this.sceneManager = scene
         let comp = new SocketServer({},{}, EngineType.SOCKETSERVER)
 
         let script = new Script("Scene", EngineType.SOCKETSERVER,(dt: number) => {
             let c = script.system.queryClass("Livable")
             let players = script.system.queryClass("KNIGHT")
-            if (players) {
-                for (let script of players) {
+            let Projectile = script.system.queryClass("Projectile")
+            let Spinning = script.system.queryClass("Spinning")
+            let Moveable = script.system.queryClass("Moveable")
+            let Enemy = script.system.queryClass("Enemy")
+            let time = script.properties.get("Time")
+            if (time != null && time != undefined) {
+                if (time > 10000) {
+                    let pos = {
+                        x: Math.random() * 1000 - 500, 
+                        y: Math.random() * 1000 - 500,
+                        z: 10
+                    }
+                    let pos2 = {
+                        x: Math.random() * 1000 - 500, 
+                        y: Math.random() * 1000 - 500,
+                        z: 10
+                    }
+                    SpawnMonsters(this, 9, pos)
+                    SpawnMonsters(this, 11, pos2)
+                    for (let i = 0; i< 14; i++) {
+                        let newPos = {
+                            x: Math.random() * 1000 - 500, 
+                            y: Math.random() * 1000 - 500,
+                            z: 10
+                        }
+                        SpawnMonsters(this, i, newPos)
+                        
+                    }
+                    time = time % 1000
+                }
+                time += dt
+                script.properties.set("Time",time)
+            }
+            // Enemy system
+            if (Enemy && players) {
+                let player;
+                for (let i of players) {
+                    player = i
+                    break
+                }
+                let position = player?.properties.get("Position")
+                if (position) {
+                    for (let e of Enemy) {
+                        let ePos = e.properties.get(("Destination"))
+                        let distance = getDistance(ePos, position)
+                        let range= e.properties.get("Range")
+                        if (ePos && range == 0) {
+                            ePos.x =  position.x
+                            ePos.y= position.y
+                            
+                        } else if (distance < range ) {
+
+                        }
+                    }
+                }
+
+            }
+            if (Moveable) {
+                for (let script of Moveable) {
                     let destination = script.properties.get("Destination")
                     let position = script.properties.get("Position")
-                    if (destination && position) {
-                        moveTowards(position, destination, dt, 0.1, 5)
+                    let speed = script.properties.get("Speed")
+                    if (destination && position && speed) {
+                        moveTowards(position, destination, dt, speed, 5)
+                        let direction = script.properties.get("Direction")
+                        if (direction) {
+                            let dirVec = getDirection(position, destination)
+                            direction.x = dirVec.x
+                            direction.y = dirVec.y
+                        }
                     }
                 }
             }
+            if (Spinning) {
+                for (let i of Spinning) {
+                    let script = i
+                    let position = script.properties.get("Position")
+                    let Axis = script.properties.get("Axis")
+                    let radius = script.properties.get("Radius")
+                    let angle = script.properties.get("Angle")
+                    let Duration = script.properties.get("Time")
+                    if (angle && position && Axis && radius) {
+                        let theta = angle + 2 * Math.PI * dt/ Duration 
+                        let x = Axis.x + radius * Math.cos(theta)
+                        let y = Axis.y + radius * Math.sin(theta)
+                        position.x = x
+                        position.y = y
+    
+                        script.properties.set("Angle", theta)
+                    }
+                }
+
+            }
+            //Projectile System
+            if (Projectile) {
+                for (let i of Projectile) {
+                    let Duration = i.properties.get("Duration")
+                    
+                    if (Duration && Duration <= 0 ) {
+                        this.removeEntity(i.entity as number)
+                    } else {
+                        i.properties.set("Duration", Duration - dt)
+                    }
+                }
+            }
+
+
+            // HP System
             if (c) {
                 for (let script of c) {
                     let healthy = script.properties.get("HP")
@@ -162,13 +269,22 @@ class Test extends MultiplayerStage implements Entity{
                     }
                 }
             }
+
+            
+
         })
+        script.properties.set("Time", 0)
+        script.setInit((s) => {
+            s.addOperation([BearSystem, CandowispSystem, DarkMageSystem, EarthTortoiseSystem, SpiderSystem, MindFlayerSystem])
+        }
+        )
         comp.initializeEventCallback({"connection": {
             "click": (pos) => {
                     let character = comp.playerCharacter.get(pos.socketId)
                     let engine = this.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING", ScriptingEngine)
                     if (engine && character) {
-
+                        // On Click Get the Player's Direction and Set it to that Direction
+                        // Also choose that position as the destination
                         for (let i = 0; i < character.components.length;i++) {
                             let script = engine.components.get(character.components[i].componentId as number)
                             if (script) {
@@ -190,27 +306,29 @@ class Test extends MultiplayerStage implements Entity{
                  
         },
             "keydown": (data) => { 
-                    let character = comp.playerCharacter.get(data.socketId)
-                    let engine = this.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING", ScriptingEngine)
-                    console.log("Key down has been pressed")
-                    if (engine && character ) {
-                        console.log("found character")
-                        for (let i = 0; i < character.components.length;i++) {
-                            let script = engine.components.get(character.components[i].componentId as number)
-                            if (script) {
-                                let Inventory = script.properties.get("Inventory")
-                                if (Inventory) {
-                                    console.log("found Inventory")
-                                    Inventory[0].use(script)
-                                }
-                            }
+
+
+            },
+            "Skill": (data) => {
+                console.log("Received skill")
+                let character = comp.playerCharacter.get(data.socketId)
+                let engine = this.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING", ScriptingEngine)
+                if (character && engine) {
+                    for (let i = 0; i < character.components.length;i++) {
+                        let charScript = engine.components.get(character.components[i].componentId as number)
+                        
+                        if (charScript) {
+                            FindSkill(data.data,charScript , this)
+                            break
                         }
-
-
                     }
-
+                }
+                
             }
-        }})
+        }
+    
+    
+    })
 
         this.components.push(comp, script) 
         
@@ -239,7 +357,8 @@ export default class RoomManager {
                 if (item) {
                     let knight =  new Knight()
                     item.playerCharacter.set(socket.id,knight)
-                    item.system.sceneManager.getCurrentScene().addEntity(knight)
+                    let ent = item.system.sceneManager.getCurrentScene().addEntity(knight)
+                    socket.emit("PlayerID", ent.id)
                 }
                 console.log(playerName)
                 console.log(roomID)
@@ -272,6 +391,7 @@ export default class RoomManager {
     removeRoom(roomID: number) {
         if (this.rooms.has(roomID)) {
             this.rooms.delete(roomID)
+            SocketServer.GetSocketServerMap().delete(roomID.toString())
         } else {
             console.log("Delete error room not found")  
         }

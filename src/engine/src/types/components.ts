@@ -51,6 +51,7 @@ export interface Renderable extends Component {
     collideType: string
     shape: Shape
     boundingBox: Rectangle
+    normals: Vector3[]
     collides(collider: Collideable): void
     checkCollision(collider: Collideable):boolean
     update(dt: number, ctx?: CanvasRenderingContext2D): void

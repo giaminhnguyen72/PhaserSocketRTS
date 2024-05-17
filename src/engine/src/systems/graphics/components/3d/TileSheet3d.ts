@@ -19,8 +19,15 @@ import { Position } from "../../../../../../engine/src/types/components/physics/
 import { System } from "../../../../../../engine/src/types/system.js";
 import { TextureLoader } from "three/src/loaders/TextureLoader.js";
 import { SpriteMaterial } from "three/src/materials/SpriteMaterial.js";
-import { NearestFilter, RepeatWrapping, Sprite } from "three";
+import * as THREE from 'three'
+import { TextureResource } from "./Texture.js";
 
+type TextureOffset = {
+    x: number,
+    y: number,
+    width: number,
+    height: number
+}
 export class TileSheet3d implements Renderable {
     entity?: number | undefined;
     visible: boolean = true;
@@ -29,52 +36,114 @@ export class TileSheet3d implements Renderable {
     componentId?: number | undefined;
     system!: GraphicsEngine;
     path: string 
-    
-    imageLength: number
+    textureOffsets: TextureOffset[]
+    //image width and height
+    width: number =0
+    height: number = 0
+    //cell length in world distances
+    cellWidth: number = 0
+    cellHeight: number
+    spriteMap: number[][]
+    meshes: THREE.Mesh[] = []
     // Array of number of columns in each row
     // To get number of rows use numOfStates.length 
 
-    constructor(path: string, rectangle: Rectangle,  imageLength: number) {
+    constructor(path: string, rectangle: Rectangle, w: number, h: number, cellWidth: number, cellHeight: number, textureOffset: TextureOffset[]) {
         
         this.path = path
         this.pos = rectangle.pos
         this.shape = rectangle
 
-        this.imageLength = imageLength
-
+        this.width = w
+        this.height = h
+        this.textureOffsets = textureOffset
+        this.cellHeight = cellHeight
+        this.cellWidth = cellWidth
+        
+        let arrWidth = Math.ceil(this.shape.dim.length / this.cellWidth)
+        let arrHeight = Math.ceil(this.shape.dim.height / this.cellHeight)
+        let arr: number[][] = []
+        for (let i = 0; i < arrHeight; i++) {
+            let row = new Array(arrWidth).fill(0)
+            arr.push(row)
+        }
+        this.spriteMap = arr
         
         
     }
-
+    addTexture(...tile: TextureOffset[]) {
+        for (let i of tile) {
+            this.textureOffsets.push(i)
+        }
+        
+    }
+    setTile(x: number, y:number, val: number) {
+        this.spriteMap[y][x] = val
+    }
     unmount(): void {
-        this.sprite.parent?.remove(this.sprite)
+        for (let i of this.sprite) {
+            this.system.sceneGraph.remove(i)
+        }
     }
     loaded: boolean  = false
     context!: ContextInfo;
     rendered: boolean= false;
     pos: Position;
     shape:Rectangle
-    sprite!: Sprite
+    sprite: THREE.Mesh[] = []
     material!:SpriteMaterial
     render(cam: OrthographicCamera3d): void {
 
     }
-    create(path: string) {
-        let loader =  new TextureLoader()
-        let loaded = loader.load(this.path, (data) => {
-            data.repeat.set(1/this.imageLength, 1)
-            data.wrapS = RepeatWrapping
-            data.wrapT = RepeatWrapping
-            data.magFilter = NearestFilter
-            let material = new SpriteMaterial({map: data})
-            this.material = material
+    setTexture(x: number, y:number, textureIDX: number) {
+        this.spriteMap[y][x] = textureIDX
+    }
 
-            let sprite = new Sprite(material)
-            this.sprite = sprite
-            this.loaded = true
-            sprite.scale.set(this.shape.dim.length, this.shape.dim.height, 1)
-            this.system.sceneGraph.add(sprite)
+    initialize(graphics: GraphicsEngine): void {
+        
+
+
+
+
+        let w = graphics.sceneManager.loadResource<TextureResource>(TextureResource, this.path)
+        if (w) {
+
+            for (let r = 0; r < this.spriteMap.length; r++) {
+                for (let c = 0; c < this.spriteMap[r].length; c++) {
+
+
+
+                    let tileInfo = this.textureOffsets[this.spriteMap[r][c]]
+                    let texture = w.clone()
+                    texture.offset.setX(tileInfo.x)
+                    texture.offset.setY(tileInfo.y)
+                    texture.repeat.set(tileInfo.width/this.width, tileInfo.height/this.height)
+                    texture.magFilter = THREE.NearestFilter
+                    texture.colorSpace = THREE.SRGBColorSpace
+
+                                        
+                    let material = new THREE.MeshBasicMaterial({map: texture, toneMapped:false, fog: false})
+                    let geo = new THREE.PlaneGeometry(this.cellWidth, this.cellHeight)
+                    let sprite = new THREE.Mesh(geo,material)
+                    
+                    this.loaded = true
+
+                    
+                    let startPosX = this.shape.dim.length * -0.5 + this.pos.x
+                    let startPosY = this.shape.dim.height * -0.5 +  this.pos.y
+                    
+                    let xPos = startPosX + c * this.cellWidth
+                    let yPos = startPosY + r * this.cellHeight
+                    sprite.position.setX(xPos)
+                    sprite.position.setY(yPos)
+                    graphics.sceneGraph.add(sprite)
+                    this.sprite.push(sprite)
+
+                }
+            }
             
+            
+
 
             
             //let box = new BoxGeometry(64,64,1)
@@ -85,22 +154,76 @@ export class TileSheet3d implements Renderable {
 
             //graphics.sceneGraph.add(mesh)
 
+        } else {
+            console.log("LCant find loaded asset")
+            let loader =  new TextureLoader()
+            let loaded = loader.load(this.path, (data) => {
+                data.magFilter = THREE.NearestFilter
+                data.colorSpace = THREE.SRGBColorSpace
+ 
+                for (let r = 0; r < this.spriteMap.length; r++) {
+                    for (let c = 0; c < this.spriteMap[r].length; c++) {
+    
+    
+    
+                        let tileInfo = this.textureOffsets[this.spriteMap[r][c]]
+                        let texture = data.clone()
+                        texture.offset.setX(tileInfo.x)
+                        texture.offset.setY(tileInfo.y)
+                        texture.repeat.set(tileInfo.width/this.width, tileInfo.height/this.height)
+    
+    
+                                            
+                        let material = new THREE.MeshBasicMaterial({map: texture, toneMapped:false, fog: false})
+                        let geo = new THREE.PlaneGeometry(this.cellWidth, this.cellHeight)
+                        let sprite = new THREE.Mesh(geo,material)
+                        
+                        this.loaded = true
+    
+                        
+                        let startPosX =this.shape.dim.length* -0.5 + this.pos.x
+                        let startPosY = this.shape.dim.height * -0.5 +  this.pos.y
+                        
+                        let xPos = startPosX + c * this.cellWidth
+                        let yPos = startPosY + r * this.cellHeight
+                        sprite.position.setX(xPos)
+                        sprite.position.setY(yPos)
+                        graphics.sceneGraph.add(sprite)
+                        this.sprite.push(sprite)
+                    }
+                }
+                
 
-        
-        }, () => {
-            console.log("progressing")
-        }, () => {
-            throw new Error("Picture failed to load")
-        })
+    
+                
+                //let box = new BoxGeometry(64,64,1)
+                //let BoxMaterial = new MeshBasicMaterial({
+                //    map: data
+                //})
+                //let mesh = new Mesh(box,BoxMaterial)
+    
+                //graphics.sceneGraph.add(mesh)
 
-    } 
-    initialize(graphics: GraphicsEngine): void {
-        
-        this.create(this.path)
-
-
-
-
+    
+            
+            }, () => {
+                console.log("progressing")
+            }, () => {
+                throw new Error("Picture failed to load")
+            })
+            
+    
+    
+            
+            //this.component.position.set(this.pos.x, this.shape.pos.y, this.shape.pos.z)
+    
+    
+            //graphics.sceneGraph.add( cube );
+            
+    
+            
+        }
+        this.system = graphics
         
         //this.sprite.position.set(this.pos.x, this.shape.pos.y, this.shape.pos.z)
 
@@ -114,7 +237,10 @@ export class TileSheet3d implements Renderable {
     }
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
         if (this.loaded) {
-            this.sprite.scale.set(this.shape.dim.length, this.shape.dim.height, 1)
+            for (let i of this.sprite) {
+                i.scale.set(1, 1, 1)
+            }
+           
         }
         
     }

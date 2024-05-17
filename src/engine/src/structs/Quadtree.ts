@@ -1,7 +1,7 @@
 interface Rectangle {
     pos: {x: number, y: number}
     dim: {length: number, height: number}
-
+    rot: number
 }
 interface Rectangular {
     getRectangle(): Rectangle
@@ -147,10 +147,10 @@ class QuadTreeNode<T extends Rectangular> {
         this.clear()
         this.area = rectangle
         if (this.depth + 1 < this.maxDepth) {
-            this.children.push(new QuadTreeNode({pos: {x: rectangle.pos.x - rectangle.dim.length / 4, y: rectangle.pos.y  + rectangle.dim.height / 4},dim: {length: rectangle.dim.length / 2, height: rectangle.dim.height / 2} }, this.depth + 1))
-            this.children.push(new QuadTreeNode({pos: {x: rectangle.pos.x - rectangle.dim.length / 4, y: rectangle.pos.y  - rectangle.dim.height / 4},dim: {length: rectangle.dim.length / 2, height: rectangle.dim.height / 2 }}, this.depth + 1))
-            this.children.push(new QuadTreeNode({pos: {x: rectangle.pos.x + rectangle.dim.length / 4, y: rectangle.pos.y  + rectangle.dim.height / 4},dim: {length: rectangle.dim.length / 2, height: rectangle.dim.height / 2} }, this.depth + 1))
-            this.children.push(new QuadTreeNode({pos: {x: rectangle.pos.x + rectangle.dim.length / 4, y: rectangle.pos.y  - rectangle.dim.height / 4},dim: {length: rectangle.dim.length / 2, height: rectangle.dim.height / 2} }, this.depth + 1))
+            this.children.push(new QuadTreeNode({pos: {x: rectangle.pos.x - rectangle.dim.length / 4, y: rectangle.pos.y  + rectangle.dim.height / 4},dim: {length: rectangle.dim.length / 2, height: rectangle.dim.height / 2} , rot: 0}, this.depth + 1))
+            this.children.push(new QuadTreeNode({pos: {x: rectangle.pos.x - rectangle.dim.length / 4, y: rectangle.pos.y  - rectangle.dim.height / 4},dim: {length: rectangle.dim.length / 2, height: rectangle.dim.height / 2 }, rot: 0}, this.depth + 1))
+            this.children.push(new QuadTreeNode({pos: {x: rectangle.pos.x + rectangle.dim.length / 4, y: rectangle.pos.y  + rectangle.dim.height / 4},dim: {length: rectangle.dim.length / 2, height: rectangle.dim.height / 2}, rot: 0 }, this.depth + 1))
+            this.children.push(new QuadTreeNode({pos: {x: rectangle.pos.x + rectangle.dim.length / 4, y: rectangle.pos.y  - rectangle.dim.height / 4},dim: {length: rectangle.dim.length / 2, height: rectangle.dim.height / 2}, rot: 0 }, this.depth + 1))
         }
         
     }
@@ -170,6 +170,8 @@ class QuadTreeNode<T extends Rectangular> {
     }
     insert(item: T):QuadTreeNode<T> {
         for (let i = 0; i < this.children.length; i++) {
+
+
             if (contains(this.children[i].area, item.getRectangle())) {
                 if (this.depth + 1 < this.maxDepth) {
 

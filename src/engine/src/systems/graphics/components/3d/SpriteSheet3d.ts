@@ -19,7 +19,7 @@ import { Position } from "../../../../../../engine/src/types/components/physics/
 import { System } from "../../../../../../engine/src/types/system.js";
 import { TextureLoader } from "three/src/loaders/TextureLoader.js";
 import { SpriteMaterial } from "three/src/materials/SpriteMaterial.js";
-import { Sprite } from "three";
+import { NearestFilter, Sprite, SRGBColorSpace } from "three";
 import { GRAPHICS_TAG } from "../../../../../../engine/src/constants/componentType.js";
 
 export class TimedSpriteSheet3d implements Renderable {
@@ -99,6 +99,8 @@ export class TimedSpriteSheet3d implements Renderable {
         let loader =  new TextureLoader()
         let loaded = loader.load(this.path, (data) => {
             data.repeat.set(1/this.maxColumn, 1/this.numOfStates.length)
+            data.magFilter = NearestFilter
+            data.colorSpace = SRGBColorSpace
             let material = new SpriteMaterial({map: data})
             this.material = material
             let sprite = new Sprite(material)
@@ -130,7 +132,7 @@ export class TimedSpriteSheet3d implements Renderable {
         
         this.create(this.path)
 
-
+        
 
 
         
@@ -164,7 +166,8 @@ export class TimedSpriteSheet3d implements Renderable {
                     this.material.map.offset.x = this.column / this.maxColumn
                     let state = 0;
                     
-                    this.material.map.offset.y = 0
+                    this.material.map.offset.y = this.row / this.numOfStates.length
+
                     this.sprite.position.x = this.pos.x
                     this.sprite.position.y = this.pos.y
                     this.sprite.position.z = this.pos.z
@@ -172,15 +175,18 @@ export class TimedSpriteSheet3d implements Renderable {
                     this.sprite.scale.set(this.shape.dim.length , this.shape.dim.height, 1)
 
                 } else {
-                    console.log("Map not found")
+                    throw new Error("Not found")
                 }
                 
+            }  else {
+                console.log(this.path + " not loaded")
             }
 
         }
     }
     bindPos(element: {pos: Position}) {
         this.shape.pos = element.pos
+        this.pos = element.pos
     }
     bind(element: {shape: Rectangle}) {
         this.shape = element.shape

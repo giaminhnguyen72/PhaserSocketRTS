@@ -83,9 +83,7 @@ export class Transform implements Transformable {
     
     
     update(dt: number): void {
-        if (this.vel.x > 0 || this.vel.x < 0) {
-            console.log("updatinh " + this.componentId)
-        }
+
         this.vel.x = this.vel.x  + this.accel.x * dt
         this.vel.y = this.vel.y  + this.accel.y * dt
         this.vel.z = this.vel.z  + this.accel.z * dt
