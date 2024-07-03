@@ -50,6 +50,82 @@ export class ResourceContainer<T> extends Container<T> {
     }
 }
 export class ResourceManager {
+    loadDataResource<T extends Resource>(type: new () => T, name: string) {
+        let resourceMap = this.resources.get(type.name)
+        if (resourceMap) {
+            let r = resourceMap as ResourceContainer<T> 
+            let resource = r.get(name)
+            return resource
+        } else {
+            
+            let item = this.addResource<T>(type, name)
+            return item
+        }
+    }
+    load<T extends Resource>(type: new () => T, name: string) {
+        let resourceMap = this.resources.get(type.name)
+        if (resourceMap) {
+            let r = resourceMap as ResourceContainer<T> 
+            let resource = r.get(name)
+            return resource
+        } else {
+            
+            
+            return undefined
+        }
+    }
+    addDataResource<T extends Resource>(type: new () => T, name: string) {
+        let resourceMap = this.resources.get(type.name)
+        if (resourceMap) {
+            let r = resourceMap as ResourceContainer<T> 
+            let resource = new type()
+            r.add(name, resource)
+            return resource
+            
+        } else {
+            let newContainer = new ResourceContainer<T>(type)
+            let resource = new type()
+            newContainer.add(name, resource)
+            this.resources.set(type.name, newContainer)
+
+            return resource
+        }
+    }
+    addCreatedResource<T extends Resource>(type: new (...param: any[]) => T, data: T,name: string) {
+        let resourceMap = this.resources.get(type.name)
+        if (resourceMap) {
+            let r = resourceMap as ResourceContainer<T> 
+            let resource = data
+            r.add(name, resource)
+            return resource
+            
+        } else {
+            let newContainer = new ResourceContainer<T>(type)
+            let resource = data
+            newContainer.add(name, resource)
+            this.resources.set(type.name, newContainer)
+
+            return resource
+        }
+    }
+    //Needs to dispose the resource
+    removeDataResource<T extends Resource>(type: new () => T, name: string) {
+        let resourceMap = this.resources.get(type.name)
+        if (resourceMap) {
+            let r = resourceMap as ResourceContainer<T> 
+            let item = r.remove(name)
+            if (item) {
+                return item
+            } else {
+                return undefined
+            }
+        } else {
+            return undefined
+
+
+
+        }
+    }
     resources: Map<string, Containable> = new Map()
     loadResource<T extends Resource>(type: new (n: string) => T, name: string) {
         let resourceMap = this.resources.get(type.name)

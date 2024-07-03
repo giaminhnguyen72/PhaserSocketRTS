@@ -56,6 +56,7 @@ export interface Renderable extends Component {
     checkCollision(collider: Collideable):boolean
     update(dt: number, ctx?: CanvasRenderingContext2D): void
     getRectangle(): Rectangle
+    getCollisionBox(col:Collideable): Rectangle
     
 }
 export interface Listenable extends Component{

@@ -13,6 +13,9 @@ import { MultiplayerSyncronizer } from "../../../../engine/src/systems/Multiplay
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
 import { lerp } from "../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
+import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
+import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { ExpEvent } from "../../../../GameFrontend/events/ExpEvent.js";
 type Data = {
     componentId: number[],
     vel: Vector3,
@@ -20,12 +23,12 @@ type Data = {
 
 }
 export class Fist implements Entity {
-    components: Component[];
+    components: [Sprite3d, Transform, Component,  Script,BoxCollider];
     id?: number | undefined;
-    scene?: Scene | undefined;
+    scene!: Scene ;
     className: string = "FIST";
     constructor(pos: Vector3 = {x:0, y:0, z:0}, dir: Vector3= {x:0,y:0,z:0}) {
-        let vel = {x: dir.x* 0.2, y: dir.y * 0.2,z:0}
+        let vel = {x: dir.x* 0.05, y: dir.y * 0.05,z:0}
         let transform = new Transform(pos, vel)
         let sprite = new Sprite3d( {
             dim:{
@@ -80,13 +83,60 @@ export class Fist implements Entity {
         script.setInit((system) => {
             system.addSuperClasses(script, "Projectile")
         })
-        script.properties.set("Duration", 2000)
-        script.properties.set("Damage", 200)
+        script.properties.set("Duration", 500)
+        script.properties.set("Damage", 15)
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                //  
 
+                                let enemyHP = i.get("HP")
+                                let damage = script.get("Damage")
+                                i.set("HP", enemyHP - damage)
+                                if (enemyHP <= 0) {
+                                    return
+                                }
+                                if (enemyHP - 10 <= 0) {
+                                    let e = this.scene.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING",ScriptingEngine)
+                                    if (e) {
+                                        
+                                        let entity = e.operations.addEntity(script.componentId as number)
+                                        let exp = new ExpEvent()
+                                        exp.playerID = script.get("Owner")
+                                        exp.exp = 20
+                                        entity.addComponent<ExpEvent>(ExpEvent, exp)
+                                    }
+                                }
+                                this.scene.removeEntity(this.id as number)
+                                break
+                            case 1:
+                                break
+                            default:
+                                break
+
+                        }
+                        return
+
+                    }
+                }
+            }
+        })
+        
+        collider.bindPos(transform)
 
 
         // Needs colllider
-        this.components = [sprite, transform,sync,script]
+        this.components = [sprite, transform,sync,script, collider]
 
 
     }

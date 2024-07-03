@@ -19,7 +19,7 @@ export class PhysicsEngine implements System<Transformable>{
     }
     register(comp: Transformable, id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
-
+            console.error("Found component without Component ID " + this.tag)
             comp.system = this
             comp.componentId = id
             this.components.set(id, comp)

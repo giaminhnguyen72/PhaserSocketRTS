@@ -153,12 +153,15 @@ export class MultiplayerStage implements Scene, Entity {
                     comp.componentId = id
                     system.register(comp, id)
                     
-                } 
+                } else {
+                    console.log("Given Compoonent id ")
+                    comp.componentId = this.getUniqueComponentId()
+                }
 
 
                 
             } else {
-                console.log(comp.engineTag + "does not exist")
+                
 
                 comp.componentId = this.getUniqueComponentId()
                 
@@ -169,34 +172,48 @@ export class MultiplayerStage implements Scene, Entity {
         return entity
     }
     removeEntity(id: number) {
+        // for (let i = this.addedEntities.length - 1; i >=  0; i--) {
+        //     let entities= this.addedEntities
+        //     if (entities[i].id == id) {
+        //         if (entities.length == 1 ) {
+        //             this.addedEntities.pop()
+        //             return
+        //         }
+        //         entities[i]= this.addedEntities[this.addedEntities.length - 1]
+        //         this.addedEntities.pop()
+        //         return
+        //     }
+        // }
         this.removedEntities.push(id)
     }
-    executeEntityRemove(id: number) {
+    private executeEntityRemove(id: number) {
         let entity : Entity | undefined = this.entities.get(id)
-        console.log(entity?.className)
+
         
-    if (entity) {
-        this.entities.delete(id)
-        let entityMap = this.classMap.get(entity.className)
-        if (entityMap) {
-            entityMap.delete(id)
+        if (entity) {
+            this.entities.delete(id)
+            let entityMap = this.classMap.get(entity.className)
+            if (entityMap) {
+                entityMap.delete(id)
 
-        } 
-        for (let c of entity.components) {
+            } 
+            for (let c of entity.components) {
 
-            if (this.querySys(c.engineTag)) {
-                c.system.unregister(c.componentId as number)
+                if (this.querySys(c.engineTag)) {
+                    c.system.unregister(c.componentId as number)
+                }
+                
             }
-            
-        }
-        for (let i of this.components) {
-            if (i instanceof SocketServer) {
-                i.deleted.push(id)
+            for (let i of this.components) {
+                if (i instanceof SocketServer) {
+                    console.log("Entity Class: " + entity.className)
+                    console.log("Entity ID: " + entity.id)
+                    i.deleted.push(id)
+                }
             }
-        }
         
 
-    }
+        }
         return entity
     }
     addServerEntity(scene:Scene, entity: Entity) {

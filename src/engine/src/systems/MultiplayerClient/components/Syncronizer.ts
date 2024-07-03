@@ -70,9 +70,10 @@ interface SocketEvent extends EngineEvent{
     copyData(listener: MultiplayerSyncronizer<T, Data>): void {
         if (listener.data) {
             this.data = listener.data
+            
         }
     }
-    //Used for lag compnesation probably
+    //Used for lag compnesation probablyf
     clone() {
         let entity = new MultiplayerSyncronizer<T, Data>(this.currEntity, this.copyFunc, this.returnData)
         entity.componentId = this.componentId
@@ -113,7 +114,6 @@ interface SocketEvent extends EngineEvent{
             let c = component
             if (c.data) {
                 this.copyFunc(c.data)
-                console.log("New entity has been created")
                 this.data = c.data
             }
             

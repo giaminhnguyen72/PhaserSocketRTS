@@ -27,7 +27,7 @@ export class HealBall implements Entity {
     constructor(owner: number =0, pos: Vector3 = {x:0, y:0, z:0}, dir: Vector3= {x:0,y:0,z:0}, ) {
         let vel = {x: dir.x* 0.2, y: dir.y * 0.2,z:0}
         let transform = new Transform(pos, vel)
-        let sprite = new TimedSpriteSheet3d("/images/Projectiles/Healballl.png", {
+        let sprite = new TimedSpriteSheet3d("/images/Projectiles/Healball.png", {
             dim:{
                 length: 32,
                 height:32

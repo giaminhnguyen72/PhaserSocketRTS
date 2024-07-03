@@ -2,11 +2,9 @@ export interface Containable {
 
     // Usually in ecs this would be here but since typescript cants support real generics we get type id of T instead
     // getTypeID(): string 
-    
+    remove(id:number): void
 }
-class Position {
-    
-}
+
 export abstract class Container<T> implements Containable {
     abstract get(id: number): T | undefined
     abstract iterate(callback:(item: [ number, T]) => void): void;
@@ -46,15 +44,27 @@ export class VectorContainer<T> extends Container<T> {
         }
     }
     remove(id: number) {
+
         for (let i =0; i < this.data.length; i++) {
             let item =  this.data[i]
+            let found = false
             if (item[0] == id) {
-                let last = this.data[this.data.length - 1]
-                this.data[i] = last
-                this.data.pop()
+                if (this.data.length > 1) {
+                    let last = this.data[this.data.length - 1]
+                    this.data[i] = last
+                    this.data.pop()
+                } else if (this.data.length == 1) {
+                    this.data.pop()
+                }
+                
+                return undefined
+                
 
             }
         }
+
+    
+        
         return undefined
     }
 
@@ -62,7 +72,7 @@ export class VectorContainer<T> extends Container<T> {
         return this.type   
     }
 }
-export class MapppedContainer<T> extends Container<T> {
+export class MappedContainer<T> extends Container<T> {
     // Enitity ID to Component
     data: Map<number, T> = new Map()
     type: string

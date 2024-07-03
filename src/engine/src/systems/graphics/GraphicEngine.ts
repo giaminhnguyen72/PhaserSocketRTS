@@ -40,6 +40,7 @@ export class GraphicsEngine implements System<Renderable>{
     mainCamera: OrthographicCamera
     renderer: WebGLRenderer
     sceneGraph: SceneGraph
+    uiScene: SceneGraph = new SceneGraph()
     constructor(sceneManager: SceneManager, graphicsConfig: GraphicsConfig) {
         this.graphicsConfig = graphicsConfig
         this.components = new Map<number, Renderable>()
@@ -48,6 +49,7 @@ export class GraphicsEngine implements System<Renderable>{
         this.mainCamera = new OrthographicCamera(-1, 1, 1,-1,0, 2000)
         this.contextInfo = new ContextInfo(graphicsConfig)
         this.renderer = new WebGLRenderer({antialias: true, canvas: this.contextInfo.realCanvas  })
+        this.renderer.localClippingEnabled = true
         window.onresize = () => {
             resizeRendererToDisplaySize(this.renderer)
         }
@@ -76,15 +78,18 @@ export class GraphicsEngine implements System<Renderable>{
 
         }
         this.renderStrategy = new Rendering3d(this)
+        this.uiScene.add(this.mainCamera)
 
-
+        
 
         
     }
     register(comp: Renderable, id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
             //console.log("Registering undefined id in Ggraphics")
-
+            console.error("Found component without Component ID " + this.tag)
+            let e = this.sceneManager.currScene.entities.get(comp.entity as number)
+            console.log(e?.className)
             comp.componentId = id
             comp.system = this
             
@@ -169,12 +174,13 @@ export class GraphicsEngine implements System<Renderable>{
         
         this.renderStrategy.render(cameras)
         this.renderer.autoClear = false
-        for (let i of this.UIComponents) {
-            let ui = this.components.get((i))
-            if (ui) {
-                ui.render(cameras[0])
-            }
-        }
+        // for (let i of this.UIComponents) {
+        //     let ui = this.components.get((i))
+        //     if (ui) {
+        //         ui.render(cameras[0])
+        //     }
+        // }
+        this.renderer.render(this.uiScene,this.mainCamera)
         this.renderer.autoClear = true
         //let bitmapOffScreen = this.contextInfo.canvas.transferToImageBitmap()
         //let canvaRenderer = this.contextInfo.realCanvas.getContext("bitmaprenderer")

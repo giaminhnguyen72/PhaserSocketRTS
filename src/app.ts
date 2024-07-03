@@ -7,7 +7,7 @@ import express, { Express } from 'express'
 
 import helmet from 'helmet';
 import cors from './middlewares/cors.js';
-
+import cookieParser from 'cookie-parser'
 
 import RedirectRouter from './routes/redirect.js';
 import Route from './routes/route.js';
@@ -32,6 +32,7 @@ app.set('env', 'dev');
 /* initialize middlewares */
 
 app.use(express.json());
+app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet({
     contentSecurityPolicy: {

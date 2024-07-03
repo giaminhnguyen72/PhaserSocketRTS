@@ -26,7 +26,7 @@ export class CollisionSystem implements System<Collideable> {
     }
     register(comp: Collideable,id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
-
+            console.error("Found component without Component ID " + this.tag)
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
@@ -71,7 +71,7 @@ export class CollisionSystem implements System<Collideable> {
 
     }
     collisionQuery(rect: Rectangle) {
-        
+        return this.collisionStrategy.query(rect)
     }
 
 }

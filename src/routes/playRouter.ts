@@ -10,10 +10,7 @@ export default class PlayRouter extends Route {
         super();
         this.createGame();
         this.play()
-        this.router.use("/:id", (req: Request, res: Response, next: NextFunction) => {
-            console.log("test")
-            
-        }) 
+
         
         this.rooms = rooms
         
@@ -22,25 +19,26 @@ export default class PlayRouter extends Route {
     play(): void {
         //for spectator mode
         this.router.get('/:id', (req:Request, res:Response, next:NextFunction) => {
-            let id: number= parseInt(req.params.id)
+            let id: number= parseInt(req.params.id,10)
             if (this.rooms?.rooms.has(id)) {
-                console.log("Get")
-
-                res.sendFile(path.join(__dirname, 'public/engine.html'))
+                res.cookie("RoomID", id)
+                res.sendFile(path.join(__dirname, 'public/engine.html'),{}, (error) => {
+                    // Called whenever request completed
+                    // IF completed correctly, error is undefined
+                } ) 
             } else {
                 res.redirect('../')
             }
-            
+             
         })
         //for joining a game
         this.router.post('/:id', (req:Request, res:Response, next:NextFunction) => {
-            let id: number= parseInt(req.params.id)
+            let id: number= parseInt(req.params.id, 10)
             console.log("Request:" + req.body.roomID)
             if (req.body.roomID != undefined) {
                 id = parseInt(req.body.roomID)
-                console.log("Inside if " + id)
             }
-            console.log("ID1 " + id)
+            
 
             if (!validateName(req.body.playerName)) {
                 //res.redirect('../')
@@ -48,8 +46,8 @@ export default class PlayRouter extends Route {
             let playerName: string = req.body.playerName
             playerName = playerName.trim()
             if (this.rooms?.rooms.has(id)) {
-                console.log("Post 32432")
-                
+
+                res.cookie("RoomID", id)
                 res.sendFile(path.join(__dirname, 'public/engine.html'), function (err: Error) {
                     if (err) {
                         next(err)
@@ -84,8 +82,7 @@ export default class PlayRouter extends Route {
             //generate Room ID
             //Set Up sockets connection
             //reroute to play/id
-            console.log('create game20')
-            res.status(404).send("lol fail")
+            res.redirect("../")
         })
         
         

@@ -8,17 +8,17 @@ import { EventSystem, System } from "../../../types/system.js";
 import { UIListener } from "./UIListener.js";
 
 
-export class MouseListener implements Listener<ClickEvent> {
+export class MouseListener implements Listener<MouseEvent | DragEvent> {
     entity!: number;
     engineTag: string = "EVENTHANDLER";
     componentId?: number | undefined;
-    events: Map<string, (click: ClickEvent)=> void>
+    events: Map<string, (click: MouseEvent | DragEvent)=> void>
     visible: boolean = true;
     alive: boolean = true;
     system!: EventHandler;
-
-    
-    constructor(clickMap: {[key:string]:(click: ClickEvent)=>void}) {
+    mousePos: [number, number] = [0,0]
+    pressed: boolean = false
+    constructor(clickMap: {[key:string]:(click: MouseEvent | DragEvent)=>void}) {
         
         this.events = new Map<string, ()=>{}>()
         
@@ -26,10 +26,10 @@ export class MouseListener implements Listener<ClickEvent> {
             this.events.set(k, v)
         })
     }
-    execute(event: ClickEvent): void {
-        let event1: ClickEvent = event
+    execute(event: MouseEvent | DragEvent): void {
+        let event1: MouseEvent | DragEvent = event
         
-        let func = this.events.get(event.eventName)
+        let func = this.events.get(event.type)
         if (func) {
             func(event)
         }
@@ -44,7 +44,7 @@ export class MouseListener implements Listener<ClickEvent> {
         this.visible = listener.visible
         this.alive = listener.alive
     }
-    initialize(system: EventSystem<ClickEvent>): void {
+    initialize(system: EventSystem<MouseEvent | DragEvent>): void {
         system.registerListener(this)
         
     }
@@ -61,16 +61,17 @@ export class MouseListener implements Listener<ClickEvent> {
             alive: this.alive
         }
     }
-    getEvents(): Map<string, (valie:ClickEvent) => void> {
+    getEvents(): Map<string, (valie:MouseEvent | DragEvent) => void> {
         return this.events
     }
     
     
 }
-export class MouseEmitter implements Emitter<ClickEvent> {
-    listeners: Map<number, Listener<ClickEvent>> = new Map()
-    events: ClickEvent[] = []
+export class MouseEmitter implements Emitter<MouseEvent | DragEvent> {
+    listeners: Map<number, Listener<MouseEvent | DragEvent>> = new Map()
+    events:( MouseEvent | DragEvent)[] = []
     entity?: number | undefined;
+    mouseMovement?: MouseEvent 
     visible: boolean = true;
     alive: boolean = true;
     engineTag: string = "EVENTHANDLER";
@@ -81,7 +82,7 @@ export class MouseEmitter implements Emitter<ClickEvent> {
     constructor(engine: EngineType) {
         this.engineType = engine
     }
-    initialize(system: EventSystem<ClickEvent>): void {
+    initialize(system: EventSystem<MouseEvent | DragEvent>): void {
         system.registerEmitter(this)
         if (this.engineType != EngineType.SOCKETSERVER) {
             const canvas = document.querySelector('canvas')
@@ -93,28 +94,37 @@ export class MouseEmitter implements Emitter<ClickEvent> {
                     if (this.events.length > this.maxInput) {
                         this.events.shift()
                     }
-                    this.events.push({
-                        pos: {x: x , y: y , z: 0},
-                        eventName: "click"
-                    })
+                    this.events.push(event)
                 })
                 window.addEventListener("dblclick", (event) => {
                     if (this.events.length > this.maxInput) {
                         this.events.shift()
                     }
-                    this.events.push({
-                        pos: {x: event.x, y:event.y, z: 0},
-                        eventName: "dblclick"
-                    })
+                    this.events.push(event)
+                })
+                window.addEventListener("mouseup",(event) => {
+                    if (this.events.length > this.maxInput) {
+                        this.events.shift()
+                    }
+                    this.events.push(event)
+                })
+                window.addEventListener("mousedown",(event) => {
+                    if (this.events.length > this.maxInput) {
+                        this.events.shift()
+                    }
+                    this.events.push(event)
+                })
+                window.addEventListener("mousemove",(event) => {
+                    this.mouseMovement = event
                 })
             }
             
         }
     }
-    addListener(component: Listener<ClickEvent>): void {
+    addListener(component: Listener<MouseEvent | DragEvent>): void {
         this.listeners.set(component.componentId as number, component)
     }
-    emit(event: ClickEvent): void {
+    emit(event: MouseEvent | DragEvent): void {
         for (let listener of this.listeners) {
             listener[1].execute(event)
         }
@@ -148,27 +158,30 @@ export class MouseEmitter implements Emitter<ClickEvent> {
     }
 
 }
-export class MouseEmitter3d implements Emitter<ClickEvent> {
-    listeners: Map<number, Listener<ClickEvent>> = new Map()
+export class MouseEmitter3d implements Emitter<MouseEvent | DragEvent> {
+    listeners: Map<number, Listener<MouseEvent | DragEvent>> = new Map()
     UIListener: Map<number, UIListener> = new Map()
-    events: ClickEvent[] = []
+    events: (MouseEvent | DragEvent)[] = []
     entity?: number | undefined;
     visible: boolean = true;
     alive: boolean = true;
     engineTag: string = "EVENTHANDLER";
     componentId?: number | undefined;
+    mouseMove?: MouseEvent
     system!: System<Component>;
     engineType:EngineType 
     maxInput: number = 1
-    
+    dragPos: [number, number] = [0,0]
+
     constructor(engine: EngineType) {
         this.engineType = engine
     }
-    initialize(system: EventSystem<ClickEvent>): void {
+    initialize(system: EventSystem<MouseEvent | DragEvent>): void {
         system.registerEmitter(this)
         if (this.engineType != EngineType.SOCKETSERVER) {
             const canvas = document.querySelector('canvas')
             if (canvas) {
+
                 window.addEventListener("click", (event) => {
                     let rect = canvas.getBoundingClientRect()
                     let x = event.x / rect.width * canvas.width
@@ -176,25 +189,35 @@ export class MouseEmitter3d implements Emitter<ClickEvent> {
                     if (this.events.length > this.maxInput) {
                         this.events.shift()
                     }
-                    this.events.push({
-                        pos: {x: event.clientX , y: event.clientY , z: 0},
-                        eventName: "click"
-                    })
+                    this.events.push(event)
                 })
                 window.addEventListener("dblclick", (event) => {
                     if (this.events.length > this.maxInput) {
                         this.events.shift()
                     }
-                    this.events.push({
-                        pos: {x: event.x, y:event.y, z: 0},
-                        eventName: "dblclick"
-                    })
+                    this.events.push(event)
                 })
+                window.addEventListener("mouseup", (event) => {
+                    if (this.events.length > this.maxInput) {
+                        this.events.shift()
+                    }
+                    this.events.push(event)
+                })
+                window.addEventListener("mousedown", (event) => {
+                    if (this.events.length > this.maxInput) {
+                        this.events.shift()
+                    }
+                    this.events.push(event)
+                })
+                window.addEventListener("mousemove", (event) => {
+                    this.mouseMove = event
+                })
+                
             }
             
         }
     }
-    addListener(component: Listener<ClickEvent>): void {
+    addListener(component: Listener<MouseEvent | DragEvent>): void {
 
         if (component instanceof UIListener) {
             
@@ -204,7 +227,7 @@ export class MouseEmitter3d implements Emitter<ClickEvent> {
             this.listeners.set(component.componentId as number, component)
         }
     }
-    emit(event: ClickEvent): void {
+    emit(event: MouseEvent | DragEvent): void {
         for (let listener of this.listeners) {
             listener[1].execute(event)
         }
@@ -226,6 +249,7 @@ export class MouseEmitter3d implements Emitter<ClickEvent> {
             let clicked = false
 
             for (let listener of this.UIListener) {
+                listener[1].update(dt)
                 clicked = clicked || listener[1].isClicked(this.events[i])
 
             }
@@ -235,6 +259,11 @@ export class MouseEmitter3d implements Emitter<ClickEvent> {
             
             this.events.pop()
         }
+        if (this.mouseMove) {
+            this.emit(this.mouseMove)
+            this.mouseMove = undefined
+        }
+        
     }
     copy(component: Component): void {
         this.alive = component.alive
@@ -247,8 +276,4 @@ export class MouseEmitter3d implements Emitter<ClickEvent> {
         }
     }
 
-}
-interface ClickEvent extends EngineEvent{
-    pos: Position
-    eventName: string
 }

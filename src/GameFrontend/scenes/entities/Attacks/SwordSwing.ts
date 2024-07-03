@@ -16,7 +16,8 @@ type Data = {
     componentId: number[],
     vel: Vector3,
     position: Vector3
-    rot: number
+    rot: number,
+    direction: number
 }
 export class SwordSwing implements Entity {
     components: Component[];
@@ -52,7 +53,10 @@ export class SwordSwing implements Entity {
         transform.pos.y = data.position.y
         transform.vel.x = data.vel.x
         transform.vel.y = data.vel.y
+
         for (let i = 0; i < data.componentId.length; i++) {
+            console.log(data.componentId.length)
+            console.log(this.components)
             this.components[i].componentId = data.componentId[i]
         }
     }, ()=> {
@@ -66,7 +70,8 @@ export class SwordSwing implements Entity {
             vel: transform.vel,
             position: transform.pos,
             componentId: array,
-            rot: rot
+            rot: rot,
+            direction: script.get("Direction")
         }
     }, (currtime: number, timestamp: number, data) => {
         let total = timestamp - sync.time
@@ -77,13 +82,18 @@ export class SwordSwing implements Entity {
         let component = data 
         
         if (component.data && sync.data) {
-            sprite.shape.rot = component.data.rot - 3 * Math.PI / 2
+            if (component.data.direction >= 0) {
+                sprite.shape.rot = component.data.rot - 3 * Math.PI / 2
+            } else {
+                sprite.shape.rot = component.data.rot - 3 * Math.PI / 2
+            }
+            
             transform.pos.x = lerp(transform.pos.x, component.data.position.x, dt)
             transform.pos.y = lerp(transform.pos.y, component.data.position.y, dt)
         }
     })
         let script = new Script(this.className,EngineType.SOCKETSERVER)
-        script.properties.set("Duration", 500)
+        script.properties.set("Duration", 5000)
         script.properties.set("Owner", owner)
         
         //Spinning Components
@@ -91,6 +101,7 @@ export class SwordSwing implements Entity {
         script.properties.set("Position", pos)
         script.properties.set("Axis", axis)
         script.properties.set("Angle", 3 *Math.PI / 2)
+        script.set("Direction", 1)
         // TIme is a constant value that never changes representing the the amount of time to do one rotation
         script.properties.set("Time", 500)
 

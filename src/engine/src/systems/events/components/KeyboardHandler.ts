@@ -3,12 +3,9 @@ import { Component, Emitter, EngineEvent, Listenable, Listener } from "../../../
 import { Entity } from "../../../types/Entity.js";
 import { EventSystem, System } from "../../../types/system.js";
 
-export interface KeyEvent extends EngineEvent{
-    eventName: string
-    key: string
-}
-export class KeyboardListener implements Listener<KeyEvent>{
-    events: Map<string, (event: KeyEvent) => void>;
+
+export class KeyboardListener implements Listener<KeyboardEvent>{
+    events: Map<string, (event: KeyboardEvent) => void>;
     system!: System<Listenable>;
     entity!: number;
     visible: boolean = true;
@@ -16,22 +13,22 @@ export class KeyboardListener implements Listener<KeyEvent>{
     engineTag: string= "EVENTHANDLER";
     componentId?: number | undefined;
     
-    constructor(clickMap: {[key:string]:(event:KeyEvent)=>void}) {
+    constructor(clickMap: {[key:string]:(event:KeyboardEvent)=>void}) {
         
-        this.events = new Map<string, (event:KeyEvent)=>void>()
+        this.events = new Map<string, (event:KeyboardEvent)=>void>()
         
         Object.entries(clickMap).map(([k, v]) => {
             this.events.set(k, v)
         })
     }
-    getEvents(): Map<string, (event: KeyEvent) => void> {
+    getEvents(): Map<string, (event: KeyboardEvent) => void> {
         return this.events
     }
     eventMap?: Map<string, () => void> | undefined;
-    execute(event: KeyEvent): void {
-        let event1: KeyEvent = event
+    execute(event: KeyboardEvent): void {
+        let event1: KeyboardEvent = event
         if (this.visible == true) {
-            let func = this.events.get(event.eventName)
+            let func = this.events.get(event.type)
             if (func) {
                 func(event)
             }
@@ -41,7 +38,7 @@ export class KeyboardListener implements Listener<KeyEvent>{
     getEventType(): string {
         return "KEYBOARD"
     }
-    initialize(system: EventSystem<KeyEvent>): void {
+    initialize(system: EventSystem<KeyboardEvent>): void {
         system.registerListener(this)
     }
     copy<T>(listener: KeyboardListener): void {
@@ -64,9 +61,9 @@ export class KeyboardListener implements Listener<KeyEvent>{
     }
 
 }
-export class KeyBoardEmitter implements Emitter<KeyEvent> {
-    listeners: Map<number, Listener<KeyEvent>> = new Map()
-    events: KeyEvent[] = []
+export class KeyBoardEmitter implements Emitter<KeyboardEvent> {
+    listeners: Map<number, Listener<KeyboardEvent>> = new Map()
+    events: KeyboardEvent[] = []
     entity?: number | undefined;
     visible: boolean = true;
     alive: boolean = true;
@@ -78,7 +75,7 @@ export class KeyBoardEmitter implements Emitter<KeyEvent> {
     constructor(engine: EngineType) {
         this.engineType = engine
     }
-    initialize(system: EventSystem<KeyEvent>): void {
+    initialize(system: EventSystem<KeyboardEvent>): void {
         system.registerEmitter(this)
 
         if (this.engineType != EngineType.SOCKETSERVER) {
@@ -86,17 +83,14 @@ export class KeyBoardEmitter implements Emitter<KeyEvent> {
                 if (this.events.length > this.maxInput) {
                     this.events.shift()
                 }
-                this.events.push({
-                    eventName: "keydown",
-                    key: event.key
-                })
+                this.events.push(event)
             })
         }
     }
-    addListener(component: Listener<KeyEvent>): void {
+    addListener(component: Listener<KeyboardEvent>): void {
         this.listeners.set(component.componentId as number, component)
     }
-    emit(event: KeyEvent): void {
+    emit(event: KeyboardEvent): void {
         for (let listener of this.listeners) {
             listener[1].execute(event)
         }

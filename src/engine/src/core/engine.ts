@@ -250,7 +250,7 @@ export class Engine {
             
             
             
-            setTimeout(() => {
+            let callback = setTimeout(() => {
                 if (this.running) {
                     let currTime = process.hrtime.bigint()
                     let realDelta =  Number(currTime - this.serverTime) / 1000000
@@ -259,6 +259,9 @@ export class Engine {
                     this.time += Number(realDelta)
                     this.serverTime = currTime
                     //console.log(Engine.time) 
+                    clearTimeout((callback))
+                } else {
+                    clearTimeout(callback)
                 }
 
             }, timeout)
@@ -269,7 +272,7 @@ export class Engine {
             for (let sys of this.systems) {
                 sys.update(dt)
             }
-            setTimeout(() => { 
+            let callback = setTimeout(() => { 
                 if (this.running) {
                     let currTime = process.hrtime.bigint()
                     let realDelta =  (currTime - this.serverTime) / 1000000n
@@ -277,7 +280,9 @@ export class Engine {
 
                     this.time += Number(realDelta)
                     this.serverTime = currTime
-                     
+                    clearTimeout((callback))
+                } else {
+                    clearTimeout(callback)
                 }
 
             }, timeout)
@@ -503,15 +508,19 @@ export class VariadicEngine {
             
             
             
-            setTimeout(() => {
+            let callback = setTimeout(() => {
                 if (this.running) {
                     let currTime = process.hrtime.bigint()
                     let realDelta =  Number(currTime - this.serverTime) / 1000000
                     this.serverUpdate(Number(realDelta), timeout)
 
                     this.time += Number(realDelta)
+                    
                     this.serverTime = currTime
+                    clearTimeout(callback)
                     //console.log(Engine.time) 
+                } else {
+                    clearTimeout(callback)
                 }
 
             }, timeout)
@@ -522,7 +531,7 @@ export class VariadicEngine {
             for (let sys of this.systems) {
                 sys.update(dt)
             }
-            setTimeout(() => { 
+            let callback = setTimeout(() => { 
                 if (this.running) {
                     let currTime = process.hrtime.bigint()
                     let realDelta =  (currTime - this.serverTime) / 1000000n
@@ -530,7 +539,10 @@ export class VariadicEngine {
 
                     this.time += Number(realDelta)
                     this.serverTime = currTime
+                    clearTimeout(callback)
                      
+                } else {
+                    clearTimeout(callback)
                 }
 
             }, timeout)

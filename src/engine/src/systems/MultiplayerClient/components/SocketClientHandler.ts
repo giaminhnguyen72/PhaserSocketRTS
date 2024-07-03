@@ -80,7 +80,7 @@ export class SocketClient implements Emitter<SocketEvent>, SocketListener<Socket
         })
     }
     initialize(system: EventSystem<SocketEvent>): void {
-        console.log("Socket Client initialization")
+
         system.registerEmitter(this)
         system.registerListener(this)
         for (let [k, v] of this.socketMap) {
@@ -97,7 +97,6 @@ export class SocketClient implements Emitter<SocketEvent>, SocketListener<Socket
         }
 
         this.events.set("deleted", (data: number[]) => {
-            console.log("Nothing has been removed so far")
 
             for (let i of data) {
                 this.deleted.add(i)
@@ -105,10 +104,10 @@ export class SocketClient implements Emitter<SocketEvent>, SocketListener<Socket
                 let entity = currScene.entities.get(i)
                 if (entity) {
                     currScene.removeEntity(entity.id as number)
-                    console.log("Entity " + entity.id + " has been removed")
+
 
                 } else {
-                    console.error(" Entity is not found " + i)
+
                 }
             }
 
@@ -303,9 +302,23 @@ export class SocketClient implements Emitter<SocketEvent>, SocketListener<Socket
                 for (let listener of serverData.data) {
                     // Checks if entity exists or not by checking whether its component exists or not
                     let component = this.listeners.get(listener.componentId as number)
+                    // Checks the added entity list to see if its there
+                    if (component == undefined) {
+                        for (let i of this.stage.addedEntities) {
+                            if (i.id == listener.entity) {
+                                for (let entityComponents of i.components ) {
+                                    if (entityComponents.componentId == listener.componentId) {
+                                        component = entityComponents as SocketListener<SocketEvent>
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
                     // If it exists we copy data over
                     // If component exists we dcopy data to storre the previous version of the results
-                    // We do copy the server data into each component becuse each component stores the past server data
+                    // We do copy the server data into each cof omponent becuse each component stores the past server data
                     if (component) {
                         if (component != this) {
                             component.time = serverData.timestamp
@@ -333,12 +346,13 @@ export class SocketClient implements Emitter<SocketEvent>, SocketListener<Socket
                             let entity = entityFactory()
     
                             if (listener.index >= 0 && listener.index < entity.components.length ) {
-    
+                                
                                 entity.id = listener.entity
                                 entity.components[listener.index].copy(listener)
                                 let c = entity.components[listener.index] as SocketListener<SocketEvent>
                                 c.time = serverData.timestamp
                                 c.copyData(listener)
+                                
                                 this.stage.addServerEntity(entity)
                             }
                             

@@ -24,7 +24,7 @@ type Data = {
 }
 
 export class Droid implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<Droid, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<Droid, Data>,BoxCollider];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "DROID";
@@ -39,19 +39,39 @@ export class Droid implements Entity {
         let sprite = new TimedSpriteSheet3d("/images/Characters/Droid_S.png", {
             rot:0,
             dim:{
-                length: 64,
-                height:64
+                length: 32,
+                height:32
             },
             pos: {
                 x:0,
                 y:0,
                 z:0
             }
-    }, 50, 32, [1,1])
+    }, 50, 64, [1,1])
         
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:32, height: 32},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                let rect = col.getCollisionBox(collider)
+                                let dir = getDirection(rect.pos, collider.boundingBox.pos)
+                                let dx = dir.x * 0.5 * rect.dim.length
+                                let dy = dir.y * 0.5 * rect.dim.height
+                                collider.boundingBox.pos.x += dx
+                                collider.boundingBox.pos.y += dy
+                        }
+                    }
+                }
+            }
         })
 
         
@@ -67,6 +87,11 @@ export class Droid implements Entity {
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
+        })
         script.setProperty("Speed", 0.1)
         script.setProperty("Position",transform.pos)
         script.setProperty("Graphics", 0)
@@ -74,6 +99,8 @@ export class Droid implements Entity {
         script.setProperty("Cooldown", 4500)
         script.setProperty("Range", 0)
         script.setProperty("State", 0)
+        
+        script.setProperty("Type", 0)
         script.setProperty("Attack", (position: Vector3) => {
             let dir = getDirection(transform.pos, position)
             let item = new Arrow(this.id, {
@@ -160,7 +187,7 @@ export class Droid implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync, collider])
         
         
         
@@ -175,7 +202,7 @@ export class Droid implements Entity {
             position.x = pos.x
             position.y= pos.y
         }
-        console.log("Bear has been spanwe")
+
         scene.addEntity(monster)
     }
 
@@ -185,7 +212,7 @@ export class DroidSystem implements ScriptOperable{
     update(dt: number, script:ScriptingEngine): void {
         let droids = script.queryClass("DROID")
 
-        let players = script.queryClass("PLAYERS")
+        let players = script.queryClass("Player")
         if (droids) {
             for (let d of droids) {
                 let cooldown = d.properties.get("Cooldown")
@@ -210,7 +237,9 @@ export class DroidSystem implements ScriptOperable{
                     if (nearestPlayer) {
                         let finalPos = nearestPlayer.getProperty("Position")
                         let dir = getDirection(pos, finalPos)
-                        let rocket = new Rocket(d.entity, {x:0, y:0, z:0}, dir)
+                        let startPos = {x: pos.x + dir.x * 32, y: pos.y + dir.y * 32, z: 0 }
+                        let rocket = new Rocket(d.entity, startPos, dir)
+                        script.sceneManager.currScene.addEntity(rocket)
 
 
                         rocket.components[3].setProperty("Owner", d.entity)
@@ -222,6 +251,7 @@ export class DroidSystem implements ScriptOperable{
 
                     
                 } else {
+                    
                     d.setProperty("Cooldown", cooldown + dt)
                     
                 }

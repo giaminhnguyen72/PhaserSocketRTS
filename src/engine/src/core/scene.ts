@@ -22,7 +22,7 @@ export interface Scene extends Entity {
     getUniqueComponentId(): number,
     removeEntity(id: number): void
     classMap?: Map<string, Map<number, Entity>> 
-    querySystem<T extends System<Component>> (type: {new(...args: any[]): T}, engineTag: string):  System<Component> | undefined
+    querySystem<T extends System<Component>> (type: {new(...args: any[]): T}, engineTag: string):  T | undefined
     querySys (engineTag: string): System<Component> | undefined
     queryComponent<T extends Component>(type: {new(...args: any[]): T}, entityTag: string):  T[]
     update(dt: number): void
@@ -90,7 +90,7 @@ export class Stage implements Scene, Entity {
         
         let engine = this.sceneManager.queryEngine<T>(engineTag, type)
         if (engine) {
-            return engine
+            return engine as T
         }
         return undefined
 
@@ -160,8 +160,10 @@ export class Stage implements Scene, Entity {
             if (compList) {
                 let system: System<Component> | undefined= this.sceneManager.systems.get(comp.engineTag)
                 if (system) {
+                    let id = this.getUniqueComponentId()
+                    comp.componentId = id
+                    system.register(comp, id)
 
-                    system.register(comp, this.getUniqueComponentId())
                 } 
 
 
@@ -172,21 +174,34 @@ export class Stage implements Scene, Entity {
                 
             }
     }
-    console.log("successfully added entity")
+
     
     return entity
     }
     removeEntity(id: number) {
+        // for (let i = this.addedEntities.length - 1; i >=  0; i--) {
+        //     let entities= this.addedEntities
+        //     if (entities[i].id == id) {
+        //         if (entities.length == 1 ) {
+        //             this.addedEntities.pop()
+        //             return
+        //         }
+        //         entities[i]= this.addedEntities[this.addedEntities.length - 1]
+        //         this.addedEntities.pop()
+        //         console.log("Found Deleted Entity ")
+        //         return
+        //     }
+        // }
         this.removedEntities.push(id)
     }
-    executeEntityRemove(id : number) {
+    private executeEntityRemove(id : number) {
         let entity : Entity | undefined = this.entities.get(id)
     
     if (entity) {
         this.entities.delete(id)
-        console.log("id: " + id)
+
         for (let c of entity.components) {
-            console.log("Component id: " + c.componentId)
+
             if (this.querySys(c.engineTag)) {
                 c.system.unregister(c.componentId as number) 
             }
@@ -197,7 +212,9 @@ export class Stage implements Scene, Entity {
         
         
     } else {
-        throw new Error("Entity not found")
+        
+        console.error("Entity not found " + id)
+        // throw new Error("Entity not found " + id)
     }
 
     return entity
@@ -227,7 +244,9 @@ export class Stage implements Scene, Entity {
             
                         let system: System<Component> | undefined= scene.sceneManager.systems.get(comp.engineTag)
                         if (system) {
-                            system.register(comp, this.getUniqueComponentId())
+                            let id = this.getUniqueComponentId()
+                            comp.componentId = id
+                            system.register(comp, id)
                         } 
             
                         
@@ -236,7 +255,7 @@ export class Stage implements Scene, Entity {
                         
                     }
                 }
-                console.log("successfully added entitys")
+
             }
             
             return entity
@@ -248,7 +267,9 @@ export class Stage implements Scene, Entity {
                     comp.entity = entity.id
                     let system: System<Component> | undefined= scene.sceneManager.systems.get(comp.engineTag)
                     if (system) {
-                        system.register(comp, this.getUniqueComponentId())
+                        // They already have component ids stored in the components
+                        // Therefore, no need to create new Ones
+                        system.register(comp, 0)
                     } 
         
                     

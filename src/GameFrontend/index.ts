@@ -2,27 +2,16 @@
 
 import {Engine} from "../engine/src/core/engine.js"
 import { GraphicsConfig, PhysicsConfig, SceneConfig, SocketClientConfig } from "../engine/src/core/config.js";
-import { GraphicsEngine } from "../engine/src/systems/graphics/GraphicEngine.js";
-import { Player } from "./scenes/entities/Player.js";
-import { Scene, Stage } from "../engine/src/core/scene.js";
-import { SceneManager } from "../engine/src/core/managers/SceneManager.js";
-import { Component } from "../engine/src/types/components.js";
-import { Entity, EntityPacket } from "../engine/src/types/Entity.js";
-import { Templar } from "./scenes/entities/Templar.js";
-import { MainCamera } from "./scenes/entities/MainCamera.js";
+
+
 import { EngineType } from "../engine/src/constants/engineType.js";
 import { SocketManager } from "../engine/src/systems/MultiplayerClient/SocketManager.js";
 import { Script } from "../engine/src/systems/scripting/components/Script.js";
 import { Label } from "./scenes/entities/Label.js";
 
-import { Div } from "../engine/src/systems/graphics/components/DomElement/Div.js";
-import { DivUI } from "./scenes/entities/DivUI.js";
-import { World } from "./scenes/entities/World.js";
-import { MouseListener } from "../engine/src/systems/events/components/MouseHandler.js";
-import { SocketClient } from "../engine/src/systems/MultiplayerClient/components/SocketClientHandler.js";
-import { KeyBoardEmitter } from "../engine/src/systems/events/components/KeyboardHandler.js";
+
 import { MainScene } from "./scenes/MainScene.js";
-import { Knight } from "./scenes/entities/Player/Knight.js";
+
 
 
 window.onload = () => {
@@ -83,7 +72,7 @@ window.onload = () => {
             ],
         physicsConfig: new PhysicsConfig(), 
         eventConfig: {keyboard: false,mouse: false },
-        scriptingConfig: {engineType: EngineType.SOCKETSERVER},
+        scriptingConfig: {engineType: EngineType.SOCKETCLIENT},
         system: [[SocketManager, {
         
 

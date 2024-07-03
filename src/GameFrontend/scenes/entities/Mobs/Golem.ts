@@ -11,7 +11,7 @@ import { BoxCollider } from "../../../../engine/src/systems/Collision/components
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 import { MultiplayerSyncronizer } from "../../../../engine/src/systems/MultiplayerClient/components/Syncronizer.js";
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
-import { lerp } from "../../../../engine/src/math/Vector.js";
+import { getDirection, lerp } from "../../../../engine/src/math/Vector.js";
 type Data = {
     componentId: number[],
     position: Vector3
@@ -43,9 +43,29 @@ export class Golem implements Entity {
             }
     }, 50, 32, [1,1])
 
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                let rect = col.getCollisionBox(collider)
+                                let dir = getDirection(rect.pos, collider.boundingBox.pos)
+                                let dx = dir.x * 0.5 * rect.dim.length
+                                let dy = dir.y * 0.5 * rect.dim.height
+                                collider.boundingBox.pos.x += dx
+                                collider.boundingBox.pos.y += dy
+                        }
+                    }
+                }
+            }
         })
 
         
@@ -62,11 +82,17 @@ export class Golem implements Entity {
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
         script.setProperty("Speed", 0.1)
+        script.setProperty("Type", 0)
         script.setProperty("Position",transform.pos)
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
         script.setProperty("Graphics", 1)
         script.setProperty("Direction", {x:1,y:0,z:0})
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
+        })
         script.setProperty("Range", 0)
         // e need attack AI
         script.setInit((system) =>{

@@ -11,7 +11,7 @@ import { BoxCollider } from "../../../../engine/src/systems/Collision/components
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 import { MultiplayerSyncronizer } from "../../../../engine/src/systems/MultiplayerClient/components/Syncronizer.js";
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
-import { lerp } from "../../../../engine/src/math/Vector.js";
+import { getDirection, lerp } from "../../../../engine/src/math/Vector.js";
 type Data = {
     componentId: number[],
     position: Vector3
@@ -19,7 +19,7 @@ type Data = {
 }
 
 export class WilloWisp implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<WilloWisp, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<WilloWisp, Data>,BoxCollider];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "WILLOWISP";
@@ -44,9 +44,40 @@ export class WilloWisp implements Entity {
             }
     }, 50, 32, [1,1])
         
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+
+            script.set("Cooldown", 0)
+            let hitEntity = this.scene.entities.get(col.entity as number)
+            if (hitEntity) {
+                for (let component of hitEntity.components) {
+                    if (component instanceof Script) {
+                        switch (component.get("Type")) {
+                            case 2: return
+                            case 0: 
+                                let players = script.system.queryClass("Player")
+                                if (players?.has(component)) {
+
+
+                                    let playerHP = component.get("HP")
+                                    let playerStamina = component.get("Stamina")
+                                    component.set("HP" , playerHP - 3)
+                                    component.set("Stamina" , playerStamina - 3)
+                                }
+                        }
+                        
+                    }
+                }
+            }
+            let rect = col.getCollisionBox(collider)
+            let dir = getDirection(rect.pos, collider.boundingBox.pos)
+            let dx = dir.x * 0.5 * rect.dim.length
+            let dy = dir.y * 0.5 * rect.dim.height
+            collider.boundingBox.pos.x += dx
+            collider.boundingBox.pos.y += dy
+            let cooldown = script.get("Cooldown")
+            if (cooldown < 3000) {
+                return
+            }
         })
 
         
@@ -64,10 +95,17 @@ export class WilloWisp implements Entity {
         script.setProperty("Defense", 5)
         script.setProperty("Speed", 0.1)
         script.setProperty("Range", 0)
+        script.setProperty("Cooldown",0)
         script.setProperty("Position",transform.pos)
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
+        })
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
-        script.setProperty("Graphics", 1)
+        script.setProperty("Graphics", 0)
+        script.setProperty("Type", 0)
         script.setProperty("Direction", {x:1,y:0,z:0})
         // e need attack AI
         script.setInit((system) =>{
@@ -142,7 +180,7 @@ export class WilloWisp implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync,collider])
         
         
         

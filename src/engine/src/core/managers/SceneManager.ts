@@ -50,6 +50,9 @@ export class SceneManager {
         
 
     }
+    load<T extends Resource>(type: new (...param: any[]) => T, name: string) {
+        return this.resourceManager.load<T>(type, name)
+    }
     loadResource<T extends Resource>(type: new (n: string) => T, name: string) {
         return this.resourceManager.loadResource<T>(type, name)
     }
@@ -58,6 +61,18 @@ export class SceneManager {
     }
     removeResource<T extends Resource>(type: new (n: string) => T, name: string)  {
         return this.resourceManager.removeResource<T>(type, name)
+    }
+    loadDataResource<T extends Resource>(type: new () => T, name: string) {
+        return this.resourceManager.loadDataResource<T>(type, name)
+    }
+    addDataResource<T extends Resource>(type: new () => T, name: string) {
+        return this.resourceManager.addDataResource<T>(type, name)
+    }
+    addCreatedResource<T extends Resource>(type: new (...params: any[]) => T,data: T, name: string) {
+        return this.resourceManager.addCreatedResource<T>(type, data,name)
+    }
+    removeDataResource<T extends Resource>(type: new () => T, name: string)  {
+        return this.resourceManager.removeDataResource<T>(type, name)
     }
     addScene() : void {
         if ( this.engineConfig.sceneConfig) {

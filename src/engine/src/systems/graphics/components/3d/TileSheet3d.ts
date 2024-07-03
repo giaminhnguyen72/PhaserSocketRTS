@@ -121,9 +121,17 @@ export class TileSheet3d implements Renderable {
                     texture.magFilter = THREE.NearestFilter
                     texture.colorSpace = THREE.SRGBColorSpace
 
-                                        
-                    let material = new THREE.MeshBasicMaterial({map: texture, toneMapped:false, fog: false})
-                    let geo = new THREE.PlaneGeometry(this.cellWidth, this.cellHeight)
+                    let  material = graphics.sceneManager.load<THREE.MeshBasicMaterial>(THREE.MeshBasicMaterial,"TileSetMaterial")
+                    if (material == undefined) {
+                        material = new THREE.MeshBasicMaterial({map: texture, toneMapped:false, fog: false})
+                        graphics.sceneManager.addCreatedResource(THREE.MeshBasicMaterial,material,"TileSetMaterial")
+                    }
+                    let  geo = graphics.sceneManager.load<THREE.PlaneGeometry>(THREE.PlaneGeometry,"TileSetGeometry")
+                    if (material == undefined) {
+                        geo = new THREE.PlaneGeometry(this.cellWidth, this.cellHeight)
+                        graphics.sceneManager.addCreatedResource(THREE.PlaneGeometry,geo,"TileSetGeometry")
+                    }
+
                     let sprite = new THREE.Mesh(geo,material)
                     
                     this.loaded = true
@@ -136,6 +144,7 @@ export class TileSheet3d implements Renderable {
                     let yPos = startPosY + r * this.cellHeight
                     sprite.position.setX(xPos)
                     sprite.position.setY(yPos)
+                    sprite.position.setZ(this.pos.z)
                     graphics.sceneGraph.add(sprite)
                     this.sprite.push(sprite)
 
@@ -188,6 +197,7 @@ export class TileSheet3d implements Renderable {
                         let yPos = startPosY + r * this.cellHeight
                         sprite.position.setX(xPos)
                         sprite.position.setY(yPos)
+                        sprite.position.setZ(this.pos.z)
                         graphics.sceneGraph.add(sprite)
                         this.sprite.push(sprite)
                     }

@@ -21,7 +21,8 @@ import { TextureLoader } from "three/src/loaders/TextureLoader.js";
 import { SpriteMaterial } from "three/src/materials/SpriteMaterial.js";
 import { NearestFilter, Sprite, SRGBColorSpace } from "three";
 import { GRAPHICS_TAG } from "../../../../../../engine/src/constants/componentType.js";
-
+import * as THREE from 'three'
+import { TextureResource } from "./Texture.js";
 export class TimedSpriteSheet3d implements Renderable {
     entity?: number | undefined;
     visible: boolean = true;
@@ -73,7 +74,16 @@ export class TimedSpriteSheet3d implements Renderable {
         }
     }
     unmount(): void {
-        this.sprite.parent?.remove(this.sprite)
+        if (this.sprite) {
+            this.sprite.parent?.remove(this.sprite);
+            if (this.sprite.material) {
+                (this.sprite.material ).dispose();
+            }
+            
+        }
+
+        
+
     }
     loaded: boolean  = false
     context!: ContextInfo;
@@ -96,6 +106,22 @@ export class TimedSpriteSheet3d implements Renderable {
         }
     }
     create(path: string) {
+        let w = this.system.sceneManager.loadResource<TextureResource>(TextureResource, this.path)
+        if (w) {
+            let texture = w.clone()
+            let data = texture
+            data.repeat.set(1/this.maxColumn, 1/this.numOfStates.length)
+            data.magFilter = NearestFilter
+            data.colorSpace = SRGBColorSpace
+            let material = new SpriteMaterial({map: data})
+            this.material = material
+            let sprite = new Sprite(material)
+            this.sprite = sprite
+            this.loaded = true
+            
+            this.system.sceneGraph.add(sprite)
+            return
+        }
         let loader =  new TextureLoader()
         let loaded = loader.load(this.path, (data) => {
             data.repeat.set(1/this.maxColumn, 1/this.numOfStates.length)
@@ -129,6 +155,7 @@ export class TimedSpriteSheet3d implements Renderable {
 
     } 
     initialize(graphics: GraphicsEngine): void {
+        this.system = graphics
         
         this.create(this.path)
 
@@ -142,7 +169,7 @@ export class TimedSpriteSheet3d implements Renderable {
         //graphics.sceneGraph.add( cube );
         
 
-        this.system = graphics
+
         
         this.column = 0
     }
@@ -160,7 +187,9 @@ export class TimedSpriteSheet3d implements Renderable {
             }
             this.column = (1 + this.column) % numStates
             this.time = this.time % this.delay
+            
             if (this.loaded) {
+                this.sprite.material.rotation = this.shape.rot
                 if (this.material.map) {
 
                     this.material.map.offset.x = this.column / this.maxColumn
@@ -171,6 +200,7 @@ export class TimedSpriteSheet3d implements Renderable {
                     this.sprite.position.x = this.pos.x
                     this.sprite.position.y = this.pos.y
                     this.sprite.position.z = this.pos.z
+                    
 
                     this.sprite.scale.set(this.shape.dim.length , this.shape.dim.height, 1)
 

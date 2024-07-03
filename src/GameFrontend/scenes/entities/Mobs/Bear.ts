@@ -16,6 +16,7 @@ import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/comp
 import { Arrow } from "../Attacks/Arrow.js";
 import { ScriptOperable } from "../../../../engine/src/systems/scripting/types/Operations.js";
 import { ScriptingEngine } from "./../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { HandleCollisionEvent } from "../../Events/Events.js";
 type Data = {
     componentId: number[],
     position: Vector3
@@ -23,7 +24,7 @@ type Data = {
 }
 
 export class Bear implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<Bear, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<Bear, Data>, Component];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "BEAR";
@@ -38,8 +39,8 @@ export class Bear implements Entity {
         let sprite = new TimedSpriteSheet3d("/images/Characters/Bear_S.png", {
             rot:0,
             dim:{
-                length: 64,
-                height:64
+                length: 128,
+                height: 128
             },
             pos: {
                 x:0,
@@ -48,9 +49,71 @@ export class Bear implements Entity {
             }
     }, 50, 32, [1,1])
         
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:32, height: 32},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                //  
+
+                                // let colliderSpeed= i.get("Speed")
+                                // let colliderDest = i.get("Destination")
+                                // let colliderPos = i.get("Position")
+                                // let colliderDir = getDirection(colliderPos, colliderDest)
+                                // let colliderVelX = colliderSpeed * colliderDir.x
+                                // let colliderVelY = colliderSpeed * colliderDir.y
+
+                                // let currSpeed= i.get("Speed")
+                                // let currDest = i.get("Destination")
+                                // let currPos = i.get("Position")
+                                // let currDir = getDirection(currPos, currDest)
+                                // let currVelX = currSpeed * currDir.x
+                                // let currVelY = currSpeed * currDir.y
+
+                                // let dx = 
+                                let hitEntity = this.scene.entities.get(col.entity as number)
+                                let backwardDist = 0
+                                if (hitEntity) {
+                                    for (let component of hitEntity.components) {
+                                        if (component instanceof Script) {
+
+                                            let players = script.system.queryClass("Player")
+                                            if (players?.has(component)) {
+                                                let hp = component.get("HP")
+                                                component.set("HP", hp - 5)
+                                                backwardDist = 20
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                let rect = col.getCollisionBox(collider)
+                                let dir = getDirection(rect.pos, collider.boundingBox.pos)
+                                let dx = dir.x * 0.5 * rect.dim.length + backwardDist *dir.x
+                                let dy = dir.y * 0.5 * rect.dim.height + backwardDist *dir.y
+                                collider.boundingBox.pos.x += dx
+                                collider.boundingBox.pos.y += dy
+                                break
+                            case 1:
+                                break
+                            default:
+                                break
+    
+                        }
+                        return
+    
+                    }
+                }
+            }
         })
 
         
@@ -63,25 +126,25 @@ export class Bear implements Entity {
 
         
         script.setProperty("HP", 100)
-        script.setProperty("EXP", 0)
+
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
-        script.setProperty("Speed", 0.1)
+        script.setProperty("Speed", 0.01)
         script.setProperty("Position",transform.pos)
         script.setProperty("Graphics", 0)
         script.setProperty("AttackRange", 100)
+        script.setProperty("AttackCooldown", 0)
         script.setProperty("Cooldown", 0)
         script.setProperty("State", 0)
-        script.setProperty("Range", 0)
-        script.setProperty("Attack", (position: Vector3) => {
-            let dir = getDirection(transform.pos, position)
-            let item = new Arrow(this.id, {
-                x: transform.pos.x,
-                y: transform.pos.y,
-                z: transform.pos.z
-            }, dir)
-            this.scene.addEntity(item)
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
         })
+
+        script.setProperty("Range", 0)
+        script.setProperty("Type", 0)
+
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
 
@@ -159,7 +222,7 @@ export class Bear implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync,collider])
         
         
         
@@ -194,7 +257,7 @@ export class BearSystem implements ScriptOperable{
                         case 0:
                             if (cooldown >= 10000) {
                                 bear.properties.set("State", 1)
-                                bear.properties.set("Speed", 0.5)
+                                bear.properties.set("Speed", 0.05)
                                 bear.properties.set("Cooldown", 0)
                                 console.log("SState changed t0 1")
                             } else {
@@ -205,7 +268,7 @@ export class BearSystem implements ScriptOperable{
 
                             if (cooldown >= 3000) {
                                 bear.properties.set("State", 0)
-                                bear.properties.set("Speed", 0.3)
+                                bear.properties.set("Speed", 0.03)
                                 console.log("SState changed t0 0")
                                 bear.properties.set("Cooldown", 0)
                             } else {

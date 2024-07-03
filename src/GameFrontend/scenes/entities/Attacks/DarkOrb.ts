@@ -13,6 +13,7 @@ import { MultiplayerSyncronizer } from "../../../../engine/src/systems/Multiplay
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
 import { lerp } from "../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
+import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
 type Data = {
     componentId: number[],
     vel: Vector3,
@@ -20,9 +21,9 @@ type Data = {
 
 }
 export class DarkOrb implements Entity {
-    components: [TimedSpriteSheet3d, Transform, MultiplayerSyncronizer<DarkOrb, Data>,Script];;
+    components: [TimedSpriteSheet3d, Transform, MultiplayerSyncronizer<DarkOrb, Data>,Script, Component];;
     id?: number | undefined;
-    scene?: Scene | undefined;
+    scene!: Scene;
     className: string = "DARKORB";
     constructor(pos: Vector3 = {x:0, y:0, z:0}, dir: Vector3= {x:0,y:0,z:0}) {
         let vel = {x: dir.x* 0.3, y: dir.y * 0.3,z:0}
@@ -74,17 +75,53 @@ export class DarkOrb implements Entity {
         script.properties.set("Position", transform.pos)
         script.properties.set("Duration", 2000)
         script.properties.set("Cooldown", 0)
+        script.properties.set("Owner", 0)
+        
         script.setInit((system) => {
             system.addSuperClasses(script, "Projectile")
         })
-
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                //  
+    
+                                let enemyHP = i.get("HP")
+                                i.set("HP", enemyHP - 15)
+                                this.scene.removeEntity(this.id as number)
+                                break
+                            case 1:
+                                break
+                            default:
+                                break
+    
+                        }
+                        return
+    
+                    }
+                }
+            }
+        })
+        collider.bindPos(transform)
         // Needs colllider
-        this.components = [sprite, transform,sync,script]
+        this.components = [sprite, transform,sync,script,collider]
 
 
     }
     clone(): Entity {
         throw new Error("Method not implemented.");
+    }
+    setOwner(owner: number) {
+        this.components[3].set("Owner",owner)
     }
 
 }

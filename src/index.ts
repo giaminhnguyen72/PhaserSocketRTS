@@ -14,7 +14,8 @@ import {WebSocketServer} from 'ws'
 const serv = createServer(app);
 
 const io: Server = new Server(serv, {
-  parser: parser
+  parser: parser,
+  perMessageDeflate: false
 })
 
 

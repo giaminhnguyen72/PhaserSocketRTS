@@ -24,7 +24,7 @@ type Data = {
 }
 
 export class Snowmon implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<Snowmon, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<Snowmon, Data>,BoxCollider];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "SNOWMON";
@@ -47,11 +47,15 @@ export class Snowmon implements Entity {
                 y:0,
                 z:0
             }
-    }, 50, 32, [1,1])
+    }, 50, 64, [1,1])
         
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let rect = col.getCollisionBox(collider)
+            let dir = getDirection(rect.pos, collider.boundingBox.pos)
+            let dx = dir.x * 0.5 * rect.dim.length
+            let dy = dir.y * 0.5 * rect.dim.height
+            collider.boundingBox.pos.x += dx
+            collider.boundingBox.pos.y += dy
         })
 
         
@@ -71,8 +75,14 @@ export class Snowmon implements Entity {
         script.setProperty("Position",transform.pos)
         script.setProperty("Graphics", 0)
         script.setProperty("AttackRange", 100)
+        script.setProperty("Type", 0)
         script.setProperty("Cooldown", 0)
         script.setProperty("Range", 0)
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
+        })
         script.setProperty("State", 0)
         script.setProperty("Attack", (position: Vector3) => {
             let dir = getDirection(transform.pos, position)
@@ -160,7 +170,7 @@ export class Snowmon implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync,collider])
         
         
         
@@ -219,14 +229,14 @@ export class SnowmonSystem implements ScriptOperable{
                     }
                     if (cooldown > 10000 && minimum < range) {
 
-                        let fireball = new Snowball()
+                            let fireball = new Snowball()
                                 let dir = getDirection(position, minPos)
                                 let xPos = 64 * dir.x
                                 let yPos = 64 * dir.y
                                 dir.x *= 0.03
                                 dir.y *= 0.03
-                                fireball.components[1].pos.x = xPos
-                                fireball.components[1].pos.y = yPos
+                                fireball.components[1].pos.x = position + xPos
+                                fireball.components[1].pos.y = position + yPos
 
                                 fireball.components[1].vel.x = dir.x
                                 fireball.components[1].vel.y = dir.y

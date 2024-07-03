@@ -11,7 +11,10 @@ import { BoxCollider } from "../../../../engine/src/systems/Collision/components
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 import { MultiplayerSyncronizer } from "../../../../engine/src/systems/MultiplayerClient/components/Syncronizer.js";
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
-import { lerp } from "../../../../engine/src/math/Vector.js";
+import { getDirection, getDistance, lerp } from "../../../../engine/src/math/Vector.js";
+import { ScriptOperable } from "../../../../engine/src/systems/scripting/types/Operations.js";
+import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { SwordSlash } from "../Attacks/SwordSlash.js";
 type Data = {
     componentId: number[],
     position: Vector3,
@@ -20,7 +23,7 @@ type Data = {
 }
 
 export class Skeleton implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<Skeleton, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<Skeleton, Data>,BoxCollider];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "SKELETON";
@@ -44,9 +47,29 @@ export class Skeleton implements Entity {
             }
     }, 50, 32, [1,1])
 
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                let rect = col.getCollisionBox(collider)
+                                let dir = getDirection(rect.pos, collider.boundingBox.pos)
+                                let dx = dir.x * 0.5 * rect.dim.length
+                                let dy = dir.y * 0.5 * rect.dim.height
+                                collider.boundingBox.pos.x += dx
+                                collider.boundingBox.pos.y += dy
+                        }
+                    }
+                }
+            }
         })
 
         
@@ -58,7 +81,7 @@ export class Skeleton implements Entity {
         let script = new Script(this.className, EngineType.SOCKETSERVER)
 
         
-        script.setProperty("HP", 100)
+        script.setProperty("HP", 50)
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
@@ -66,8 +89,14 @@ export class Skeleton implements Entity {
         script.setProperty("Position",transform.pos)
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
+        })
         script.setProperty("Graphics", 0)
         script.setProperty("Direction", {x:1,y:0,z:0})
+        script.setProperty("Type", 0)
         script.setProperty("Range", 0)
         // e need attack AI
         script.setInit((system) =>{
@@ -142,7 +171,7 @@ export class Skeleton implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync, collider])
         
         
         
@@ -158,6 +187,69 @@ export class Skeleton implements Entity {
             position.y= pos.y
         }
         scene.addEntity(monster)
+    }
+
+}
+export class SkeletonSystem implements ScriptOperable{
+    constructor() {
+
+    }
+    update(dt: number, script:ScriptingEngine): void {
+        let spiders = script.queryClass("MINDFLAYER")
+        let players = script.queryClass("Player")
+        if (spiders) {
+            for (let i of spiders) {
+                let cooldown = i.getProperty("Cooldown")
+                let position = i.getProperty("Position")
+                let range = 64
+                let minimum = 100000000
+                let minPos = undefined
+                if (players){
+                    
+                    for (let player of players) {
+                        if (minPos) {
+                            let playerPos = player.properties.get("Position")
+                            let dist = getDistance(playerPos, position)  
+                            if (dist < minimum) {
+                                minPos = playerPos
+                                minimum = dist
+                            }
+
+
+                        } else {
+                            let playerPos = player.properties.get("Position")
+                            let dist = getDistance(playerPos, position)
+                            minPos = playerPos
+                            minimum = dist
+
+                        }
+                        
+
+
+                    }
+                    if (minPos == undefined) {
+                        continue
+                    }
+                    if (cooldown > 10000 && minimum < range) {
+                            let swordSwing = new SwordSlash()
+                            swordSwing.components[1].pos.x = position.x
+                            swordSwing.components[1].pos.y = position.y
+
+                            swordSwing.setOwner(i.entity as number)
+
+                            script.sceneManager.currScene.addEntity(swordSwing)
+
+                        i.setProperty("Cooldown", 0)
+                                
+                    } else {
+                        i.setProperty("Cooldown", cooldown + dt)
+                    }
+
+
+                } 
+            }
+        }
+
     }
 
 }

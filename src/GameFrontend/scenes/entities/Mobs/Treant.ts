@@ -66,6 +66,7 @@ export class Treant implements Entity {
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
         script.setProperty("Graphics", 1)
+        script.setProperty("Type", 0)
         script.setProperty("Direction", {x:1,y:0,z:0})
         script.setProperty("Range", 0)
         // e need attack AI

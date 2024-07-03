@@ -49,7 +49,17 @@ export class Sprite3d implements Component, Renderable {
     unmount(): void {
 
         
-        this.system.sceneGraph.remove(this.component)
+        this.system.sceneGraph.remove(this.component);
+        if (this.component) {
+            if (this.component.material) {
+                (this.component.material ).dispose();
+            }
+            // if (this.component.geometry) {
+            //     (this.component.geometry ).dispose()
+            // }
+        }
+        
+        
     }
     rendered: boolean = false;
     

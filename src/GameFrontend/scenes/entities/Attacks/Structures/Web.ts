@@ -13,6 +13,9 @@ import { MultiplayerSyncronizer } from "../../../../../engine/src/systems/Multip
 import { Vector3 } from "../../../../../engine/src/types/components/physics/transformType.js";
 import { lerp } from "../../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
+import { BoxCollider } from "../../../../../engine/src/systems/Collision/components/Collider.js";
+import { ScriptingEngine } from "../../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { Slow } from "../../../../../GameFrontend/events/Slow.js";
 type Data = {
     componentId: number[],
     vel: Vector3,
@@ -20,11 +23,11 @@ type Data = {
 
 }
 export class Web implements Entity {
-    components: [Sprite3d, Transform, MultiplayerSyncronizer<Web, Data>,Script];;
+    components: [Sprite3d, Transform, MultiplayerSyncronizer<Web, Data>,Script,BoxCollider];;
     id?: number | undefined;
-    scene?: Scene | undefined;
+    scene!: Scene ;
     className: string = "WEB";
-    constructor(pos: Vector3 = {x:0, y:0, z:0}, dir: Vector3= {x:0,y:0,z:0}) {
+    constructor(pos: Vector3 = {x:0, y:0, z:8}, dir: Vector3= {x:0,y:0,z:0}) {
         let vel = {x: dir.x* 0.3, y: dir.y * 0.3,z:0}
         let transform = new Transform(pos, vel)
         let sprite = new Sprite3d({
@@ -36,6 +39,63 @@ export class Web implements Entity {
             pos: transform.pos
 
     }, "/images/Structures/Web.png")
+    let collider = new BoxCollider({dim:{length:128, height: 128},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+        let entID = col.entity as number
+        let ent = this.scene.entities.get(col.entity as number)
+        if (entID == script.get("Owner")) {
+            return
+        } 
+        if (ent) {
+            
+            for (let i of ent.components) {
+                if (i instanceof Script) {
+                    
+                    let currType = i.get("Type")
+                    switch (currType) {
+                        case 0:
+                            
+                            let s = this.scene.querySystem<ScriptingEngine>(ScriptingEngine, "SCRIPTING")
+                            if (s) {
+                                let c = s.operations.dataManager.query<Slow>(Slow)
+                                if (c) {
+                                    let found = false
+                                    c.iterate((slow) => {
+                                        let slowedScript = s?.components.get(slow[1].scriptID)
+                                        if (slowedScript && slowedScript.entity === col.entity) {
+                                            found = true
+                                            slow[1].multiplier = Math.min(slow[1].multiplier,0.8)
+                                        }
+                                        
+                                    })
+                                    if (found == false) {
+                                        let slowC = new Slow()
+                                        slowC.duration = 2000
+                                        slowC.multiplier = 0.7
+                                        slowC.scriptID = i.componentId as number
+
+                                        s.operations.dataManager.addEntity(0).addComponent<Slow>(Slow,slowC)
+                                    }
+                                }
+                            
+                            }
+                            
+
+                            
+                            
+                            break
+                        case 1:
+                            break
+                        default:
+                            break
+
+                    }
+                    return
+
+                }
+            }
+        }
+    })
+
     let sync = new MultiplayerSyncronizer<Web, Data>(this, (data: Data) =>{
 
         //script.properties.set("Destination", data.destination)
@@ -74,12 +134,14 @@ export class Web implements Entity {
         script.properties.set("Position", transform.pos)
         script.properties.set("Duration", 25000)
         script.properties.set("Cooldown", 0)
+        script.properties.set("Type", 3)
         script.setInit((system) => {
             system.addSuperClasses(script, "Projectile")
         })
+        collider.bindPos(transform)
 
         // Needs colllider
-        this.components = [sprite, transform,sync,script]
+        this.components = [sprite, transform,sync,script,collider]
 
 
     }

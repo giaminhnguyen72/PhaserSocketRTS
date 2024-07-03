@@ -4,6 +4,7 @@ import { Component } from "../../../types/components.js";
 import { Entity } from "../../../types/Entity.js";
 import { System } from "../../../types/system.js";
 import { Engine } from "../../../../../engine/src/core/engine.js";
+import { ScriptEntity } from "../types/Operations.js";
 
 interface Get {
     get(s: any): Get
@@ -14,16 +15,17 @@ export abstract class ScriptObject implements Component {
     visible: boolean = true;
     alive: boolean = true;
     componentId?: number | undefined;
-    system!: System<Component>;
+    system!: ScriptingEngine
 
     abstract copy(component: Component): void 
     engineTag: string = "SCRIPTING";
     engineType: EngineType = EngineType.CLIENTONLY
     abstract className: string 
-    abstract properties: any
     abstract destructor(): void
     abstract initialize(system: ScriptingEngine): void 
     abstract update(dt: number): void
+    abstract get(s: string) : any
+    abstract set(s: string, a: any) : void
 }
 export class Script implements ScriptObject {
     entity?: number;
@@ -36,12 +38,19 @@ export class Script implements ScriptObject {
     callback?: (dt: number, data?: any ) => void
     init?: (engine: ScriptingEngine) => void
     destroy?: () => void
+    scriptEntity?: ScriptEntity
     constructor(className: string,  engineType: EngineType = EngineType.CLIENTONLY,callback?: (dt: number, data: any ) => void, init?: (engine: ScriptingEngine) => void,destroy?: ()=> void) {
         this.callback = callback
         this.className = className
         this.engineType = engineType
         this.init = init
         this.destroy = destroy
+    }
+    set(s: string, a: any): void {
+        this.properties.set(s,a)
+    }
+    get(s: string) {
+        return this.properties.get(s)
     }
     copy(script: Script): void {
         this.className = script.className
@@ -66,6 +75,9 @@ export class Script implements ScriptObject {
         if (deleted.destroy) {
             deleted.destroy()
         }
+        if (this.scriptEntity) {
+
+        }
         let set = this.system.objectDB.get(deleted.className)
         if (set) {
             set.delete(deleted)
@@ -88,6 +100,7 @@ export class Script implements ScriptObject {
         if (this.init) {
             this.init(system)
         }
+
     }
     getClasses(classId: string) {
         let classArr = this.system.objectDB.get(classId);
@@ -98,6 +111,10 @@ export class Script implements ScriptObject {
     }
     addEntity(entity: Entity): Entity {
         return this.system.sceneManager.getCurrentScene().addEntity(entity)
+    }
+    addScriptEntity() {
+        this.scriptEntity = this.system.operations.addEntity(this.componentId as number)
+        return this.scriptEntity
     }
     removeEntity(id: number) {
         this.system.sceneManager.getCurrentScene().removeEntity(id)

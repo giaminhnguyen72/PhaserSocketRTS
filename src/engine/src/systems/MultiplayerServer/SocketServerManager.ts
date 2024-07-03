@@ -59,17 +59,17 @@ export class SocketServerManager implements System<Listenable>, SocketEventSyste
         
     }
     register(comp: Listenable): void {
-        console.log(" Component has been registered with type Socket Client")
+
         console.log(comp instanceof SocketServer)
         if (comp.componentId == undefined || comp.componentId == null) {
-            console.log(" Component is not defined ")
+            console.error("Found component without Component ID " + this.tag)
             let id = this.sceneManager.getUniqueComponentId()
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
             comp.initialize(this)
         } else {
-            console.log(" Component is defined")
+
             comp.system = this
             this.components.set(comp.componentId, comp)
             comp.initialize(this)

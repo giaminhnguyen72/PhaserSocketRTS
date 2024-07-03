@@ -15,12 +15,13 @@ export class Text implements Renderable {
     alive: boolean = true;
     system!: System<Component>;
     pos: Vector3
+    children: [] = []
     update(dt: number, ctx?: CanvasRenderingContext2D | undefined): void {
 
     }
     
     constructor(text: string = "") {
-        this.pos = {x:100, y:100, z:0}
+        this.pos = {x:0, y:0, z:0}
         this.text = text
     }
     unmount(): void {

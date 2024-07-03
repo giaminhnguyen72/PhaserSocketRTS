@@ -6,7 +6,7 @@ import { Transform } from "../../../../engine/src/systems/physics/components/tra
 
 import { Script } from "../../../../engine/src/systems/scripting/components/Script.js";
 import { EngineType } from "../../../../engine/src/constants/engineType.js";
-
+import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
 
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 import { MultiplayerSyncronizer } from "../../../../engine/src/systems/MultiplayerClient/components/Syncronizer.js";
@@ -29,8 +29,8 @@ export class Rocket implements Entity {
         let transform = new Transform(pos, vel)
         let sprite = new Sprite3d({
             dim:{
-                length: 32,
-                height:32
+                length: 64,
+                height: 64
             },
             rot: 0,
             pos: transform.pos

@@ -6,7 +6,7 @@ import { Transform } from "../../../../engine/src/systems/physics/components/tra
 
 import { Script } from "../../../../engine/src/systems/scripting/components/Script.js";
 import { EngineType } from "../../../../engine/src/constants/engineType.js";
-
+import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
 
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 import { MultiplayerSyncronizer } from "../../../../engine/src/systems/MultiplayerClient/components/Syncronizer.js";
@@ -20,9 +20,9 @@ type Data = {
 
 }
 export class Stone implements Entity {
-    components: Component[];
+    components: [Sprite3d, Transform, MultiplayerSyncronizer<Stone, Data>, Script, Component];
     id?: number | undefined;
-    scene?: Scene | undefined;
+    scene!: Scene ;
     className: string = "STONE";
     constructor(owner: number =0, pos: Vector3 = {x:0, y:0, z:0}, dir: Vector3= {x:0,y:0,z:0}, ) {
         let vel = {x: dir.x* 0.2, y: dir.y * 0.2,z:0}
@@ -75,6 +75,37 @@ export class Stone implements Entity {
             transform.pos.y = lerp(transform.pos.y, component.data.position.y, dt)
         }
     })
+    let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+        let entID = col.entity as number
+        let ent = this.scene.entities.get(col.entity as number)
+        if (entID == script.get("Owner")) {
+            return
+        } 
+        if (ent) {
+            
+            for (let i of ent.components) {
+                if (i instanceof Script) {
+                    let currType = i.get("Type")
+                    switch (currType) {
+                        case 0:
+                            //  
+
+                            let enemyHP = i.get("HP")
+                            i.set("HP", enemyHP - 10)
+                            this.scene.removeEntity(this.id as number)
+                            break
+                        case 1:
+                            break
+                        default:
+                            break
+
+                    }
+                    return
+
+                }
+            }
+        }
+    })
         let script = new Script(this.className,EngineType.SOCKETSERVER)
         script.properties.set("Position", transform.pos)
         script.properties.set("Duration", 5000)
@@ -82,9 +113,10 @@ export class Stone implements Entity {
         script.setInit((system) => {
             system.addSuperClasses(script, "Projectile")
         })
+        collider.bindPos(transform)
 
         // Needs colllider
-        this.components = [sprite, transform,sync,script]
+        this.components = [sprite, transform,sync,script,collider]
 
 
     }

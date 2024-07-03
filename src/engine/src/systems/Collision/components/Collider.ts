@@ -9,6 +9,7 @@ import { Transform } from "../../physics/components/transform.js";
 import { getRectangleNormals, SATCollision } from "../utils/collisionUtils.js";
 
 
+
 export class BoxCollider implements Collideable {
     entity!: number;
     engineTag: string = "COLLISION";
@@ -87,6 +88,40 @@ export class BoxCollider implements Collideable {
     }
     bindPos(element: {pos: Vector3}) {
         this.shape.pos = element.pos
+    }
+    getCollisionBox(collider: Collideable) {
+        let boundingBox = this.boundingBox
+        
+        let x1 = boundingBox.pos.x - 0.5 * boundingBox.dim.length
+        let y1 = boundingBox.pos.y - 0.5 * boundingBox.dim.height
+
+        let x2 = boundingBox.pos.x + 0.5 * boundingBox.dim.length
+        let y2 = boundingBox.pos.y + 0.5 * boundingBox.dim.height
+        let col = collider.boundingBox
+        let x3 = col.pos.x - 0.5 * col.dim.length
+        let y3 = col.pos.y - 0.5 * col.dim.height
+
+        let x4 = col.pos.x + 0.5 * col.dim.length
+        let y4 = col.pos.y + 0.5 * col.dim.height
+
+        let blX = Math.max(x1,x3)
+        let blY = Math.max(y1,y3)
+
+        let trX = Math.min(x1,x3)
+        let trY = Math.min(y1,y3)
+        let x = 0.5 * (blX + trX)
+        let y = 0.5 * (blY + trY)
+
+        let rect: Rectangle = {
+            pos: {x:x, y:y,z:boundingBox.pos.z},
+            rot: 0,
+            dim: {
+                length: Math.abs(blX - trX),
+                height: Math.abs(blY - trY)
+            }
+        } 
+        return rect
+
     }
     checkCollision(collider: Collideable): boolean {
 
@@ -182,6 +217,40 @@ export class CircleCollider implements Collideable {
     }
     getRectangle(): Rectangle {
         return this.boundingBox
+    }
+    getCollisionBox(collider: Collideable) {
+        let boundingBox = this.boundingBox
+        
+        let x1 = boundingBox.pos.x - 0.5 * boundingBox.dim.length
+        let y1 = boundingBox.pos.y - 0.5 * boundingBox.dim.height
+
+        let x2 = boundingBox.pos.x + 0.5 * boundingBox.dim.length
+        let y2 = boundingBox.pos.y + 0.5 * boundingBox.dim.height
+        let col = collider.boundingBox
+        let x3 = col.pos.x - 0.5 * col.dim.length
+        let y3 = col.pos.y - 0.5 * col.dim.height
+
+        let x4 = col.pos.x + 0.5 * col.dim.length
+        let y4 = col.pos.y + 0.5 * col.dim.height
+
+        let blX = Math.max(x1,x3)
+        let blY = Math.max(y1,y3)
+
+        let trX = Math.min(x1,x3)
+        let trY = Math.min(y1,y3)
+        let x = 0.5 * (blX + trX)
+        let y = 0.5 * (blY + trY)
+
+        let rect: Rectangle = {
+            pos: {x:x, y:y,z:boundingBox.pos.z},
+            rot: 0,
+            dim: {
+                length: Math.abs(blX - trX),
+                height: Math.abs(blY - trY)
+            }
+        } 
+        return rect
+
     }
     copy<T>(): void {
         throw new Error("Method not implemented.");

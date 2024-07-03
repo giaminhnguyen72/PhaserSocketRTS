@@ -2,14 +2,20 @@ import { Vector3 } from "../../../../engine/src/types/components/physics/transfo
 import { Bear } from "../../entities/Mobs/Bear.js";
 import { CandoWisp } from "../../entities/Mobs/Candowisp.js";
 import { DarkMage } from "../../entities/Mobs/DarkMage.js";
+import { Droid } from "../../entities/Mobs/Droid.js";
 import { EarthEater } from "../../entities/Mobs/EarthEater.js";
 import { EarthTortoise } from "../../entities/Mobs/EarthTortoise.js";
+import { EvilAngel } from "../../entities/Mobs/EvilAngel.js";
 import { Gargoyle } from "../../entities/Mobs/Gargoyle.js";
 import { GiantRat } from "../../entities/Mobs/GiantRat.js";
 import { GiantSpider } from "../../entities/Mobs/GiantSpider.js";
+import { Goblin } from "../../entities/Mobs/Goblin.js";
+import { HimalayanMuscox } from "../../entities/Mobs/HimalayanMuscox.js";
 import { MindFlayer } from "../../entities/Mobs/MindFlayer.js";
+import { Orc } from "../../entities/Mobs/Orc.js";
 import { Skeleton } from "../../entities/Mobs/Skeleton.js";
 import { Snake } from "../../entities/Mobs/Snake.js";
+import { Snowmon } from "../../entities/Mobs/Snowmon.js";
 import { WilloWisp } from "../../entities/Mobs/WilloWisp.js";
 import { Wolf } from "../../entities/Mobs/Wolf.js";
 import { Scene } from "./../../../../engine/src/core/scene.js";
@@ -63,6 +69,30 @@ export function SpawnMonsters(scene: Scene, monsterID: number, pos: Vector3) {
         case 12:
             let will = new WilloWisp()
             will.spawn(scene, pos)
+            break
+        case 13: 
+            let goblin = new Goblin()
+            goblin.spawn(scene, pos)
+            break
+        case 14:
+            let droid = new Droid()
+            droid.spawn(scene,pos)
+            break
+        case 15:
+            let evilAngel = new EvilAngel()
+            evilAngel.spawn(scene, pos)
+            break
+        case 16:
+            let muscox = new HimalayanMuscox()
+            muscox.spawn(scene, pos)
+            break
+        case 17: 
+            let orc = new Orc()
+            orc.spawn(scene,pos)
+            break
+        case 18:
+            let snowmon = new Snowmon()
+            snowmon.spawn(scene,pos)
             break
         default:
             let wolf= new Wolf()

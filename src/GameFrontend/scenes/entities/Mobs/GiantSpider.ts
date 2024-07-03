@@ -11,7 +11,7 @@ import { BoxCollider } from "../../../../engine/src/systems/Collision/components
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 import { MultiplayerSyncronizer } from "../../../../engine/src/systems/MultiplayerClient/components/Syncronizer.js";
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
-import { lerp } from "../../../../engine/src/math/Vector.js";
+import { getDirection, lerp } from "../../../../engine/src/math/Vector.js";
 import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
 import { ScriptOperable } from "../../../../engine/src/systems/scripting/types/Operations.js";
 import { Web } from "../Attacks/Structures/Web.js";
@@ -22,7 +22,7 @@ type Data = {
 }
 
 export class GiantSpider implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<GiantSpider, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<GiantSpider, Data>,BoxCollider];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "GIANTSPIDER";
@@ -47,9 +47,28 @@ export class GiantSpider implements Entity {
             }
     }, 50, 32, [1,1])
         
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let collidedEntity = this.scene.entities.get(col.entity as number)
+            if (collidedEntity) {
+                for (let i of collidedEntity.components) {
+                    if (i instanceof Script ) {
+                        switch (i.get("Type")) {
+                            case 2:
+                            case 0: 
+                                let rect = col.getCollisionBox(collider)
+                                let dir = getDirection(rect.pos, collider.boundingBox.pos)
+                                let dx = dir.x * 0.5 * rect.dim.length
+                                let dy = dir.y * 0.5 * rect.dim.height
+                                collider.boundingBox.pos.x += dx
+                                collider.boundingBox.pos.y += dy
+                        }
+                        
+                    }
+                    
+                }
+            }
+            
+            
         })
 
         
@@ -61,11 +80,17 @@ export class GiantSpider implements Entity {
         let script = new Script(this.className, EngineType.SOCKETSERVER)
 
         
-        script.setProperty("HP", 100)
+        script.setProperty("HP", 120)
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
-        script.setProperty("Speed", 0.05)
+        script.setProperty("Speed", 0.03)
+        script.setProperty("Type", 0)
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
+        })
         script.setProperty("Position",transform.pos)
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
@@ -146,7 +171,7 @@ export class GiantSpider implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync,collider])
         
         
         

@@ -22,7 +22,7 @@ type Data = {
 }
 
 export class EarthTortoise implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<EarthTortoise, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<EarthTortoise, Data>,BoxCollider];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "EARTHTORTOISE";
@@ -37,8 +37,8 @@ export class EarthTortoise implements Entity {
         let sprite = new TimedSpriteSheet3d("/images/Characters/EarthTortoise_S.png", {
             rot:0,
             dim:{
-                length: 64,
-                height:64
+                length: 128,
+                height:128
             },
             pos: {
                 x:0,
@@ -47,9 +47,29 @@ export class EarthTortoise implements Entity {
             }
     }, 50, 32, [1,1])
 
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:96, height: 96},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                let rect = col.getCollisionBox(collider)
+                                let dir = getDirection(rect.pos, collider.boundingBox.pos)
+                                let dx = dir.x * 0.5 * rect.dim.length
+                                let dy = dir.y * 0.5 * rect.dim.height
+                                collider.boundingBox.pos.x += dx
+                                collider.boundingBox.pos.y += dy
+                        }
+                    }
+                }
+            }
         })
 
         
@@ -65,8 +85,14 @@ export class EarthTortoise implements Entity {
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
         script.setProperty("Speed", 0.05)
+        script.setProperty("Type", 0)
         script.setProperty("Position",transform.pos)
         let vec = {x: transform.pos.x, y: transform.pos.y}
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
+        })
         script.setProperty("Destination", vec)
         script.setProperty("Graphics", 0)
         script.setProperty("Range", 0)
@@ -145,7 +171,7 @@ export class EarthTortoise implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync,collider])
         
         
         
@@ -180,6 +206,7 @@ export class EarthTortoiseSystem implements ScriptOperable {
                 let scene = scriptingEngine.sceneManager.currScene
                 if (cooldown > 5000) {
                     let earthquake = new Earthquake()
+                    earthquake.setOwner(i.entity as number)
                     earthquake.components[1].pos.x = pos.x
                     earthquake.components[1].pos.y = pos.y
                     scene.addEntity(earthquake)

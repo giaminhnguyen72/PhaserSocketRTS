@@ -5,6 +5,7 @@ import { System } from "../../types/system.js";
 import { ScriptingConfig } from "../../core/config.js";
 import { ScriptOperable, ScriptOperationManager } from "./types/Operations.js";
 import { TypeMap } from "./types/HelperTypes.js";
+import { Container } from "./types/Containers.js";
 export class ScriptingEngine implements System<ScriptObject> {
     tag: string ="SCRIPTING"  ;
     components: Map<number, ScriptObject>;
@@ -14,11 +15,16 @@ export class ScriptingEngine implements System<ScriptObject> {
     objectDB: Map<string, Set<Script>> = new Map()
     updateSystems:Map<number, Script> = new Map()
     operations: ScriptOperationManager = new ScriptOperationManager(this)
+
     constructor(sceneManager: SceneManager, engineType: ScriptingConfig) {
         this.components = new Map<number, ScriptObject>()
         this.engineType = engineType.engineType
         this.sceneManager = sceneManager
     }
+    addContainer<Data, T extends Container<Data>>(dataType : new () => Data, containerType: (new (item: new ()=>Data) => T)) {
+        return this.operations.addContainer<Data,T>(dataType, containerType)
+    }
+    
     addOperation<T extends TypeMap<ScriptOperable[]>>(sys: T) {
         this.operations.addOperation(sys)
     }
@@ -66,7 +72,7 @@ export class ScriptingEngine implements System<ScriptObject> {
 
     register(comp: ScriptObject, id: number): void {
         if (comp.componentId == undefined || comp.componentId == null) {
-            
+
             comp.componentId = id
             comp.system = this
             this.components.set(id, comp)
@@ -101,6 +107,8 @@ export class ScriptingEngine implements System<ScriptObject> {
     update(dt: number): void {
         //console.log("Scripting engine running")
         //console.log("Scripting Components: " + this.components.size)
+        this.operations.dataManager.trueAdd()
+        this.operations.dataManager.trueRemove()
         for (let comp of this.updateSystems) {
             if (comp[1].engineType == this.engineType) {
                 comp[1].update(dt)

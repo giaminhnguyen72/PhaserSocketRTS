@@ -30,6 +30,12 @@ class VectorField implements ScriptObject {
         }
         
     }
+    get(s:string) {
+
+    }
+    set(s: string, a: any): void {
+        this.properties.set(s,a)
+    }
     destructor(): void {
         throw new Error("Method not implemented.");
     }

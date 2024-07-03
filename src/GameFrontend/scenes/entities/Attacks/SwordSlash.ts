@@ -12,17 +12,19 @@ import { MultiplayerSyncronizer } from "../../../../engine/src/systems/Multiplay
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
 import { lerp } from "../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
+import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
 type Data = {
     componentId: number[],
     vel: Vector3,
     position: Vector3
-    rot: number
+    rot: number,
+    direction: number
 }
 export class SwordSlash implements Entity {
-    components: Component[];
+    components: [Sprite3d, Transform, MultiplayerSyncronizer<SwordSlash, Data>, Script, Component];
     id?: number | undefined;
-    scene?: Scene | undefined;
-    className: string = "SWORDSWING";
+    scene!: Scene ;
+    className: string = "SWORDSLASH";
     constructor(owner: number =0, pivot: Vector3 = {x:0, y:0, z:0}) {
 
         let axis = {
@@ -66,7 +68,8 @@ export class SwordSlash implements Entity {
             vel: transform.vel,
             position: transform.pos,
             componentId: array,
-            rot: rot
+            rot: rot,
+            direction: script.get("Direction")
         }
     }, (currtime: number, timestamp: number, data) => {
         let total = timestamp - sync.time
@@ -77,7 +80,11 @@ export class SwordSlash implements Entity {
         let component = data 
         
         if (component.data && sync.data) {
-            sprite.shape.rot = component.data.rot - 3 * Math.PI / 2
+            if (component.data.direction >= 0) {
+                sprite.shape.rot = component.data.rot - 3 * Math.PI / 2
+            } else {
+                sprite.shape.rot = component.data.rot - 1 * Math.PI / 2
+            }
             transform.pos.x = lerp(transform.pos.x, component.data.position.x, dt)
             transform.pos.y = lerp(transform.pos.y, component.data.position.y, dt)
         }
@@ -85,27 +92,61 @@ export class SwordSlash implements Entity {
         let script = new Script(this.className,EngineType.SOCKETSERVER)
         script.properties.set("Duration", 500)
         script.properties.set("Owner", owner)
-        
+        script.properties.set("Owner", owner)
         //Spinning Components
         script.properties.set("Radius", 50)
         script.properties.set("Position", pos)
         script.properties.set("Axis", axis)
+        script.set("Direction", 1)
         script.properties.set("Angle", 3 *Math.PI / 2)
         // TIme is a constant value that never changes representing the the amount of time to do one rotation
         script.properties.set("Time", 1000)
-
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                //  
+    
+                                let enemyHP = i.get("HP")
+                                i.set("HP", enemyHP - 30)
+                                this.scene.removeEntity(this.id as number)
+                                break
+                            case 1:
+                                break
+                            default:
+                                break
+    
+                        }
+                        return
+    
+                    }
+                }
+            }
+        })
         script.setInit((system) => {
             system.addSuperClasses(script, "Projectile", "Spinning")
         })
 
-
+        collider.bindPos(transform)
         // Needs colllider
-        this.components = [sprite, transform,sync,script]
+        this.components = [sprite, transform,sync,script, collider]
 
 
     }
     clone(): Entity {
         throw new Error("Method not implemented.");
+    }
+    setOwner(id: number) {
+        this.components[3].set("Owner", id)
     }
 
 }

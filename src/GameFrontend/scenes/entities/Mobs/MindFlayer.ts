@@ -24,7 +24,7 @@ type Data = {
 }
 
 export class MindFlayer implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<MindFlayer, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<MindFlayer, Data>,BoxCollider];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "MINDFLAYER";
@@ -49,9 +49,29 @@ export class MindFlayer implements Entity {
             }
     }, 50, 32, [1,1])
 
-        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, () => {
-            transform.vel.x *= -1
-            transform.vel.y *= -1
+        let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+            let entID = col.entity as number
+            let ent = this.scene.entities.get(col.entity as number)
+            if (entID == script.get("Owner")) {
+                return
+            } 
+            if (ent) {
+                
+                for (let i of ent.components) {
+                    if (i instanceof Script) {
+                        let currType = i.get("Type")
+                        switch (currType) {
+                            case 0:
+                                let rect = col.getCollisionBox(collider)
+                                let dir = getDirection(rect.pos, collider.boundingBox.pos)
+                                let dx = dir.x * 0.5 * rect.dim.length
+                                let dy = dir.y * 0.5 * rect.dim.height
+                                collider.boundingBox.pos.x += dx
+                                collider.boundingBox.pos.y += dy
+                        }
+                    }
+                }
+            }
         })
 
         
@@ -63,16 +83,22 @@ export class MindFlayer implements Entity {
         let script = new Script(this.className, EngineType.SOCKETSERVER)
 
         
-        script.setProperty("HP", 100)
+        script.setProperty("HP", 80)
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
-        script.setProperty("Speed", 0.005)
+        script.setProperty("Speed", 0.02)
         script.setProperty("Position",transform.pos)
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
         script.setProperty("Graphics", 0)
         script.setProperty("Direction", {x:1,y:0,z:0})
+        script.setProperty("Modifier", {
+            speed: 1,
+            regen: 0,
+            damage: 0
+        })
+        script.setProperty("Type", 0)
         script.setProperty("AttackRange", 300)
         script.setProperty("Range", 0)
         script.setProperty("Cooldown", 0)
@@ -149,7 +175,7 @@ export class MindFlayer implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync,collider])
         
         
         
@@ -205,41 +231,49 @@ export class MindFlayerSystem implements ScriptOperable{
 
 
                     }
+                    if (minPos == undefined) {
+                        continue
+                    }
                     if (cooldown > 10000 && minimum < range) {
                         let randomSpell = Math.floor(Math.random() * 4)
-
+                        let dir = getDirection(position, minPos)
+                        let newX = position.x +   dir.x * 64
+                        let newY = position.y +   dir.y * 64
                         switch (randomSpell) {
                             case 0:
                                 let fireball = new Fireball()
-                                fireball.components[1].pos.x =position.x
-                                fireball.components[1].pos.y =position.y
-                                let dir = getDirection(position, minPos)
-                                dir.x *= 0.03
-                                dir.y *= 0.03
-                                fireball.components[1].vel.x = dir.x
-                                fireball.components[1].vel.y = dir.y
+
+                                
+                                
+                                fireball.components[1].pos.x = newX 
+                                fireball.components[1].pos.y = newY
+                                fireball.components[1].vel.x = dir.x* 0.1
+                                fireball.setOwner(i.entity as number)
+                                fireball.components[1].vel.y = dir.y* 0.1
                                 script.sceneManager.currScene.addEntity(fireball)
                                 break
                             case 1:
                                 let icicle = new Icicle()
-                                icicle.components[1].pos.x =position.x
-                                icicle.components[1].pos.y =position.y
+
                                 let dir2 = getDirection(position, minPos)
-                                dir2.x *= 0.03
-                                dir2.y *= 0.03
-                                icicle.components[1].vel.x = dir2.x
-                                icicle.components[1].vel.y = dir2.y
+                                
+                                icicle.components[1].pos.x = newX 
+                                icicle.components[1].pos.y = newY
+                                icicle.components[1].vel.x = dir2.x * 0.1
+                                icicle.components[1].vel.y = dir2.y* 0.1
+                                icicle.setOwner(i.entity as number)
                                 script.sceneManager.currScene.addEntity(icicle)
                                 break
                             default:
                                 let darkblast = new DarkOrb()
-                                darkblast.components[1].pos.x =position.x
-                                darkblast.components[1].pos.y =position.y
+
                                 let dir3 = getDirection(position, minPos)
-                                dir3.x *= 0.03
-                                dir3.y *= 0.03
-                                darkblast.components[1].vel.x = dir3.x
-                                darkblast.components[1].vel.y = dir3.y
+                                
+                                darkblast.setOwner(i.entity as number)
+                                darkblast.components[1].pos.x = newX 
+                                darkblast.components[1].pos.y = newY
+                                darkblast.components[1].vel.x = dir3.x * 0.1
+                                darkblast.components[1].vel.y = dir3.y* 0.1
                                 script.sceneManager.currScene.addEntity(darkblast)
                         }
                         i.setProperty("Cooldown", 0)

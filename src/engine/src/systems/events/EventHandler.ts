@@ -3,13 +3,13 @@ import { Component, Collideable, Listenable, Emitter, EngineEvent, Listener } fr
 import { EventConfig } from "../../core/config.js";
 import { EventSystem, System } from "../../types/system.js";
 import { SceneManager } from "../../core/managers/SceneManager.js";
-import { KeyEvent } from "./components/KeyboardHandler.js";
+
 import { Vector3 } from "../../types/components/physics/transformType.js";
 interface ClickEvent extends EngineEvent{
     pos: Vector3
     eventName: string
 }
-export class EventHandler implements System<Listenable>, EventSystem<KeyEvent | ClickEvent> {
+export class EventHandler implements System<Listenable>, EventSystem<KeyboardEvent | ClickEvent> {
     tag: string = "EVENTHANDLER";
     
     sceneManager!: SceneManager
