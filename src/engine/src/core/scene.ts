@@ -27,6 +27,7 @@ export interface Scene extends Entity {
     queryComponent<T extends Component>(type: {new(...args: any[]): T}, entityTag: string):  T[]
     update(dt: number): void
     createEntity(className:string, components: Component[]): Entity
+    hasEntity(id: number): boolean
 }
 export class Stage implements Scene, Entity {
     components: Component[] = []
@@ -85,7 +86,19 @@ export class Stage implements Scene, Entity {
             entities: [this]
         }
     }
-    
+    hasEntity(id: number): boolean {
+        let ent = this.entities.has(id)
+        if (ent) {
+            return ent
+        } else {
+            for (let i of this.addedEntities) {
+                if (i.id == id) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
     querySystem<T extends System<Component>> (type: {new(...args: any[]): T}, engineTag: string) {
         
         let engine = this.sceneManager.queryEngine<T>(engineTag, type)
@@ -169,7 +182,7 @@ export class Stage implements Scene, Entity {
 
                 
             } else {
-                console.log(comp.engineTag + "does not exist")
+                // console.log(comp.engineTag + "does not exist")
 
                 
             }
@@ -205,9 +218,9 @@ export class Stage implements Scene, Entity {
             if (this.querySys(c.engineTag)) {
                 c.system.unregister(c.componentId as number) 
             }
-            
-            
-        }
+             
+             
+        } 
         
         
         
@@ -251,7 +264,7 @@ export class Stage implements Scene, Entity {
             
                         
                     } else {
-                        console.log(comp.engineTag + " tagged System is not found")
+                        // console.log(comp.engineTag + " tagged System is not found")
                         
                     }
                 }
@@ -274,11 +287,11 @@ export class Stage implements Scene, Entity {
         
                     
                 } else {
-                    console.log(comp.engineTag + " tagged System is not found")
+                    // console.log(comp.engineTag + " tagged System is not found")
                     
                 }
             }
-            console.log("successfully added entitys")
+            // console.log("successfully added entitys")
             return entity
         }
         

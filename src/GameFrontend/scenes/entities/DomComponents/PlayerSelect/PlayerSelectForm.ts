@@ -11,7 +11,7 @@ import { SocketClient } from "../../../../../engine/src/systems/MultiplayerClien
 import { Text3d } from "../../../../../engine/src/systems/graphics/components/3d/Text.js";
 
 export class PlayerUIForm implements Entity{
-    components: [Script, UIComponent,KeyboardListener,UIComponent] ;
+    components: [Script, UIComponent,KeyboardListener,UIComponent,UIComponent] ;
     id?: number | undefined;
     scene!: Scene ;
     className: string = "UIForm";
@@ -42,7 +42,12 @@ export class PlayerUIForm implements Entity{
         let whiteButton1 = new UIComponent(0.125, 0.5, {x:0, y:0, z: 0}, 1,)
         whiteButton1.texture = "/images/Background/UI/Icons.png"
         whiteButton1.tileNumber = 13
-        let camera = new UIComponent(0.8, 0.2, {x:0, y:0, z: -0.1}, 0,undefined ,  redButton, blueButton, greenButton, whiteButton, redButton1, blueButton1, greenButton1, whiteButton1)
+        let selectedBox = new UIComponent(0.1, 0.2, {x:-0.35, y:-0.9, z: -0.1}, 1,)
+        selectedBox.texture = "/images/Background/UI/UIBox.png"
+        selectedBox.color = 0xFFFF00
+        
+
+        let camera = new UIComponent(0.8, 0.2, {x:0, y:0, z: -0.2}, 0,undefined ,  redButton, blueButton, greenButton, whiteButton, redButton1, blueButton1, greenButton1, whiteButton1)
         camera.texture = "/images/Background/InventoryUI.png"
 
 
@@ -99,18 +104,22 @@ export class PlayerUIForm implements Entity{
 
                     switch (ev.key) {
                         case "a":
-                            script.properties.set("Selected", (selected + 7) % 8)
+                            selected = (selected + 7) % 8
+                            script.properties.set("Selected", selected)
+                            selectedBox.pos.x = selected * 0.1 -0.35
                         
                             break
                         case "d":
-                            script.properties.set("Selected", (selected + 1) % 8)
+                            selected = (selected + 1) % 8
+                            selectedBox.pos.x = selected * 0.1 -0.35
+                            script.properties.set("Selected", selected)
                             break
-                        case "q":
-                            text.pos.z += 0.05
-                            break 
-                        case "e":
-                            text.pos.z -= 0.05
-                            break 
+                        // case "q":
+                        //     text.pos.z += 0.05
+                        //     break 
+                        // case "e":
+                        //     text.pos.z -= 0.05
+                        //     break 
                         case "w":
                             for (let i of this.scene.components) {
                                 
@@ -131,7 +140,7 @@ export class PlayerUIForm implements Entity{
             }
         })
         
-        this.components = [script, camera, listener,healthDataBoX]
+        this.components = [script, camera, listener,healthDataBoX, selectedBox]
     }
     clone(): Entity {
         throw new Error("Method not implemented.");

@@ -8,6 +8,7 @@ import { EngineType } from "../../../../engine/src/constants/engineType.js";
 import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 
+
 export class BasicAxe implements Entity {
     components: Component[] = [];
     id?: number | undefined;

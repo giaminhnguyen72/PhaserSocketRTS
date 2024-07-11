@@ -1,5 +1,6 @@
 import React from "react"
 import { useState } from "react"
+import { DefaultButton } from "../../../../frontend/components/buttons/button.js"
 
 export function CreateRoomForm (props: any) {
     var style: Object = {
@@ -8,8 +9,7 @@ export function CreateRoomForm (props: any) {
         alignSelf: "center",
         backgroundColor:  "#259E25",
         border: "28px solid  #259E25",
-        marginTop: "12.5%",
-        borderRadius: "18.5%",
+        marginTop: "5%",
         justifySelf: "center",
         alignment: "center",
         height: "50%",
@@ -24,12 +24,18 @@ export function CreateRoomForm (props: any) {
         justifyContent: 'space-around',
         flexDirection: "column",
         height: "100%",
-        marginTop: "10%"
+        marginTop: "5%"
     }
     var labelStyle: Object = {
         textAlign: "center",
-        fontSize: "1.5vw",
+        fontSize: "1.7vw",
         color: 'white'
+    }
+    let inputStyle ={
+        borderColor: "0xA9A9A9",
+        height: "10%",
+        width: "40%",
+        borderRadius: "5px"
     }
 
     const [playerName, setPlayerName] = useState("")
@@ -43,17 +49,27 @@ export function CreateRoomForm (props: any) {
                 
                     <label style={labelStyle}>Game Name</label>
                 
-                    <input className="gameName" type="text" name="gameName" required />
+                    <input style={inputStyle} className="gameName" type="text" name="gameName" required />
                 
             
                     <label style={labelStyle}>Player Name</label>
                 
-                    <input className="playerName" type="text" name="playerName" value={playerName} 
+                    <input style={inputStyle} className="playerName" type="text" name="playerName" value={playerName} 
                     onChange={(e) => {setPlayerName(e.target.value)}}
                     required />
                 
-                
-                <button className="Play" type="submit" onClick={storeFormData}>Create Game</button>
+                <DefaultButton
+                    color= {"green"}
+                    textColor={"white"}
+                    radius={"3px"}
+                    fontSize={"1.1vw"}
+                    onClick={storeFormData}
+                    height={"20%"}
+                    width={"30%"}
+                >
+                    Create Room
+                </DefaultButton>
+
             </form>
         
     )

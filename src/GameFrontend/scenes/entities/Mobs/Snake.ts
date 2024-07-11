@@ -89,7 +89,7 @@ export class Snake implements Entity {
         let script = new Script(this.className, EngineType.SOCKETSERVER)
 
         
-        script.setProperty("HP", 20)
+        script.setProperty("HP", 5)
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)

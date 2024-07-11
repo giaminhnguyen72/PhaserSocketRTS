@@ -13,6 +13,8 @@ import { MultiplayerSyncronizer } from "../../../../engine/src/systems/Multiplay
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
 import { lerp } from "../../../../engine/src/math/Vector.js";
 import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
+import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { ExpEvent } from "../../../../GameFrontend/events/ExpEvent.js";
 type Data = {
     componentId: number[],
     vel: Vector3,
@@ -100,7 +102,23 @@ export class Windslash implements Entity {
                                 let hitSet = script.get("Hit")
                                 if (!hitSet.has(col.entity)) {
                                     let enemyHP = i.get("HP")
-                                    i.set("HP", enemyHP - 30)
+                                    let damage = 30
+                                    if (enemyHP - damage <= 0) {
+                                        let e = this.scene.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING",ScriptingEngine)
+                                        if (e) {
+                                            let players = e.queryClass("Player")
+                                            if (players == undefined || players.has(i) == false) {
+                                            
+                                            } else {
+                                                let entity = e.operations.addEntity(script.componentId as number)
+                                                let exp = new ExpEvent()
+                                                exp.playerID = script.get("Owner")
+                                                exp.exp = 20
+                                                entity.addComponent<ExpEvent>(ExpEvent, exp)
+                                            }
+                                        }
+                                    }
+                                    i.set("HP", enemyHP - damage)
                                     
                                     hitSet.add(col.entity)
                                 }

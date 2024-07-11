@@ -142,8 +142,10 @@ export class GraphicsEngine implements System<Renderable>{
                 this.cameras.delete(deleted.componentId as number)
                 this.renderStrategy.deregisterStrategy(deleted)
                 //console.log(deleted.entity+ " s Component with id " +  deleted.componentId + "is popped")
-            }
+        } else {
+            console.error("Graphics Component not Found")
         }
+    }
     
     addUIComponent(component: Renderable) {
         this.UIComponents.add(component.componentId as number)

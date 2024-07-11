@@ -24,6 +24,7 @@ import { PlayerUIForm } from "../DomComponents/PlayerSelect/PlayerSelectForm.js"
 import { MouseListener } from "../../../../engine/src/systems/events/components/MouseHandler.js"
 import { MultiplayerStage } from "../../../../engine/src/core/MultiplayerScene.js"
 import { MainScene } from "../../MainScene.js"
+import { UnlockSkill } from "../../Skills/SkillNavigation.js"
 type Fist = [0, "", 0, true, []]
 type SkillClass = (Skill & (new() => Skill))
 interface Skill {
@@ -105,6 +106,7 @@ export class SkillTree implements Entity {
 
         let title = new Text3d()
         title.text = "Item"
+        title.color = 0xffffff
         title.pos.x = -0.12
         title.pos.y = 0
         title.pos.z = 0.1
@@ -112,12 +114,22 @@ export class SkillTree implements Entity {
         infoBox.children.push(title)
 
         let description = new Text3d()
+        description.color = 0xffffff
         description.text = "Description"
         description.pos.x = -0.12
         description.pos.y = -0.05
         description.pos.z = 0.1
         description.fontSize = 0.015
         infoBox.children.push(description)
+
+        let ExpText = new Text3d()
+        ExpText.text = "EXP"
+        ExpText.color = 0xffffff
+        ExpText.pos.x = -0.12
+        ExpText.pos.y = -0.3
+        ExpText.pos.z = 0.1
+        ExpText.fontSize = 0.015
+        infoBox.children.push(ExpText)
         
         let script = new Script("SkillTREE", EngineType.SOCKETCLIENT)
         script.setProperty("DisplayedID", 17)
@@ -130,12 +142,13 @@ export class SkillTree implements Entity {
 
         
 
-
+        let border:[number,number,number,number] = [0.15,0.4,0.15,0.15]
 
         for (let i = 0; i < UIDATA.length; i++) {
             let icon = new UIComponent(0.03125,0.03125,{x:UIDATA[i].posX,y: UIDATA[i].posY , z: 0.1}, 1)
             icon.texture = "/images/Background/UI/Icons.png"
             icon.tileNumber = UIDATA[i].tileNum
+            icon.border = border
             
             UI.children.push(icon)
             // Create Line from  each icon to children icon
@@ -147,6 +160,7 @@ export class SkillTree implements Entity {
                 let lineLength =   Math.sqrt(dx * dx + dy * dy)
                 let angle = Math.atan(dy/dx)
                 let line = new Line()
+                line.border = border
                 line.rot = angle
                 line.length = lineLength - 0.08
                 line.pos.x = posX
@@ -159,6 +173,7 @@ export class SkillTree implements Entity {
             
             
             let frame = new UIComponent(0.04,0.04,{x:UIDATA[i].posX,y: UIDATA[i].posY , z: 0.1}, 1)
+            frame.border = border
             frame.texture = "/images/Background/UI/UIBox.png"
             if (set.has(UIDATA[i].SkillID)) {
                 frame.color = 0xffff00
@@ -180,6 +195,8 @@ export class SkillTree implements Entity {
                 title.updateText()
                 description.text = UIDATA[i].description
                 description.updateText()
+                ExpText.text = "Exp: " + UnlockSkill(UIDATA[i].SkillID)
+                ExpText.updateText()
                 if (uiList) {
                     for (let uiElement of uiList) {
                         let ui  = this.scene?.entities.get(uiElement.entity as number)

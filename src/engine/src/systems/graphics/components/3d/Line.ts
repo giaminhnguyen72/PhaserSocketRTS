@@ -27,6 +27,7 @@ export class Line implements UIElement {
     color: number = 0
     isUI: boolean = true
     rot: number = 0
+    border :[number,number,number,number] = [0,0,0,0]
     render(camera: Camera): void {
         
         this.system.renderer.clearDepth()
@@ -102,10 +103,10 @@ export class Line implements UIElement {
     setClippinngPlanes(mat: THREE.LineBasicMaterial) {
         if (this.parent) {
             let item1 = this.parent
-            let minX = item1.pos.x - item1.boundingBox.dim.length / 2
-            let maxX = item1.pos.x + item1.boundingBox.dim.length / 2
-            let minY = item1.pos.y - item1.boundingBox.dim.height / 2
-            let maxY = item1.pos.y + item1.boundingBox.dim.height / 2
+            let minX = item1.pos.x - item1.boundingBox.dim.length / 2 + this.border[0]
+            let maxX = item1.pos.x + item1.boundingBox.dim.length / 2 - this.border[1]
+            let minY = item1.pos.y - item1.boundingBox.dim.height / 2 + this.border[2]
+            let maxY = item1.pos.y + item1.boundingBox.dim.height / 2 - this.border[2]
             mat.clippingPlanes = [
                 new THREE.Plane(new THREE.Vector3(1, 0, 0), -minX),   // Right plane deletes everything to the Left
                 new THREE.Plane(new THREE.Vector3(-1, 0, 0), maxX),   // Left plane

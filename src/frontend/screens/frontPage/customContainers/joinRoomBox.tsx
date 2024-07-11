@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { HorizontalContainer } from "../../../components/containers/header.js";
 import { SwitchFormButton } from "../customComponents/SwitchFormButton.js";
 import { CreateRoomForm } from "./createRoomForm.js";
-import { JoinRoomForm } from "./joinRoomForm.js";
+import { InstructionBox } from "./InstructionContainer.js";
+import { GameList, JoinRoomForm } from "./joinRoomForm.js";
 function FormHandler(props:any) {
 
     return (
@@ -29,11 +30,11 @@ export function JoinRoomContainer(props: any) {
         backgroundColor:  "#259E25",
         border: "28px solid  #259E25",
         marginTop: "12.5%",
-        borderRadius: "18.5%",
+        borderRadius: "10px",
         justifySelf: "center",
         alignment: "center",
-        height: "50%",
-        width: "30%",
+        height: "70%",
+        width: "70%",
         flexDirection: "column"
         
         
@@ -58,13 +59,15 @@ export function JoinRoomContainer(props: any) {
                 <FormHandler mode={mode} setMode={setMode}/>
                 <CreateRoomForm/>
 
+
             </div>
         )
     } else {
         return (
             <div style={style}> 
             <FormHandler mode={mode} setMode={setMode}/>
-            <JoinRoomForm/>
+            <GameList/>
+
 
         </div>
         )

@@ -47,9 +47,10 @@ export function SpawnMonsters(scene: Scene, monsterID: number, pos: Vector3) {
             gargoyle.spawn(scene, pos)
             break
         case 7:
-            let giantRat = new GiantRat()
-            giantRat.spawn(scene, pos)
-            break
+            // let giantRat = new GiantRat()
+            // giantRat.spawn(scene, pos)
+            // break
+        case 23:
         case 8:
             let giantSpider = new GiantSpider()
             giantSpider.spawn(scene, pos)
@@ -75,6 +76,9 @@ export function SpawnMonsters(scene: Scene, monsterID: number, pos: Vector3) {
             goblin.spawn(scene, pos)
             break
         case 14:
+        case 19:
+        case 20:
+        case 21:
             let droid = new Droid()
             droid.spawn(scene,pos)
             break
@@ -82,6 +86,7 @@ export function SpawnMonsters(scene: Scene, monsterID: number, pos: Vector3) {
             let evilAngel = new EvilAngel()
             evilAngel.spawn(scene, pos)
             break
+        case 22:
         case 16:
             let muscox = new HimalayanMuscox()
             muscox.spawn(scene, pos)

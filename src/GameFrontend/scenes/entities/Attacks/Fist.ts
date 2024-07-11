@@ -102,11 +102,7 @@ export class Fist implements Entity {
 
                                 let enemyHP = i.get("HP")
                                 let damage = script.get("Damage")
-                                i.set("HP", enemyHP - damage)
-                                if (enemyHP <= 0) {
-                                    return
-                                }
-                                if (enemyHP - 10 <= 0) {
+                                if (enemyHP - damage <= 0) {
                                     let e = this.scene.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING",ScriptingEngine)
                                     if (e) {
                                         
@@ -117,6 +113,11 @@ export class Fist implements Entity {
                                         entity.addComponent<ExpEvent>(ExpEvent, exp)
                                     }
                                 }
+                                i.set("HP", enemyHP - damage)
+                                if (enemyHP <= 0) {
+                                    return
+                                }
+
                                 this.scene.removeEntity(this.id as number)
                                 break
                             case 1:

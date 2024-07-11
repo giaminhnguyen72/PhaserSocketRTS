@@ -85,7 +85,7 @@ export class EvilAngel implements Entity {
         let script = new Script(this.className, EngineType.SOCKETSERVER)
 
         
-        script.setProperty("HP", 100)
+        script.setProperty("HP", 80)
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)

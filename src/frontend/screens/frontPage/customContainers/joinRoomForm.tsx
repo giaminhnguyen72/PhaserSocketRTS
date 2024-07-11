@@ -1,5 +1,100 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { DefaultButton } from "../../../../frontend/components/buttons/button.js";
+export function GameList(props: any) {
+    let arr: {RoomName: string, RoomNumber: number, PlayerCount: number}[] = []
+    const [games, setGames] = useState(arr)
+    useEffect(() => {
+        fetch("/play/games").then(async (value) => {
+            let listOfGames = await value.json()
+            setGames(listOfGames)
+        })
+        
+    })
+    var formStyle: Object = {
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: "column",
+        height: "100%",
+        width: "100%",
+        padding: "5px",
+        OverflowY: "auto"
+    }
+    return        ( 
+    <div id="GameList"  style={formStyle} >
+        <LabelRow />
 
+        {games.map((packet) => {
+            return <ListRow roomName={packet.RoomName} roomID={packet.RoomNumber} playerCount={packet.PlayerCount} />
+        })}
+
+    </div>
+
+)
+}
+function LabelRow() {
+    let style = {
+        width: "100%",
+        height: "20%",
+        display:'flex',
+        justifyContent: "space-between",
+        alignItems: "center",
+        fontSize: "1.2vw",
+
+
+    }
+    let labelStyle: React.CSSProperties = {
+        color: "white",
+        textAlign: 'center'
+        
+    }
+    return <div style={style}>
+        <label style={labelStyle}>Room Name</label>
+        <label style={labelStyle}>Room ID</label>
+        <label style={labelStyle}>Player Count</label>
+        <label style={labelStyle}></label>
+    </div>
+}
+function ListRow(props: any) {
+    let style = {
+        width: "100%",
+        height: "20%",
+        display:'flex',
+        justifyContent: "space-between",
+        alignItems: "center",
+
+    }
+    let labelStyle : React.CSSProperties= {
+        "color": "white",
+        textAlign: 'center'
+    }
+
+    return <form style={style} method="POST" action='/play'>
+        
+        <label style={labelStyle}>{props.roomName}</label>
+        <label style={labelStyle}>{props.roomID}</label>
+        <label style={labelStyle}>{props.playerCount}</label>
+        <input className="playerName" name="playerName" type="hidden" 
+                        value="Test"
+                         required/>
+
+
+
+        <input className="roomNumber" name="roomID" type="hidden" value={props.roomID} 
+
+                        required />
+        <DefaultButton
+            color= {"green"}
+            textColor={"white"}
+            radius={"3px"}
+            fontSize={"1.1vw"}
+            onClick={props.onClick}
+            height={"80%"}
+        >
+            Play
+        </DefaultButton>
+
+    </form>
+}
 export function JoinRoomForm(props: any) {
     var style: Object = {
         display: "flex",
@@ -38,7 +133,7 @@ export function JoinRoomForm(props: any) {
         window.sessionStorage.setItem("RoomID", roomID)
     }
     return (
-        <form  method="POST" action='/play' style={formStyle} >
+        <form style={formStyle} >
 
                         <label style={labelStyle}>Player Name</label>
 
@@ -54,6 +149,6 @@ export function JoinRoomForm(props: any) {
 
 
                     <button className="Play" type="submit" value="Play" onClick={storeFormData}> Play</button>
-            </form>
+        </form>
     )
 }

@@ -13,6 +13,8 @@ import { MultiplayerSyncronizer } from "../../../../engine/src/systems/Multiplay
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
 import { lerp } from "../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
+import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { ExpEvent } from "../../../../GameFrontend/events/ExpEvent.js";
 type Data = {
     componentId: number[],
     vel: Vector3,
@@ -91,7 +93,22 @@ export class Firebulb implements Entity {
                             //  
 
                             let enemyHP = i.get("HP")
-                            i.set("HP", enemyHP - 15)
+                            let damage = 15
+                            if (enemyHP - damage <= 0) {
+                                let e = this.scene.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING",ScriptingEngine)
+                                if (e) {
+                                    let entity = e.operations.addEntity(script.componentId as number)
+                                    let exp = new ExpEvent()
+                                    exp.playerID = script.get("Owner")
+                                    exp.exp = 20
+                                    entity.addComponent<ExpEvent>(ExpEvent, exp)
+                                }
+                            }
+                            i.set("HP", enemyHP - damage)
+                            if (enemyHP <= 0) {
+                                return
+                            }
+
                             this.scene.removeEntity(this.id as number)
                             break
                         case 1:

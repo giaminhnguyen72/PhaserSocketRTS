@@ -39,8 +39,8 @@ export class Droid implements Entity {
         let sprite = new TimedSpriteSheet3d("/images/Characters/Droid_S.png", {
             rot:0,
             dim:{
-                length: 32,
-                height:32
+                length: 48,
+                height: 48
             },
             pos: {
                 x:0,
@@ -229,12 +229,15 @@ export class DroidSystem implements ScriptOperable{
                                 nearestPlayer =  p
                             } else {
                                 nearestPlayer = p
+                                distance = lowestDist
+                                
                             }
                         }
                     }
 
 
                     if (nearestPlayer) {
+
                         let finalPos = nearestPlayer.getProperty("Position")
                         let dir = getDirection(pos, finalPos)
                         let startPos = {x: pos.x + dir.x * 32, y: pos.y + dir.y * 32, z: 0 }

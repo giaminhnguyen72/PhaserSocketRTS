@@ -21,6 +21,7 @@ const io: Server = new Server(serv, {
 
 let roomManager: RoomManager = new RoomManager(io)
 playRoutes.setRooms(roomManager)
+roomManager.addRoom("Starting Room")
 /* LOCAL CONFIG */
 const BASE_URL = "localhost";
 const PORT = 5000;

@@ -25,7 +25,7 @@ export class Rocket implements Entity {
     scene?: Scene | undefined;
     className: string = "ROCKET";
     constructor(owner: number =0, pos: Vector3 = {x:0, y:0, z:0}, dir: Vector3= {x:0,y:0,z:0}, ) {
-        let vel = {x: dir.x* 0.3, y: dir.y * 0.3,z:0}
+        let vel = {x: dir.x* 0.1, y: dir.y * 0.1,z:0}
         let transform = new Transform(pos, vel)
         let sprite = new Sprite3d({
             dim:{
@@ -47,9 +47,9 @@ export class Rocket implements Entity {
             this.components[i].componentId = data.componentId[i]
         }
         if (transform.vel.x < 0) {
-            sprite.reflect = 1
-        } else {
             sprite.reflect = -1
+        } else {
+            sprite.reflect = 1
         }
     }, ()=> {
         let array = []
@@ -81,6 +81,7 @@ export class Rocket implements Entity {
         script.properties.set("Owner", owner)
         script.setInit((system) => {
             system.addSuperClasses(script, "Projectile")
+
         })
 
         // Needs colllider

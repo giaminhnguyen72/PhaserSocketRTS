@@ -1,3 +1,5 @@
+
+import { UnlockSkill } from "../../Skills/SkillNavigation.js"
 import { updateFist } from "./SetYPos.js"
 
 type PosX= number
@@ -26,8 +28,10 @@ class UIClass {
     parent:UIClass[] = []
     branchHeight: number = 0.3
     branchWidth: number = 0
+    exp: number = 0
     updatePos(depth: number) {
         this.posX += depth * xOffset + startPos
+        this.exp = UnlockSkill(this.SkillID)
         if (this.children.length == 1) {
             this.children[0].parent.push(this)
             this.children[0].posY += this.posY
@@ -84,7 +88,7 @@ const Web: UIClass = CreateUIClass ([
 ])
 const HealBall: UIClass = CreateUIClass ([
     8,16, 0 , 0 ,0.10, 0.10, "Heal Ball","Heals Characters it Hits", []
-])
+]) 
 const Snowball: UIClass = CreateUIClass ([
     30, 17, 0 , 0 ,0.10, 0.10, "Snowball", "Launches a Snowball", []
 ])
@@ -121,7 +125,7 @@ const Rage: UIClass = CreateUIClass ([
     38,7,0 ,0,0.10,0.10, "Rage","Activates Rage Effect that \n Doubles Speed for a while", []
 ])
 const AxeSwing: UIClass = CreateUIClass ([
-    12,8,0 ,0.2,0.10,0.10,"Axe Swing","Swings an Axe", [Rage,AxeEarthQuake]
+    12,8,0 ,0.2,0.10,0.10,"Axe Swing","Swings an Axe", [Rage,AxeCircle]
 ], 0.1)
 
 
@@ -151,7 +155,7 @@ const Bubble: UIClass = CreateUIClass ([
     43,28, 0 , 0 ,0.10, 0.10, "Basic Fist Attack", "", [Snowball,Icicle]
 ])
 const SwordStab: UIClass = CreateUIClass ([
-    44,2,0 ,0,0.10,0.10,"A Basic Sword Stab", "A Sword Thrust ", [Katana,Regen,Barricade]
+    44,2,0 ,0,0.10,0.10,"A Basic Sword Stab", "A Sword Thrust ", [Regen,Barricade]
 ])
 const Fireball: UIClass = CreateUIClass ([
     45, 20, 0 , 0 ,0.10, 0.10, "Fireball", "Launches a Ball of Fire", [FireballCircle,MagmaPool]
@@ -175,7 +179,7 @@ const SwordSwing: UIClass = CreateUIClass ([
 
 const Fist: UIClass = CreateUIClass (
 [
-    0,13, 0,0,0.10,0.10,"A Bsic Punch", "Throws a Punch", 
+    0,13, 0,0,0.10,0.10,"A Basic Punch", "Throws a Punch", 
     [EnergyBlast, SwordSwing]
 ], 0.6)
 
@@ -184,10 +188,10 @@ const Fist: UIClass = CreateUIClass (
 function SetY(parentPos: number, childrenCount: number) {
     
 }
-
+//Axe Earthquake and Katana not included
 const UIDATA: UIClass[] = [
     Barricade,        //0
-    AxeEarthQuake,
+    //Axg
     SwordSwing,
     Regen,
     BearTrap,
@@ -211,7 +215,7 @@ const UIDATA: UIClass[] = [
     Firebulb,
     EnergyBlast,
     Lightning,Slowball, //25
-    Katana, WindSlash, Bubble,SwordStab
+    WindSlash, Bubble,SwordStab
 ]
 Fist.updatePos(0)
 

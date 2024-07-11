@@ -21,6 +21,9 @@ import { Slowball } from "../../entities/Attacks/Slowball.js";
 import { Lightning } from "../../entities/Attacks/Lightning.js";
 import { GreatAxe } from "../../entities/Attacks/AxeSwing.js";
 import { LavaPool } from "../../entities/Attacks/LavaPool.js";
+import { Web } from "../../entities/Attacks/Structures/Web.js";
+import { SwordStab } from "../../entities/Attacks/SwordStab.js";
+import { BearTrap } from "../../entities/Attacks/BearTrap.js";
 
  
 export function FistSkill(script: ScriptObject, scene:Scene) {
@@ -91,6 +94,34 @@ export function SwordSkill(script: ScriptObject, scene:Scene) {
         }
         let fireball = new SwordSwing(Owner, item)
         scene.addEntity(fireball)
+    }
+      
+}
+export function SwordStabSkill(script: ScriptObject, scene:Scene) {
+
+    let Position = script.get("Position")
+    let Owner =script.entity
+    let Direction = script.get("Direction")
+
+    let cost = 20
+    if (!checkStamina(script,cost)) {
+        return
+    } 
+    if (Position) {
+        let item = {
+            x: Position.x,
+            y: Position.y,
+            z: Position.z
+
+        }
+        let projectile = new SwordStab()
+        projectile.components[3].set("Owner", Owner)
+        projectile.components[1].pos.x  = Position.x + Direction.x * 32
+        projectile.components[1].pos.y  = Position.y + Direction.y * 32
+        projectile.components[1].pos.z  = Position.z
+        projectile.components[1].vel.x  = 0.1 * Direction.x
+        projectile.components[1].vel.y  = 0.1 * Direction.y
+        scene.addEntity(projectile)
     }
       
 }
@@ -506,6 +537,46 @@ export function LavaPoolSkill(script: ScriptObject, scene:Scene) {
     if (Position) {
 
         let projectile = new LavaPool()
+        projectile.components[3].set("Owner", Owner)
+        projectile.components[1].pos.x  = Position.x + Direction.x * 32
+        projectile.components[1].pos.y  = Position.y + Direction.x * 32
+        projectile.components[1].pos.z  = Position.z
+        scene.addEntity(projectile)
+    }
+      
+}
+export function BearTrapSkill(script: ScriptObject, scene:Scene) {
+
+    let Position = script.get("Position")
+    let Owner =script.entity
+    let Direction = script.get("Direction")
+    const cost  = 25
+    if (!checkStamina(script,cost)) {
+        return
+    } 
+    if (Position) {
+
+        let projectile = new BearTrap()
+        projectile.components[3].set("Owner", Owner)
+        projectile.components[1].pos.x  = Position.x + Direction.x * 32
+        projectile.components[1].pos.y  = Position.y + Direction.x * 32
+        projectile.components[1].pos.z  = Position.z
+        scene.addEntity(projectile)
+    }
+      
+}
+export function WebSkill(script: ScriptObject, scene:Scene) {
+
+    let Position = script.get("Position")
+    let Owner =script.entity
+    let Direction = script.get("Direction")
+    const cost  = 20
+    if (!checkStamina(script,cost)) {
+        return
+    } 
+    if (Position) {
+
+        let projectile = new Web()
         projectile.components[3].set("Owner", Owner)
         projectile.components[1].pos.x  = Position.x + Direction.x * 32
         projectile.components[1].pos.y  = Position.y + Direction.x * 32

@@ -85,18 +85,18 @@ export class SocketServerManager implements System<Listenable>, SocketEventSyste
        }
     }
     registerListener(component: SocketListener<EngineEvent>): void {
-        console.log("A listener has been registered")
+        // console.log("A listener has been registered")
         let emitter = this.emitters.get(component.getEventType())
         if (emitter) {
-            console.log("A listener has been added")
+            // console.log("A listener has been added")
             emitter.addListener(component)
         } else {
-            console.log("A listener has been pushed to waitlist")
+            // console.log("A listener has been pushed to waitlist")
             this.listeners.push(component)
         }
     }
     registerEmitter(component: Emitter<EngineEvent>): void{
-        console.log("An emitter has been registered")
+        // console.log("An emitter has been registered")
         this.emitters.set(component.getEventType(), component)
 
     }

@@ -39,12 +39,12 @@ export class GameOver implements Entity{
         respawnText.fontSize = 0.05
 
         gameOverPanel.children.push(gameOVerText, respawnText)
+        let func = () => {
 
-        let listener = new UIListener({pos:{x:0,y:0,z:-0.2},dim: {length: 0.8, height: 0.24},rot:0},() => {
-            console.log("Emitted Respawn")
             MainScene.SocketHandler.emit({event: "Respawn", data: true})
             this.scene.removeEntity(this.id as number)
-        })
+        }
+        let listener = new UIListener({pos:{x:0,y:0,z:-0.2},dim: {length: 0.8, height: 0.24},rot:0},func)
         this.components= [gameOverPanel, listener]
 
     }

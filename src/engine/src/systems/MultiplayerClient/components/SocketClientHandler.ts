@@ -103,9 +103,14 @@ export class SocketClient implements Emitter<SocketEvent>, SocketListener<Socket
                 let currScene = this.stage
                 let entity = currScene.entities.get(i)
                 if (entity) {
-                    currScene.removeEntity(entity.id as number)
+                    let deletedNum = entity.id as number
+                    currScene.removeEntity(deletedNum)
+                    // if (deletedNum <= 0) {
+                    //     console.log("Found negative Entity " + deletedNum)
+                    //     console.log("Negative entity is " + entity.className)
+                    // }
 
-
+ 
                 } else {
 
                 }

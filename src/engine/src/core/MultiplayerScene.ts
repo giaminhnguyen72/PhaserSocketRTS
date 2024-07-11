@@ -125,6 +125,19 @@ export class MultiplayerStage implements Scene, Entity {
         return entity
         
     }
+    hasEntity(id: number): boolean {
+        let ent = this.entities.has(id)
+        if (ent) {
+            return ent
+        } else {
+            for (let i of this.addedEntities) {
+                if (i.id == id) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
     executeEntityAdd(entity:Entity) {
         if (!entity.id) {
             throw new Error()
@@ -206,8 +219,7 @@ export class MultiplayerStage implements Scene, Entity {
             }
             for (let i of this.components) {
                 if (i instanceof SocketServer) {
-                    console.log("Entity Class: " + entity.className)
-                    console.log("Entity ID: " + entity.id)
+
                     i.deleted.push(id)
                 }
             }

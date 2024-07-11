@@ -200,7 +200,7 @@ export class TimedSpriteSheet3d implements Renderable {
                     this.sprite.position.x = this.pos.x
                     this.sprite.position.y = this.pos.y
                     this.sprite.position.z = this.pos.z
-                    
+                    this.sprite.material.rotation = this.shape.rot
 
                     this.sprite.scale.set(this.shape.dim.length , this.shape.dim.height, 1)
 

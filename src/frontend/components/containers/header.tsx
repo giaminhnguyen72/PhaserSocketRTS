@@ -8,7 +8,9 @@ export function DefaultHeader(props:any) {
         alignContent: "center",
         justifyContent: props.justifyContent,
         flexDirection: "horizontal",
-        display: "flex"
+        display: "flex",
+        color:"green",
+        paddingTop: "5%"
         
     }
     return (

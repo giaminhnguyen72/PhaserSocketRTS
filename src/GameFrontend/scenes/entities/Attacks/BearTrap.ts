@@ -14,6 +14,8 @@ import { Vector3 } from "../../../../engine/src/types/components/physics/transfo
 import { lerp } from "../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
 import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
+import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { ExpEvent } from "../../../../GameFrontend/events/ExpEvent.js";
 
 type Data = {
     componentId: number[],
@@ -38,7 +40,7 @@ export class BearTrap implements Entity {
             pos: transform.pos
 
     },"/images/Structures/BearTrap.png", )
-    let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+    let collider = new BoxCollider({dim:{length:32, height: 32},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
         let entID = col.entity as number
         let ent = this.scene.entities.get(col.entity as number)
         if (entID == script.get("Owner")) {
@@ -52,7 +54,7 @@ export class BearTrap implements Entity {
                     switch (currType) {
                         case 0:
                             //  
-
+                        
                             let enemyHP = i.get("HP")
                             i.set("HP", enemyHP - 30)
                             this.scene.removeEntity(this.id as number)

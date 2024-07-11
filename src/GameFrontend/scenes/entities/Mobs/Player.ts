@@ -140,7 +140,7 @@ export class GamePlayer implements Entity {
             regen: 0,
             damage: 0
         })
-        script.setProperty("Unlocked", new Set())
+        script.setProperty("Unlocked", new Set([0]))
         script.setProperty("Type",0)
         script.setProperty("AttackCooldown",0)
         script.setProperty("StaminaCooldown", 0)

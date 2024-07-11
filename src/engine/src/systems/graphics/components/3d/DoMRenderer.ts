@@ -10,10 +10,12 @@ import * as THREE from "three";
 import { OrthographicCamera3d } from "./OrthographicCamera3d.js";
 import { MeshBasicMaterial, Object3D } from "three";
 import { TextureResource, TilesheetResource } from "./Texture.js";
+import { TileSheet3d } from "./TileSheet3d.js";
 export interface UIElement extends Renderable {
     children: UIElement[]
     parent?: Renderable & {component: Object3D, boundingBox: Rectangle}
 }
+type Parent = Renderable & {component: Object3D, boundingBox: Rectangle, parent:Parent}
 export class UIComponent implements Renderable {
     context!: ContextInfo;
     
@@ -26,7 +28,7 @@ export class UIComponent implements Renderable {
 
     pos: Position
     boundingBox: Rectangle
-    parent?: Renderable & {component: Object3D, boundingBox: Rectangle}
+    parent?: Parent
     children: (UIElement)[] = []
     component!: THREE.Mesh
     binded: boolean = false
@@ -34,6 +36,7 @@ export class UIComponent implements Renderable {
     color?: number
     texture: string = ""
     tileNumber:number = -1
+    border: [number, number,number,number] =[0,0,0,0]
     constructor(width: number=-1, height: number = -1, curr: Position={x:0,y:0,z:-1} ,  alignment: number =0, color?: number , ...children: UIComponent[] ) {
         this.boundingBox = {
             pos:curr,
@@ -237,12 +240,17 @@ export class UIComponent implements Renderable {
                     }
                 });
             } else {
-                let componentGeo = new THREE.PlaneGeometry(item.boundingBox.dim.length, item.boundingBox.dim.height)
+                    let componentGeo = new THREE.PlaneGeometry(item.boundingBox.dim.length, item.boundingBox.dim.height)
+
                     const material = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, color: item.color} );
                     material.transparent = true;
-                    this.setClippinngPlanes(material)
-
+                    
+                    if (item.color == undefined) {
+                        material.opacity = 0
+                    }
                     const component = new THREE.Mesh( componentGeo, material );
+
+                    this.setClippinngPlanes(material)
                     item.component = component
                     this.component.position.set(this.pos.x, this.pos.y, this.pos.z)
                     if (this.children.length > 0) {
@@ -276,10 +284,13 @@ export class UIComponent implements Renderable {
     setClippinngPlanes(mat: MeshBasicMaterial) {
         if (this.parent) {
             let item1 = this.parent
-            let minX = item1.pos.x - item1.boundingBox.dim.length / 2
-            let maxX = item1.pos.x + item1.boundingBox.dim.length / 2
-            let minY = item1.pos.y - item1.boundingBox.dim.height / 2
-            let maxY = item1.pos.y + item1.boundingBox.dim.height / 2
+            
+            let minX = item1.pos.x - item1.boundingBox.dim.length / 2 + this.border[0]
+            let maxX = item1.pos.x + item1.boundingBox.dim.length / 2 - this.border[1]
+            let minY = item1.pos.y - item1.boundingBox.dim.height / 2 + this.border[2]
+            let maxY = item1.pos.y + item1.boundingBox.dim.height / 2 - this.border[2]
+
+            
             mat.clippingPlanes = [
                 new THREE.Plane(new THREE.Vector3(1, 0, 0), -minX),   // Right plane deletes everything to the Left
                 new THREE.Plane(new THREE.Vector3(-1, 0, 0), maxX),   // Left plane

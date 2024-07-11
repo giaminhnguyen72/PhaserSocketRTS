@@ -12,6 +12,9 @@ import { MultiplayerSyncronizer } from "../../../../engine/src/systems/Multiplay
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
 import { lerp } from "../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
+import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { ExpEvent } from "../../../../GameFrontend/events/ExpEvent.js";
+
 type Data = {
     componentId: number[],
     vel: Vector3,

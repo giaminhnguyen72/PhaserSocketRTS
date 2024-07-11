@@ -17,6 +17,7 @@ import { Arrow } from "../Attacks/Arrow.js";
 import { ScriptOperable } from "../../../../engine/src/systems/scripting/types/Operations.js";
 import { ScriptingEngine } from "./../../../../engine/src/systems/scripting/ScriptingEngine.js";
 import { Snowball } from "../Attacks/Snowball.js";
+import { SnowballSkill } from "../../Skills/AttackSkills/ProjectileSkills.js";
 type Data = {
     componentId: number[],
     position: Vector3
@@ -71,10 +72,10 @@ export class Snowmon implements Entity {
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
-        script.setProperty("Speed", 0.1)
+        script.setProperty("Speed", 0.025)
         script.setProperty("Position",transform.pos)
         script.setProperty("Graphics", 0)
-        script.setProperty("AttackRange", 100)
+        script.setProperty("AttackRange", 200)
         script.setProperty("Type", 0)
         script.setProperty("Cooldown", 0)
         script.setProperty("Range", 0)
@@ -84,15 +85,7 @@ export class Snowmon implements Entity {
             damage: 0
         })
         script.setProperty("State", 0)
-        script.setProperty("Attack", (position: Vector3) => {
-            let dir = getDirection(transform.pos, position)
-            let item = new Arrow(this.id, {
-                x: transform.pos.x,
-                y: transform.pos.y,
-                z: transform.pos.z
-            }, dir)
-            this.scene.addEntity(item)
-        })
+
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
 
@@ -227,26 +220,16 @@ export class SnowmonSystem implements ScriptOperable{
 
 
                     }
-                    if (cooldown > 10000 && minimum < range) {
+                    if (cooldown > 6000 && minimum < range && minPos != undefined) {
 
-                            let fireball = new Snowball()
-                                let dir = getDirection(position, minPos)
-                                let xPos = 64 * dir.x
-                                let yPos = 64 * dir.y
-                                dir.x *= 0.03
-                                dir.y *= 0.03
-                                fireball.components[1].pos.x = position + xPos
-                                fireball.components[1].pos.y = position + yPos
+                            SnowballSkill(i, i.system.sceneManager.currScene)
+                            i.setProperty("Cooldown", 0)
 
-                                fireball.components[1].vel.x = dir.x
-                                fireball.components[1].vel.y = dir.y
-                                script.sceneManager.currScene.addEntity(fireball)
-
+                    }else {
+                        i.setProperty("Cooldown", cooldown + dt)
                     }
 
-                } else {
-                    i.setProperty("Cooldown", cooldown + dt)
-                }
+                } 
             }
         }
 

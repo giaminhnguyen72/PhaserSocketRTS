@@ -56,12 +56,18 @@ export class Goblin implements Entity {
                         let currType = i.get("Type")
                         switch (currType) {
                             case 0:
+                                let players = i.system.queryClass("Player")
+                                if (players && players.has(i) == true) {
+                                    let hp = i.get("HP")
+                                    i.set("HP", hp - 2)
+                                }
                                 let rect = col.getCollisionBox(collider)
                                 let dir = getDirection(rect.pos, collider.boundingBox.pos)
-                                let dx = dir.x * 0.5 * rect.dim.length
-                                let dy = dir.y * 0.5 * rect.dim.height
+                                let dx = dir.x * 0.5 * rect.dim.length + dir.x * 0.2
+                                let dy = dir.y * 0.5 * rect.dim.height+ dir.y * 0.2
                                 collider.boundingBox.pos.x += dx
                                 collider.boundingBox.pos.y += dy
+
                         }
                     }
                 }
@@ -81,7 +87,7 @@ export class Goblin implements Entity {
         script.setProperty("EXP", 0)
         script.setProperty("Attack", 5)
         script.setProperty("Defense", 5)
-        script.setProperty("Speed", 0.25)
+        script.setProperty("Speed", 0.15)
         script.setProperty("Type", 0)
         script.setProperty("Modifier", {
             speed: 1,

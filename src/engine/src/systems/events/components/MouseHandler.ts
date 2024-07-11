@@ -122,6 +122,7 @@ export class MouseEmitter implements Emitter<MouseEvent | DragEvent> {
         }
     }
     addListener(component: Listener<MouseEvent | DragEvent>): void {
+
         this.listeners.set(component.componentId as number, component)
     }
     emit(event: MouseEvent | DragEvent): void {
@@ -130,7 +131,11 @@ export class MouseEmitter implements Emitter<MouseEvent | DragEvent> {
         }
     }
     removeListener(id: number): void {
-        this.listeners.delete(id)
+        
+        let b = this.listeners.delete(id)
+        if (b == true) {
+            console.log("Removed Listener with ID " + id)
+        }
         
     }
     getListeners() {
@@ -172,8 +177,8 @@ export class MouseEmitter3d implements Emitter<MouseEvent | DragEvent> {
     engineType:EngineType 
     maxInput: number = 1
     dragPos: [number, number] = [0,0]
-
-    constructor(engine: EngineType) {
+    
+    constructor(engine: EngineType,events: string[] = ["click"]) {
         this.engineType = engine
     }
     initialize(system: EventSystem<MouseEvent | DragEvent>): void {
@@ -190,25 +195,30 @@ export class MouseEmitter3d implements Emitter<MouseEvent | DragEvent> {
                         this.events.shift()
                     }
                     this.events.push(event)
+                    // console.log("Click")
                 })
-                window.addEventListener("dblclick", (event) => {
-                    if (this.events.length > this.maxInput) {
-                        this.events.shift()
-                    }
-                    this.events.push(event)
-                })
-                window.addEventListener("mouseup", (event) => {
-                    if (this.events.length > this.maxInput) {
-                        this.events.shift()
-                    }
-                    this.events.push(event)
-                })
-                window.addEventListener("mousedown", (event) => {
-                    if (this.events.length > this.maxInput) {
-                        this.events.shift()
-                    }
-                    this.events.push(event)
-                })
+                // This adds events of multiple kind which we dont want cuz listeners may handle more than one 
+                // window.addEventListener("dblclick", (event) => {
+                //     if (this.events.length > this.maxInput) {
+                //         this.events.shift()
+                //     }
+                //     console.log("DBLClick")
+                //     this.events.push(event)
+                // })
+                // window.addEventListener("mouseup", (event) => {
+                //     if (this.events.length > this.maxInput) {
+                //         this.events.shift()
+                //     }
+                //     console.log("CLickMouseUP")
+                //     this.events.push(event)
+                // })
+                // window.addEventListener("mousedown", (event) => {
+                //     if (this.events.length > this.maxInput) {
+                //         this.events.shift()
+                //     }
+                //     this.events.push(event)
+                //     console.log("CLickMouseDown")
+                // })
                 window.addEventListener("mousemove", (event) => {
                     this.mouseMove = event
                 })
@@ -220,7 +230,8 @@ export class MouseEmitter3d implements Emitter<MouseEvent | DragEvent> {
     addListener(component: Listener<MouseEvent | DragEvent>): void {
 
         if (component instanceof UIListener) {
-            
+            console.log("Added UIListener with ID " + component.componentId)
+            console.log("UIListener Entity " + component.entity)
             this.UIListener.set(component.componentId as number, component)
         } else {
             
@@ -234,7 +245,11 @@ export class MouseEmitter3d implements Emitter<MouseEvent | DragEvent> {
     }
     removeListener(id: number): void {
         this.listeners.delete(id)
-        this.UIListener.delete(id)
+        let ui = this.UIListener.delete(id)
+        if (ui == true) {
+            console.log("Removed UIListener with ID " + id)
+            
+        }
     }
     getListeners() {
         return []

@@ -28,10 +28,11 @@ export class SocketServer implements Emitter<SocketEvent> {
     static SocketServerMap: Map<string, SocketServer>
     // Cliennt IDs to socket connections
     static Lobby: Set<Socket>
+    static PlayerRooms: Map<Socket, SocketServer>
     // List of Socket COnnections to how long they have been disconnected
     disconnectedPlayers: [Socket,number][] = []
     // maps socket id to events from players
-    playerEvents: Map<string,  ReceiverEvent[]> = new Map() 
+    playerEvents: Map<Socket,  ReceiverEvent[]> = new Map() 
     //maps socket id to entity
     playerCharacter: Map<Socket, Entity> = new Map()
     maxEvent: number = 5
@@ -49,7 +50,7 @@ export class SocketServer implements Emitter<SocketEvent> {
     system!: SocketServerManager
     type: EngineType
     entityGenerator: Map<string, () => Entity> = new Map()
-    events: Map<string, Map<string, (data: ReceiverEvent)=>void>> = new Map()
+    static events: Map<string, Map<string, (data: ReceiverEvent)=>void>> = new Map()
     static socketCallback: Map<string, (socket: Socket) => void> = new Map()
     entityTag: string = ""
     index: number = -1
@@ -79,6 +80,8 @@ export class SocketServer implements Emitter<SocketEvent> {
             SocketServer.Lobby = new Set()
         }
         return SocketServer.Lobby
+
+        
     }
     static GetSocketServerMap() {
         if (!SocketServer.SocketServerMap) {
@@ -86,43 +89,50 @@ export class SocketServer implements Emitter<SocketEvent> {
         }
         return SocketServer.SocketServerMap
     }
+    static GetPlayerMap() {
+        if (SocketServer.PlayerRooms == undefined) {
+            SocketServer.PlayerRooms = new Map()
+            return SocketServer.PlayerRooms
+        } else {
+            return SocketServer.PlayerRooms
+        }
+    }
 
     static removeRoom(roomID: string) {
+        let room = SocketServer.SocketServerMap.get(roomID)
+        if (room) {
+            for (let i of room.playerCharacter) {
+                SocketServer.GetPlayerMap().delete(i[0])
+            }
+        }
         SocketServer.SocketServerMap.delete(roomID)
     }
     static addPlayerToRoom(playerSocket: Socket, roomID: string) {
         let player = SocketServer.Lobby.has(playerSocket)
         let room = SocketServer.SocketServerMap.get(roomID)
-
         if (player && room) {
             SocketServer.Lobby.delete(playerSocket)
-
+            SocketServer.GetPlayerMap().set(playerSocket, room)
             room.addPlayer(playerSocket)
+            
         } else {
             
         }
     }
-    static GetPlayerRoom(socket: Socket) {
-        for (let [i, rooms] of SocketServer.GetSocketServerMap()) {
-            let char = rooms.getCharacter(socket)
-            if (char) {
-                return rooms
-            }
-        }
-        return undefined
+    static GetPlayerRoom(socket: Socket): SocketServer | undefined {
+
+        return SocketServer.GetPlayerMap().get(socket)
     }
     static removePlayer(playerSocket: Socket) {
         if (SocketServer.GetLobby().has(playerSocket)) {
             SocketServer.GetLobby().delete(playerSocket)
-            return
+            
         }
-        
-        for (let room of SocketServer.SocketServerMap) {
-            if (room[1].playerCharacter.has(playerSocket)) {
-                room[1].removePlayer(playerSocket)
-                return
-            }
+        let playerRoom = SocketServer.GetPlayerMap().get(playerSocket)
+        if (playerRoom) {
+            playerRoom.removePlayer(playerSocket)
         }
+        SocketServer.GetPlayerMap().delete(playerSocket)
 
     }
     static getRoom(roomID: string) {
@@ -151,22 +161,16 @@ export class SocketServer implements Emitter<SocketEvent> {
     }
     getCharacter(socket: Socket) {
         let char = this.playerCharacter.get(socket)
-        if (char == undefined) {
 
-            for (let i of this.playerCharacter) {
-                console.log(i[0] == socket)
-
-            }
-        }
 
         return char
     }
     addCharacter(socketID: Socket, entity: Entity) {
-        console.log("Socket ID is " + socketID.id)
+        console.log("Add Character Socket ID is " + socketID.id)
         this.playerCharacter.set(socketID, entity)
     }
     addPlayer(player: Socket) {
-        let SocketHandler = this.events.get("connection")
+        let SocketHandler = SocketServer.events.get("connection")
         if (SocketHandler) {
             this.applySocketConnection(player, SocketHandler)
         }
@@ -176,7 +180,7 @@ export class SocketServer implements Emitter<SocketEvent> {
     // Use this function to delete players who disconneccted for too long
     private removePlayer(socket: Socket) {
         let i = this.playerCharacter.get(socket)
-        console.log("Removing Player")
+        // console.log("Removing Player")
         if (i) {
             let scene = this.system.sceneManager.getCurrentScene()
             this.playerCharacter.delete(socket)
@@ -188,7 +192,7 @@ export class SocketServer implements Emitter<SocketEvent> {
             SocketServer.socketCallback.set(connectionString, callback)
         })
     }
-    initializeEventCallback(events: {[connectionString:string]:{[socketString:string]:(data: ReceiverEvent)=>void}}) {
+    static initializeEventCallback(events: {[connectionString:string]:{[socketString:string]:(data: ReceiverEvent)=>void}}) {
         Object.entries(events).map(([connectionString, eventMap]) => {
             let map = new Map() 
             Object.entries(eventMap).map(([eventString, callback]) => {
@@ -216,7 +220,7 @@ export class SocketServer implements Emitter<SocketEvent> {
         system.registerListener(this)
         SocketServer.SocketServerMap.set(this.system.roomID, this)
         if (!SocketServer.isInitialized) {
-            console.log("Socket server is " + SocketServer.isInitialized)
+
 
             SocketServerManager.socket.on("connection", (socket: Socket) => {
                 // Add to lobby to look for players
@@ -260,11 +264,11 @@ export class SocketServer implements Emitter<SocketEvent> {
         if (!playerSocket) {
             throw new Error("Socket not found")
         }
-        let events = playerSocket.playerEvents.get(socket.id)
+        let events = playerSocket.playerEvents.get(socket)
         if (!events) {
             events = []
 
-            playerSocket.playerEvents.set(socket.id, events)
+            playerSocket.playerEvents.set(socket, events)
         }
         for (let [socketString, func] of v) {
             playerSocket.eventsMap.set(socketString, func)
@@ -275,10 +279,10 @@ export class SocketServer implements Emitter<SocketEvent> {
                 if (!playerSocket) {
                     throw new Error("Socket not found")
                 }
-                let playerEvents = playerSocket.playerEvents.get(socket.id)
+                let playerEvents = playerSocket.playerEvents.get(socket)
                 if (!playerEvents) {
                     playerEvents = [] 
-                    playerSocket.playerEvents.set(socket.id, playerEvents)
+                    playerSocket.playerEvents.set(socket, playerEvents)
                 }
                 if (!this.listenerLock)  {
 
@@ -300,7 +304,7 @@ export class SocketServer implements Emitter<SocketEvent> {
     }
     getEvents(): Map<string, (evnt: SocketEvent) => void> {
         let map = new Map()
-        Object.entries(this.events).map(([k, v]) => {
+        Object.entries(SocketServer.events).map(([k, v]) => {
             Object.entries(v).map(([eventString, func]) => {
                 map.set(eventString, func)
             })
@@ -485,6 +489,7 @@ export class SocketServer implements Emitter<SocketEvent> {
                 SocketServer.removePlayer(players[i][0])
                 players[i] = this.disconnectedPlayers[disconnected - 1]
                 let socket = players[i][0]
+                this.playerEvents.delete(socket)
                 socket.disconnect(true);
                 socket.removeAllListeners();
 
@@ -508,6 +513,7 @@ export class SocketServer implements Emitter<SocketEvent> {
         }
     }
     emit(event: SocketEvent): void {
+
         SocketServerManager.socket.to(this.system.roomID).emit(event.event, event.data)
     }
     execute(event: SocketEvent): void {

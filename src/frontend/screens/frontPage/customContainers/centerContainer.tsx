@@ -1,5 +1,6 @@
 import React from 'react';
 import { HorizontalContainer } from '../../../components/containers/header.js';
+import { InstructionBox } from './InstructionContainer.js';
 
 import {JoinRoomContainer} from "./joinRoomBox.js"
 
@@ -20,6 +21,7 @@ function CenterContainer(props: any) {
     return (
         <HorizontalContainer width={style.width} height={style.height}>
             <JoinRoomContainer />
+            <InstructionBox/>
             
         </HorizontalContainer>
             

@@ -57,12 +57,19 @@ export class Gargoyle implements Entity {
                         let currType = i.get("Type")
                         switch (currType) {
                             case 0:
+                                let players = i.system.queryClass("Player")
+                                if (players && players.has(i) == true) {
+                                    let hp = i.get("HP")
+                                    i.set("HP",hp - 5)
+                                }
                                 let rect = col.getCollisionBox(collider)
                                 let dir = getDirection(rect.pos, collider.boundingBox.pos)
                                 let dx = dir.x * 0.5 * rect.dim.length
                                 let dy = dir.y * 0.5 * rect.dim.height
                                 collider.boundingBox.pos.x += dx
                                 collider.boundingBox.pos.y += dy
+
+                                
                         }
                     }
                 }

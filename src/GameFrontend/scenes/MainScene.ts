@@ -83,6 +83,8 @@ import { Lightning } from "./entities/Attacks/Lightning.js";
 import { Firebulb } from "./entities/Attacks/Firebulb.js";
 import { GreatAxe } from "./entities/Attacks/AxeSwing.js";
 import { LavaPool } from "./entities/Attacks/LavaPool.js";
+import { SwordStab } from "./entities/Attacks/SwordStab.js";
+import { BearTrap } from "./entities/Attacks/BearTrap.js";
 
 export class MainScene extends Stage {
     sceneConfig: SceneConfig
@@ -211,7 +213,7 @@ export class MainScene extends Stage {
                     for (let i of entity.components) {
                         
                         if (i instanceof Transform) {
-
+                            console.log("Component ID is " + i.componentId)
                             script.properties.set("Component", i.componentId)
                         }
                         
@@ -225,6 +227,8 @@ export class MainScene extends Stage {
                 if (transform) {
                     camera.pos.x = transform.pos.x
                     camera.pos.y = transform.pos.y
+                } else {
+                    console.log("Cant find component in Physics Engine")
                 }
                 
 
@@ -247,6 +251,8 @@ export class MainScene extends Stage {
                  "PlayerID": ([id, skillIDs]: [number, number[]]) =>{
                     script.properties.set("Following", id)
                     script.set("Component", 0)
+                    console.log("PlayerID " + id)
+
                     for (let skillID of skillIDs) {
                         let scriptingEngine = this.querySystem<ScriptingEngine>(ScriptingEngine, "SCRIPTING")
                         if (scriptingEngine) {
@@ -383,7 +389,7 @@ export class MainScene extends Stage {
          socket.addClass<Knight>("KNIGHT", Knight)
          socket.addClass<GamePlayer>("PLAYER", GamePlayer)
 
-
+         socket.addClass<SwordStab>("SWORDSTAB", SwordStab)
          socket.addClass<SwordSwing>("SWORDSWING", SwordSwing)
          socket.addClass<SwordSlash>("SWORDSLASH", SwordSlash)
          socket.addClass<Bear>("BEAR", Bear)
@@ -432,6 +438,7 @@ export class MainScene extends Stage {
          socket.addClass<Slowball>("SLOWBALL", Slowball)
          socket.addClass<Lightning>("LIGHTNING", Lightning)
          socket.addClass<LavaPool>("LAVAPOOL", LavaPool)
+         socket.addClass<BearTrap>("BEARTRAP", BearTrap)
 
          this.components.push(socket, keyEmitter, keyListener, mouseEmit, mouseListener, camera, script, tile)
   

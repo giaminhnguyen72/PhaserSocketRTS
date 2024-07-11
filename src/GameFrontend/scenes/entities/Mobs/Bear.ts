@@ -257,9 +257,9 @@ export class BearSystem implements ScriptOperable{
                         case 0:
                             if (cooldown >= 10000) {
                                 bear.properties.set("State", 1)
-                                bear.properties.set("Speed", 0.05)
+                                bear.properties.set("Speed", 0.15)
                                 bear.properties.set("Cooldown", 0)
-                                console.log("SState changed t0 1")
+
                             } else {
                                 bear.properties.set("Cooldown", cooldown + dt)
                             }
@@ -268,8 +268,8 @@ export class BearSystem implements ScriptOperable{
 
                             if (cooldown >= 3000) {
                                 bear.properties.set("State", 0)
-                                bear.properties.set("Speed", 0.03)
-                                console.log("SState changed t0 0")
+                                bear.properties.set("Speed", 0.075)
+
                                 bear.properties.set("Cooldown", 0)
                             } else {
                                 bear.properties.set("Cooldown", cooldown + dt)

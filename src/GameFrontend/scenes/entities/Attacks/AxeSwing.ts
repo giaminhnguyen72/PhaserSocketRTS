@@ -13,6 +13,8 @@ import { Vector3 } from "../../../../engine/src/types/components/physics/transfo
 import { getDirection, lerp } from "../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
 import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
+import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { ExpEvent } from "../../../../GameFrontend/events/ExpEvent.js";
 type Data = {
     componentId: number[],
     vel: Vector3,
@@ -97,7 +99,9 @@ export class GreatAxe implements Entity {
         script.properties.set("Radius", 50)
         script.properties.set("Position", pos)
         script.properties.set("Axis", axis)
+        script.set("Damage", 30)
         script.set("Direction", 1)
+        script.set("Hit", new Set())
         script.properties.set("Angle", 3 *Math.PI / 2)
         // TIme is a constant value that never changes representing the the amount of time to do one rotation
         script.properties.set("Time", 1000)
@@ -115,14 +119,31 @@ export class GreatAxe implements Entity {
                         switch (currType) {
                             case 0:
                                 //  
-    
+                                let hitSet = script.get("Hit")
+                                if (hitSet.has(col.entity)) {
+                                    return
+                                }
                                 let enemyHP = i.get("HP")
+                                let damage = script.get("Damage")
+                                if (enemyHP - damage <= 0) {
+                                    let e = this.scene.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING",ScriptingEngine)
+                                    if (e) {
+
+                                        let entity = e.operations.addEntity(script.componentId as number)
+                                        let exp = new ExpEvent()
+                                        exp.playerID = script.get("Owner")
+                                        exp.exp = 20
+                                        entity.addComponent<ExpEvent>(ExpEvent, exp)
+                                    }
+                                }
+
                                 let dir = getDirection(collider.boundingBox.pos, col.boundingBox.pos)
                                 col.boundingBox.pos.x += dir.x * 10
                                 col.boundingBox.pos.y += dir.y * 10
                                 i.set("HP", enemyHP - 30)
+                                hitSet.add(col.entity)
 
-                                this.scene.removeEntity(this.id as number)
+                                
                                 break
                             case 1:
                                 break

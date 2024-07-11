@@ -23,7 +23,7 @@ import { SocketServer } from "../engine/src/systems/MultiplayerServer/components
 import { MultiplayerStage } from "../engine/src/core/MultiplayerScene.js"
 import { Knight } from "../GameFrontend/scenes/entities/Player/Knight.js"
 import { ScriptingEngine } from "../engine/src/systems/scripting/ScriptingEngine.js"
-import { Script } from "..//engine/src/systems/scripting/components/Script.js"
+import { Script, ScriptObject } from "..//engine/src/systems/scripting/components/Script.js"
 import { getDirection, getDistance, moveTowards } from "../engine/src/math/Vector.js"
 import { FindSkill } from "../GameFrontend/scenes/Skills/SkillNavigation.js"
 import { SpawnMonsters } from "../GameFrontend/scenes/Skills/SpawnSkills/Spawn.js"
@@ -49,6 +49,9 @@ import { SnowmonSystem } from "../GameFrontend/scenes/entities/Mobs/Snowmon.js"
 import { EvilAngelrSystem } from "../GameFrontend/scenes/entities/Mobs/EvilAngel.js"
 import { SkeletonSystem } from "../GameFrontend/scenes/entities/Mobs/Skeleton.js"
 import { LavaPoolSystem } from "../GameFrontend/scenes/entities/Attacks/LavaPool.js"
+import { DroidSystem } from "../GameFrontend/scenes/entities/Mobs/Droid.js"
+import { OrcSystem } from "../GameFrontend/scenes/entities/Mobs/Orc.js"
+import { UIDATA } from "../GameFrontend/scenes/entities/UI/UISkillData.js"
 //Rooms are going to have more options than this. Will probably add a RoomConfig Interface
 export class Room {
     players: Map<number, Player>
@@ -119,7 +122,7 @@ export class Room {
                 let timeout = setTimeout(() =>{ 
                     if (this.disconnected == this.players.size) {
 
-                        console.log("deleting room " + this.roomID)
+                        // console.log("deleting room " + this.roomID)
                         let s =  SocketServerManager.socket.in(this.roomID.toString()).fetchSockets()
                         s.then((sockets) => {
                             for (let i of sockets) {
@@ -140,7 +143,7 @@ export class Room {
                 }, 50)
             }
         }) 
-        console.log("player added in rooms")
+
         
         return player
     }
@@ -222,7 +225,7 @@ class Test extends MultiplayerStage implements Entity{
                             if (col.length === 0) {
                                 let num = Math.floor(Math.random() * 30)
                                 SpawnMonsters(this,num, pos)
-                                SpawnMonsters(this,15, pos1) 
+                                SpawnMonsters(this,Math.floor(Math.random() * 30), pos1) 
                             }
 
 
@@ -264,26 +267,49 @@ class Test extends MultiplayerStage implements Entity{
             if (Enemy && players) {
 
                 let player;
-                for (let i of players) {
-                    player = i
-
-                    break
-                }
-                let position = player?.get("Position")
-                if (position) {
-                    for (let e of Enemy) {
-                        let ePos = e.get(("Destination"))
-                        let distance = getDistance(ePos, position)
-                        let range= e.get("Range")
-                        if (ePos && range == 0) {
-                            ePos.x =  position.x
-                            ePos.y= position.y
-                            
-                        } else if (distance < range ) {
-
+                
+                
+                for (let e of Enemy) {
+                    let ePosition = e.get("Position")
+                    let eRange = e.get("Range") 
+                    let minPos;
+                    let minDistance = 100000000000
+                    for (let p of players) {
+                        let pPosition = p.get("Position")
+                        let dist = getDistance(ePosition, pPosition)
+                        if (dist < minDistance) {
+                            minPos = pPosition
+                            minDistance = dist
                         }
                     }
+                    let eDest = e.get("Destination")
+                    if (minPos) {
+                        eDest.x = minPos.x
+                        eDest.y = minPos.y
+                    }
+
                 }
+                // for (let i of players) {
+                //     player = i
+
+                    
+                    
+                // }
+                // let position = player?.get("Position")
+                // if (position) {
+                //     for (let e of Enemy) {
+                //         let ePos = e.get(("Destination"))
+                //         let distance = getDistance(ePos, position)
+                //         let range = e.get("Range")
+                //         if (ePos && range == 0) {
+                //             ePos.x =  position.x
+                //             ePos.y= position.y
+                            
+                //         } else if (distance < range ) {
+
+                //         }
+                //     }
+                // }
 
             }
             if (Moveable) {
@@ -376,7 +402,7 @@ class Test extends MultiplayerStage implements Entity{
             s.operations.addContainer<Slow,VectorContainer<Slow>>(Slow,VectorContainer<Slow>)
             s.operations.addContainer<Rage,VectorContainer<Rage>>(Rage,VectorContainer<Rage>)
             s.addOperation([ObjectOperation,SnowmonSystem,BearSystem,EarthquakeSystem, CandowispSystem,
-                EvilAngelrSystem, LavaPoolSystem,
+                EvilAngelrSystem, LavaPoolSystem, DroidSystem, OrcSystem,
                  DarkMageSystem, EarthTortoiseSystem, SpiderSystem, MindFlayerSystem, ExpSystem, RegenSystem, PoisonSystem, SnakeSystem, ModifierOperation,SkeletonSystem,SlowSystem,RageSystem])
         }
         )
@@ -425,26 +451,59 @@ class Test extends MultiplayerStage implements Entity{
                 
             }
         })
-        comp.initializeEventCallback({"connection": {
+        SocketServer.initializeEventCallback({"connection": {
             "Respawn": (event) => {
-                let char = comp.getCharacter(event.socketId)
-                if (char) {
-                    let ent = this.addEntity(char) as GamePlayer
-                    for (let i of ent.components) {
-                        i.entity = ent.id
+                
+                // console.log("Respawn Socket ID " + event.socketId.id)
+                let socket = SocketServer.GetPlayerRoom(event.socketId)
+                if (socket) {
+                    let char = socket.getCharacter(event.socketId)
+                    if (char) {
+                        // console.log("Characters Size is "+socket.playerCharacter.size)
+                        if (this.hasEntity(char.id as number)) {
+                            return
+                        }
+                        let ent = this.addEntity(char) as GamePlayer
+                        for (let i of ent.components) {
+                            i.entity = ent.id
+                        }
+                        ent.components[2].set("HP", 100)
+                        ent.components[2].set("UpdateUI", true)
+                        ent.components[1].pos.x = 0
+                        ent.components[1].pos.y = 0
+
+                        let engine = this.querySystem<CollisionSystem>(CollisionSystem, "COLLISION")
+                        if (engine) {
+                            let pos = ent.components[1].pos
+                            let col = engine.collisionQuery({pos: ent.components[1].pos, dim: {length: 96,height: 96}, rot: 0})
+                            let counter = 0
+                            while (counter < 2 && col.length !== 0) {
+                                pos.x = Math.random() * 1000 - 500
+                                pos.y = Math.random() * 1000 - 500
+                                col = engine.collisionQuery({pos: pos, dim: {length: 96,height: 96}, rot: 0})
+                                counter++
+                            }
+                        }
+
+                        // console.log("Respawned entity in " + socket.system.roomID)
+
+                        event.socketId.emit("PlayerID", [ent.id,Array.from(ent.components[2].get("Unlocked"))])
+                    } else {
+                        console.log("Cant find entity")
                     }
-                    ent.components[2].set("HP", 100)
-                    ent.components[1].pos.x = 0
-                    ent.components[1].pos.y = 0
-                    console.log("Respawned entity")
-                    console.log
-                    event.socketId.emit("PlayerID", [ent.id,Array.from(ent.components[2].get("Unlocked"))])
                 } else {
-                    console.log("Cant find entity")
+                    console.log("Room Not Found for Respawn")
                 }
+
             },
             "click": (pos) => {
-                    let character = comp.playerCharacter.get(pos.socketId)
+                    let socket = SocketServer.GetPlayerRoom(pos.socketId)
+                    if (socket == undefined) {
+                        return
+                    }
+                    let character = socket.getCharacter(pos.socketId)
+                    // console.log("Socket ID is")
+                    // console.log(pos.socketId.id)
 
                     let engine = this.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING", ScriptingEngine)
                     if (engine && character) {
@@ -475,8 +534,12 @@ class Test extends MultiplayerStage implements Entity{
 
             },
             "Skill": (data) => {
-                console.log("Received skill")
-                let character = comp.playerCharacter.get(data.socketId)
+
+                let socket = SocketServer.GetPlayerRoom(data.socketId)
+                if (socket == undefined) {
+                    return
+                }
+                let character = socket.getCharacter(data.socketId)
                 let engine = this.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING", ScriptingEngine)
                 if (character && engine) {
                     for (let i = 0; i < character.components.length;i++) {
@@ -501,8 +564,12 @@ class Test extends MultiplayerStage implements Entity{
             },
             "Unlock": (data) => {
                 // The client player is trying to unlock a skill and the server is verifying if she can or not
-                console.log("Received unlock Skill " + data.data)
-                let character = comp.playerCharacter.get(data.socketId)
+                // console.log("Received unlock Skill " + data.data)
+                let socket = SocketServer.GetPlayerRoom(data.socketId)
+                if (socket == undefined) {
+                    return
+                }
+                let character = socket.playerCharacter.get(data.socketId)
                 let engine = this.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING", ScriptingEngine)
                 if (character && engine) {
                     for (let i = 0; i < character.components.length;i++) {
@@ -511,18 +578,43 @@ class Test extends MultiplayerStage implements Entity{
                         if (charScript) {
                             let unlockedSet = charScript.get("Unlocked")
                             
-                            unlockedSet.add(data.data)
+                            let id = UIDATA[0]
+                            if (unlockedSet.has(data.data)) {
+                                return
+                            }
+                            for (let i of UIDATA) {
+                                if (i.SkillID == data.data) {
+                                    
+                                    id = i
+                                    break
+                                }
+                            }
+                            let unlockSkill = true
+                            for (let p of id.parent) {
+                                if (unlockedSet.has(p.SkillID) == false) {
+
+
+                                    unlockSkill = false
+                                    break
+                                }
+                            }
+                            if (unlockSkill == true && checkExp(charScript, id.exp)) {
+
+                                data.socketId.emit(
+                                    "UnlockSkill",
+                                    data.data
+                                )
+                                unlockedSet.add(data.data)
+                            }
                             
                             
-                            FindSkill(data.data[0],charScript , this)
+                            
+                            
                             break
                         }
                     }
                 }
-                comp.emit({
-                    event: "UnlockSkill",
-                    data: data.data
-                })
+
             },
             
         }
@@ -538,6 +630,16 @@ class Test extends MultiplayerStage implements Entity{
 
 
 } 
+function checkExp(s: ScriptObject, levelUp: number) {
+    let exp = s.get("EXP")
+    if (exp < levelUp) {
+        return false
+    } else {
+        s.set("EXP", exp - levelUp)
+        s.set("UpdateUI", true)
+        return true
+    }
+}
 export default class RoomManager {       
     rooms: Map<number, Room>;
     server: Server
@@ -550,17 +652,19 @@ export default class RoomManager {
     }
     setUpEvents(): void {
         this.server.on("connection", (socket: Socket)=> {
-
+            
             socket.on("joined", (playerName: string, roomID:string) => {
                 this.addPlayer(playerName,  socket, parseInt(roomID))
                 SocketServer.addPlayerToRoom(socket, roomID)
-                let item = SocketServer.GetSocketServerMap().get(roomID)
-                console.log("Player jolined")
-
+                let item = SocketServer.GetPlayerRoom(socket)
+                // console.log("Player jolined " + parseInt(roomID).toString())
+                let path = parseInt(roomID).toString()
+                socket.join(path,)
                 if (item) {
                     let playerEntity = item.getCharacter(socket)
-                    let knight = undefined
+                    let knight: GamePlayer;
                     if (playerEntity) { 
+                        console.log("Found Player Character")
                         knight = playerEntity as GamePlayer
                         console.log( knight.components[2].get("Unlocked"))
                         socket.emit("PlayerID",[ knight.id, Array.from(knight.components[2].get("Unlocked"))])
@@ -571,7 +675,21 @@ export default class RoomManager {
                         socket.emit("PlayerID",[ knight.id, Array.from(knight.components[2].get("Unlocked"))])
                     }
                     
-                    item.playerCharacter.set(socket,knight)
+                    let engine = item.system.sceneManager.currScene.querySystem<CollisionSystem>(CollisionSystem, "COLLISION")
+                    if (engine) {
+                        let pos = knight.components[1].pos
+                        let col = engine.collisionQuery({pos: knight.components[1].pos, dim: {length: 96,height: 96}, rot: 0})
+                        let counter = 0
+                        while (counter < 2 && col.length !== 0) {
+                            pos.x = Math.random() * 1000 - 500
+                            pos.y = Math.random() * 1000 - 500
+                            col = engine.collisionQuery({pos: pos, dim: {length: 96,height: 96}, rot: 0})
+                            counter++
+                        }
+                    }
+                    
+                    item.addCharacter(socket,knight)
+                    console.log("Characters size is " +item.playerCharacter.size)
                     
                 }
                 console.log(playerName)
@@ -579,7 +697,7 @@ export default class RoomManager {
                 let room = this.rooms.get(parseInt(roomID))
                 
             })
-            console.log("Player Joined") 
+
 
             
             
@@ -603,15 +721,7 @@ export default class RoomManager {
         }
         return false
     }
-    removeRoom(roomID: number) {
-        if (this.rooms.has(roomID)) {
-            this.rooms.delete(roomID)
-            console.log(this.rooms.size)
-            SocketServer.GetSocketServerMap().delete(roomID.toString())
-        } else {
-            console.log("Delete error room not found")  
-        }
-    }
+
 
     hasRoom(roomID: number): boolean {
         return this.rooms.has(roomID)

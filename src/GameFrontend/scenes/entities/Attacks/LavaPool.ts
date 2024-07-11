@@ -17,6 +17,8 @@ import { BoxCollider } from "../../../../engine/src/systems/Collision/components
 import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
 import { ScriptOperable } from "../../../../engine/src/systems/scripting/types/Operations.js";
 import { EarthTortoise } from "../Mobs/EarthTortoise.js";
+
+import { ExpEvent } from "../../../../GameFrontend/events/ExpEvent.js";
 type Data = {
     componentId: number[],
     vel: Vector3,
@@ -95,7 +97,24 @@ export class LavaPool implements Entity {
                             let hitSet = script.get("Hit")
                             if (!hitSet.has(col.entity)) {
                                 let enemyHP = i.get("HP")
-                                i.set("HP", enemyHP - 10)
+                                let damage = 10
+                                if (enemyHP - damage <= 0) {
+                                    let e = this.scene.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING",ScriptingEngine)
+                                    if (e) {
+                                        let entity = e.operations.addEntity(script.componentId as number)
+                                        let exp = new ExpEvent()
+                                        exp.playerID = script.get("Owner")
+                                        exp.exp = 20
+                                        entity.addComponent<ExpEvent>(ExpEvent, exp)
+
+                                    }
+                                }
+                                i.set("HP", enemyHP - damage)
+                                if (enemyHP <= 0) {
+                                    return
+                                }
+
+                                this.scene.removeEntity(this.id as number)
                                 hitSet.add(col.entity)
                             }
                             

@@ -15,6 +15,7 @@ import { getDirection, getDistance, lerp } from "../../../../engine/src/math/Vec
 import { ScriptOperable } from "../../../../engine/src/systems/scripting/types/Operations.js";
 import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
 import { SwordSlash } from "../Attacks/SwordSlash.js";
+import { SwordSlashSkill } from "../../Skills/AttackSkills/ProjectileSkills.js";
 type Data = {
     componentId: number[],
     position: Vector3,
@@ -195,13 +196,13 @@ export class SkeletonSystem implements ScriptOperable{
 
     }
     update(dt: number, script:ScriptingEngine): void {
-        let spiders = script.queryClass("MINDFLAYER")
+        let spiders = script.queryClass("SKELETON")
         let players = script.queryClass("Player")
         if (spiders) {
             for (let i of spiders) {
                 let cooldown = i.getProperty("Cooldown")
                 let position = i.getProperty("Position")
-                let range = 64
+                let range = 200
                 let minimum = 100000000
                 let minPos = undefined
                 if (players){
@@ -230,16 +231,12 @@ export class SkeletonSystem implements ScriptOperable{
                     if (minPos == undefined) {
                         continue
                     }
-                    if (cooldown > 10000 && minimum < range) {
-                            let swordSwing = new SwordSlash()
-                            swordSwing.components[1].pos.x = position.x
-                            swordSwing.components[1].pos.y = position.y
+                    if (cooldown > 6000 && minimum < range) {
 
-                            swordSwing.setOwner(i.entity as number)
 
-                            script.sceneManager.currScene.addEntity(swordSwing)
+                            SwordSlashSkill(i,i.system.sceneManager.currScene)
 
-                        i.setProperty("Cooldown", 0)
+                            i.setProperty("Cooldown", 0)
                                 
                     } else {
                         i.setProperty("Cooldown", cooldown + dt)

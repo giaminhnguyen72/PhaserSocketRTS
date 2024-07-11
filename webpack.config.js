@@ -4,13 +4,13 @@ export default [
   {
     entry: './dist/frontend',
     mode: "production",
-    devtool: 'inline-source-map',
+    // devtool: 'inline-source-map',
     output: {
       path: path.resolve(dirname, 'public'),
       filename: 'bundle.js'
 
     },
-    devtool: 'inline-source-map',
+    // devtool: 'inline-source-map',
 
     module: {
       rules: [
@@ -60,7 +60,7 @@ export default [
       path: path.resolve(dirname, 'public'),
       filename: 'gameBundle.js'
     },
-    devtool: 'inline-source-map',
+    // devtool: 'inline-source-map',
 
     module: {
       rules: [

@@ -15,6 +15,7 @@
     "watch-ts": "tsc -w",
     "inspect": "node --inspect dist/index.js",
     "watch-node": "nodemon dist/index.js",
+    "watchTS":"nodemon --esm ./src/index.ts",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yello.bold, cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\""
   },
   "repository": {

@@ -19,7 +19,7 @@ type Data = {
 }
 
 export class EarthEater implements Entity {
-    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<EarthEater, Data>];
+    components: [TimedSpriteSheet3d, Transform, Script,MultiplayerSyncronizer<EarthEater, Data>, BoxCollider];
     id?: number | undefined;
     scene!: Scene ;
     className: string = "EARTHEATER";
@@ -62,6 +62,8 @@ export class EarthEater implements Entity {
                                 let dy = dir.y * 0.5 * rect.dim.height
                                 collider.boundingBox.pos.x += dx
                                 collider.boundingBox.pos.y += dy
+                                let hp = i.get("HP")
+                                i.set("HP", hp - 8)
                             case 2:
                                 break
                             default:
@@ -71,7 +73,7 @@ export class EarthEater implements Entity {
                 }
             }
         })
-
+        
         
 
         collider.bindPos(transform)
@@ -171,7 +173,7 @@ export class EarthEater implements Entity {
         })
         
 
-        this.components = ([sprite, transform, script, sync])
+        this.components = ([sprite, transform, script, sync, collider])
         
         
         

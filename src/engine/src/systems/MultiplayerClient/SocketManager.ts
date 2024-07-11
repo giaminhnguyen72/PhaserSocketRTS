@@ -67,7 +67,7 @@ export class SocketManager implements SocketEventSystem<SocketEvent>{
             this.components.set(comp.componentId, comp)
             comp.initialize(this)
         }
-        console.log("Socket Manager registered")
+       
     }
     unregister(comp: number): void {
        let deleted = this.components.get(comp) 

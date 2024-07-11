@@ -6,18 +6,26 @@ import { NavigationButton } from '../customComponents/navigationButton.js';
 export function NavigationBar(props: any) {
     var childrenColor = "green"
     var labelColors = {
-        backgroundColor: undefined, color:"white"
+        color:"white",
+        
+        justifyContent: "center",
+        alignSelf:  "center",
+
+
     }
     return (
-        <DefaultHeader height={"5%"} justifyContent={"space-around"}>
+        <DefaultHeader height={"10%"} justifyContent={"space-around"}  >
             <HorizontalContainer 
-                height={"100%"} 
-                width={"60%"}
+                height={"80%"} 
+                width={"40%"}
                 justifyContent={"center"}
+                color={"green"}
+
             >
-                <NavigationButton>Home</NavigationButton>
+                <h1 style={labelColors}>Quandary</h1>
+                {/* <NavigationButton>Home</NavigationButton>
                 <NavigationButton>Lobby</NavigationButton>
-                <NavigationButton>Community</NavigationButton>
+                <NavigationButton>Community</NavigationButton> */}
             </HorizontalContainer>
             
         </DefaultHeader>

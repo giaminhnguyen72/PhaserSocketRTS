@@ -14,34 +14,32 @@ import { Vector3 } from "../../../../engine/src/types/components/physics/transfo
 import { lerp } from "../../../../engine/src/math/Vector.js";
 import { TimedSpriteSheet3d } from "../../../../engine/src/systems/graphics/components/3d/SpriteSheet3d.js";
 import { BoxCollider } from "../../../../engine/src/systems/Collision/components/Collider.js";
-import { GamePlayer } from "../Mobs/Player.js";
 import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
 import { ExpEvent } from "../../../../GameFrontend/events/ExpEvent.js";
-
 type Data = {
     componentId: number[],
     vel: Vector3,
     position: Vector3
 
 }
-export class Arrow implements Entity {
-    components: [Sprite3d, Transform, MultiplayerSyncronizer<Arrow, Data>, Script,...Component[]];
+export class SwordStab implements Entity {
+    components: [TimedSpriteSheet3d, Transform, MultiplayerSyncronizer<SwordStab, Data>, Script,...Component[]];
     id?: number | undefined;
     scene!: Scene ;
-    className: string = "ARROW";
-    constructor(owner: number =0, pos: Vector3 = {x:0, y:0, z:2}, dir: Vector3= {x:0,y:0,z:0}, ) {
-        let vel = {x: dir.x* 0.4, y: dir.y * 0.4,z:0}
+    className: string = "SWORDSTAB";
+    constructor(owner: number =0, pos: Vector3 = {x:0, y:0, z:0}, dir: Vector3= {x:0,y:0,z:0}, ) {
+        let vel = {x: dir.x* 0.2, y: dir.y * 0.2,z:0}
         let transform = new Transform(pos, vel)
-        let sprite = new Sprite3d({
+        let sprite = new TimedSpriteSheet3d("/images/Projectiles/Sword_S.png", {
             dim:{
-                length: 32,
-                height:32
+                length: 96,
+                height: 96
             },
-            rot: 0,
+            rot: -Math.PI/2,
             pos: transform.pos
 
-    },"/images/Projectiles/Arrow.png", )
-    let collider = new BoxCollider({dim:{length:64, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
+    }, 450, 64, [2])
+    let collider = new BoxCollider({dim:{length:96, height: 64},pos: {x:0,y:0,z:5}, rot: 0}, (col) => {
         let entID = col.entity as number
         let ent = this.scene.entities.get(col.entity as number)
         if (entID == script.get("Owner")) {
@@ -55,17 +53,21 @@ export class Arrow implements Entity {
                     switch (currType) {
                         case 0:
                             //  
-                            
                             let enemyHP = i.get("HP")
                             let damage = script.get("Damage")
                             if (enemyHP - damage <= 0) {
                                 let e = this.scene.sceneManager.queryEngine<ScriptingEngine>("SCRIPTING",ScriptingEngine)
                                 if (e) {
-                                    let entity = e.operations.addEntity(script.componentId as number)
-                                    let exp = new ExpEvent()
-                                    exp.playerID = script.get("Owner")
-                                    exp.exp = 20
-                                    entity.addComponent<ExpEvent>(ExpEvent, exp)
+                                    let players = e.queryClass("Player")
+                                    if (players == undefined || players.has(i) == false) {
+                                            
+                                    } else {
+                                        let entity = e.operations.addEntity(script.componentId as number)
+                                        let exp = new ExpEvent()
+                                        exp.playerID = script.get("Owner")
+                                        exp.exp = 20
+                                        entity.addComponent<ExpEvent>(ExpEvent, exp)
+                                    }
                                 }
                             }
                             i.set("HP", enemyHP - damage)
@@ -84,21 +86,20 @@ export class Arrow implements Entity {
         }
     })
     
-    let sync = new MultiplayerSyncronizer<Arrow, Data>(this, (data: Data) =>{
+    let sync = new MultiplayerSyncronizer<SwordStab, Data>(this, (data: Data) =>{
 
         //script.properties.set("Destination", data.destination)
         transform.pos.x = data.position.x
         transform.pos.y = data.position.y
         transform.vel.x = data.vel.x
         transform.vel.y = data.vel.y
+        if (transform.vel.x <= 0) {
+            sprite.shape.rot = Math.PI / 2
+        } 
         for (let i = 0; i < data.componentId.length; i++) {
             this.components[i].componentId = data.componentId[i]
         }
-        if (transform.vel.x < 0) {
-            sprite.reflect = 1
-        } else {
-            sprite.reflect = -1
-        }
+
     }, ()=> {
         let array = []
         for (let i of this.components) {
@@ -119,15 +120,15 @@ export class Arrow implements Entity {
 
         let component = data 
         if (component.data && sync.data) {
+
             transform.pos.x = lerp(transform.pos.x, component.data.position.x, dt)
             transform.pos.y = lerp(transform.pos.y, component.data.position.y, dt)
         }
     })
         let script = new Script(this.className,EngineType.SOCKETSERVER)
         script.properties.set("Position", transform.pos)
-        script.properties.set("Duration", 5000)
-        script.set("Damage", 10)
-        script.set("Type", 4)
+        script.properties.set("Duration", 1000)
+        script.set("Damage", 40)
         script.properties.set("Owner", owner)
         script.setInit((system) => {
             system.addSuperClasses(script, "Projectile")

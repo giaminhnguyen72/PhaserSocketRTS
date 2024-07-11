@@ -11,7 +11,10 @@ import { BoxCollider } from "../../../../engine/src/systems/Collision/components
 import { Sprite3d } from "../../../../engine/src/systems/graphics/components/3d/Sprite3d.js";
 import { MultiplayerSyncronizer } from "../../../../engine/src/systems/MultiplayerClient/components/Syncronizer.js";
 import { Vector3 } from "../../../../engine/src/types/components/physics/transformType.js";
-import { getDirection, lerp } from "../../../../engine/src/math/Vector.js";
+import { getDirection, getDistance, lerp } from "../../../../engine/src/math/Vector.js";
+import { ScriptOperable } from "../../../../engine/src/systems/scripting/types/Operations.js";
+import { ScriptingEngine } from "../../../../engine/src/systems/scripting/ScriptingEngine.js";
+import { AxeTornado } from "../../Skills/AttackSkills/ProjectileSkills.js";
 type Data = {
     componentId: number[],
     position: Vector3
@@ -86,6 +89,7 @@ export class Orc implements Entity {
         let vec = {x: transform.pos.x, y: transform.pos.y}
         script.setProperty("Destination", vec)
         script.setProperty("Graphics", 0)
+        script.setProperty("Cooldown", 0)
         script.setProperty("Modifier", {
             speed: 1,
             regen: 0,
@@ -184,6 +188,59 @@ export class Orc implements Entity {
             position.y= pos.y
         }
         scene.addEntity(monster)
+    }
+
+}
+export class OrcSystem implements ScriptOperable{
+
+    update(dt: number, script:ScriptingEngine): void {
+        let droids = script.queryClass("ORC")
+
+        let players = script.queryClass("Player")
+        if (droids) {
+            for (let d of droids) {
+                let cooldown = d.properties.get("Cooldown")
+                if (cooldown >= 4500 && players) {
+                    let pos = d.getProperty("Position")
+                    let nearestPlayer = undefined
+                    let lowestDist = 1000000
+                    for (let p of players) {
+                        let playerPosition = p.getProperty("Position")
+                        let distance = getDistance(pos, playerPosition)
+                        if (distance < 500) {
+                            if (nearestPlayer) {
+                                distance = Math.min(distance, lowestDist)
+                                nearestPlayer =  p
+                            } else {
+                                nearestPlayer = p
+                                distance = lowestDist
+                                
+                            }
+                        }
+                    }
+
+
+                    if (nearestPlayer) {
+
+                        let finalPos = nearestPlayer.getProperty("Position")
+                        let dir = getDirection(pos, finalPos)
+                        AxeTornado(d, d.system.sceneManager.currScene)
+
+
+                        d.setProperty("Cooldown", 0)
+
+                    } else {
+                        //Insert wander 
+                    }
+
+                    
+                } else {
+                    
+                    d.setProperty("Cooldown", cooldown + dt)
+                    
+                }
+            }
+        }
     }
 
 }

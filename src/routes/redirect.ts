@@ -25,6 +25,7 @@ export default class RedirectRouter extends Route {
 
             res.sendFile(path.join(__dirname, 'public/index.html'))
         })
+
     }
      
      test() {
