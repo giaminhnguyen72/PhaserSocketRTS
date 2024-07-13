@@ -1,5 +1,7 @@
 body {
   background-color: #5ed887;
+  margin: 0;
+  padding: 0;
 }
 .joinRoomBox {
   background-color: rgb(28, 46, 212);

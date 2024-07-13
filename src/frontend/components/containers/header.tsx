@@ -4,13 +4,12 @@ export function DefaultHeader(props:any) {
         width: "100%",
         height: props.height != undefined ? props.height :undefined,
         backgroundColor: props.backgroundColor != undefined ? props.backgroundColor : undefined,
-        alignItems: "center",
-        alignContent: "center",
+
         justifyContent: props.justifyContent,
         flexDirection: "horizontal",
         display: "flex",
-        color:"green",
-        paddingTop: "5%"
+        color:"#259E25",
+
         
     }
     return (

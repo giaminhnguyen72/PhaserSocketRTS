@@ -14,12 +14,13 @@ export function NavigationBar(props: any) {
 
     }
     return (
-        <DefaultHeader height={"10%"} justifyContent={"space-around"}  >
+        <DefaultHeader height={"20%"}  >
             <HorizontalContainer 
                 height={"80%"} 
-                width={"40%"}
+                width={"100%"}
                 justifyContent={"center"}
-                color={"green"}
+                color=  {"#259E25"}
+                alignment={""}
 
             >
                 <h1 style={labelColors}>Quandary</h1>
