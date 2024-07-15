@@ -11,6 +11,8 @@ const cors = (req: Request, res: Response, next: NextFunction): void => {
   res.append('Access-Control-Allow-Origin', '*');
   res.append('Access-Control-Allow-Headers', '*');
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Origin-Agent-Cluster', '?1');
   next();
 };
 

@@ -39,7 +39,8 @@ app.use(helmet({
         "directives": {
             "script-src": ["'self'"],
             "default-src": ["ws:*"],
-            "connect-src": ["ws://localhost:8080/", "'self'"]
+            "connect-src": ["ws://localhost:8080/", "'self'"],
+	    upgradeInsecureRequests:null
         }
     }
 }));
