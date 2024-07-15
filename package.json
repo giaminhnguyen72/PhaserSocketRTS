@@ -5,7 +5,7 @@
   "description": "Game with a game engine",
   "main": "/dist",
   "scripts": {
-    "deploy": "npm run update-source && npm run install && npm run compile-ts && npm run restart",
+    "deploy": "npx tsx src/index.ts",
     "update-source": "git fetch --all && git reset --hard origin/master",
     "restart": "pm2 reload all",
     "compile-ts": "tsc",
@@ -16,6 +16,7 @@
     "inspect": "node --inspect dist/index.js",
     "watch-node": "nodemon dist/index.js",
     "watchTS":"nodemon --esm ./src/index.ts",
+
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yello.bold, cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\""
   },
   "repository": {
