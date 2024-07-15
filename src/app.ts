@@ -12,7 +12,8 @@ import cookieParser from 'cookie-parser'
 import RedirectRouter from './routes/redirect.js';
 import Route from './routes/route.js';
 import PlayRouter from './routes/playRouter.js';
-
+import * as dotenv from 'dotenv'
+import {fileURLToPath} from 'url'
 
 
 
@@ -22,13 +23,17 @@ let app: Express = express();
 /* set options */
 app.set('port', 3000);
 app.set('env', 'dev');
-
+dotenv.config({path: path.resolve(path.resolve(), './.env')})
 /* set loggers */
-
 
 /* initialise MongoDB connection */
 //mongo.init();
-
+let connectSrc;
+if (process.env.IP) {
+    connectSrc = ["ws://localhost:8080/", "'self'", process.env.IP]
+} else {
+    connectSrc =["ws://localhost:8080/", "'self'"]
+}
 /* initialize middlewares */
 
 app.use(express.json());
@@ -39,8 +44,8 @@ app.use(helmet({
         "directives": {
             "script-src": ["'self'"],
             "default-src": ["ws:*"],
-            "connect-src": ["ws://localhost:8080/", "'self'"],
-	    upgradeInsecureRequests:null
+            "connect-src": connectSrc,
+	    upgradeInsecureRequests:null 
         }
     }
 }));
