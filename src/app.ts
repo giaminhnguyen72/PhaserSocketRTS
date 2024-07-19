@@ -30,7 +30,9 @@ dotenv.config({path: path.resolve(path.resolve(), './.env')})
 //mongo.init();
 let connectSrc;
 if (process.env.IP) {
-    connectSrc = ["ws://localhost:8080/", "'self'", process.env.IP]
+    let ip1 = "wss://" + process.env.IP
+    let ip2 = "ws://" + process.env.IP
+    connectSrc = ["ws://localhost:8080/", "'self'", ip1, ip2]
 } else {
     connectSrc =["ws://localhost:8080/", "'self'"]
 }
